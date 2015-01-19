@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+	<!--Not sure whether for compilation purposes, re really need to distinguish bitness-->
+    <NetcdfInstallPath64>F:\office12\libraries\netCDF 4.3.2</NetcdfInstallPath64>
+    <NetcdfInstallPath32>F:\office12\libraries\netCDF 4.3.2</NetcdfInstallPath32>
+    <BoostLibraryPath64>F:\office12\libraries\boost_1_56_0</BoostLibraryPath64>
+    <BoostLibraryPath32>F:\office12\libraries\boost_1_56_0</BoostLibraryPath32>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="NetcdfInstallPath64">
+      <Value>$(NetcdfInstallPath64)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="NetcdfInstallPath32">
+      <Value>$(NetcdfInstallPath32)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BoostLibraryPath64">
+      <Value>$(BoostLibraryPath64)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BoostLibraryPath32">
+      <Value>$(BoostLibraryPath32)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
