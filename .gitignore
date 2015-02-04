@@ -118,6 +118,6 @@ UpgradeLog*.XML
 doc/api/doxyoutput/
 *.gz
 *.zip
-libswift/netcdf_paths.props
+datatypes/lib_paths.props
 *.exp
 *.rda
