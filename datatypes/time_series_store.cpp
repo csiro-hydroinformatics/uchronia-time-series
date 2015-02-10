@@ -2,10 +2,9 @@
 
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include "exception_utilities.h"
-
-using string = std::string;
 
 namespace datatypes
 {
@@ -71,7 +70,7 @@ namespace datatypes
 				int code = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
 				if (NC_NOERR != code)
 				{
-					// do something
+					ThrowOnFileOpenFail(filename, code);
 				}
 				else
 				{
@@ -85,7 +84,7 @@ namespace datatypes
 				int code = nc_create(fname, NC_CLASSIC_MODEL | NC_CLOBBER, &ncid);
 				if (NC_NOERR != code)
 				{
-					// do something
+					ThrowOnFileOpenFail(filename, code);
 				}
 				else
 				{
@@ -624,7 +623,7 @@ namespace datatypes
 				int code = nc_inq_varid(ncid, varName.c_str(), &dataVarId);
 				if (NC_NOERR != code)
 				{
-					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("variable name not found" + varName);
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("variable name not found " + varName);
 				}
 				return dataVarId;
 			}
@@ -702,11 +701,29 @@ namespace datatypes
 			return dataAccess->TimeForIndex(timeIndex);
 		}
 
+		template <typename T>
+		EnsembleTimeSeriesStore<T>::EnsembleTimeSeriesStore(const string& forecastDataFiles, const string& varName, const string& varIdentifier, int index)
+		{
+			this->forecastDataFiles = forecastDataFiles;
+			this->varName = varName;
+			this->varIdentifier = varIdentifier;
+			this->index = index;
+		}
 
 		// explicit instantiations. Without these, code using this DL library would fail at link time.
 		// see http://stackoverflow.com/a/495056/2752565
 		template class SwiftNetCDFTimeSeriesStore < double > ;
 		template class SwiftTimeSeriesStore < double > ;
 		template class SwiftNetCDFTimeSeries < double > ;
+
+		template <typename T>
+		MultiTimeSeries<T>* EnsembleTimeSeriesStore<T>::Read(const string& fileIdentifier)
+		{
+			string fileName(forecastDataFiles);
+			boost::algorithm::replace_first(fileName, "{0}", fileIdentifier);
+			return TimeSeriesOperations<T>::ReadForecastRainfallTimeSeries(fileName, varName, varIdentifier, index);
+		}
+
+		template class EnsembleTimeSeriesStore < double >;
 	}
 }

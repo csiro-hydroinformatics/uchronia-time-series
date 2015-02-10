@@ -102,5 +102,34 @@ namespace datatypes
 			std::vector<TTimeSeries<T>*> * series;
 			ptime startDate;
 		};
+
+
+		template <typename T>
+		class DLL_LIB TimeSeriesOperations
+		{
+		public:
+			static TTimeSeries<T>* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier);
+			static MultiTimeSeries<T>* ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index);
+			static TTimeSeries<T>* TrimTimeSeries(TTimeSeries<T>* timeSeries, const ptime& startDate, const ptime& endDate);
+			static TTimeSeries<T>* DailyToHourly(TTimeSeries<T>* dailyTimeSeries);
+			static TTimeSeries<T>* JoinTimeSeries(TTimeSeries<T>* head, TTimeSeries<T>* tail);
+			static bool AreTimeSeriesEqual(TTimeSeries<T>* a, TTimeSeries<T>* b);
+		};
+
+		template <typename T>
+		class DLL_LIB TimeWindow
+		{
+		public:
+			TimeWindow(const ptime& startDate, const ptime& endDate);
+			TTimeSeries<T>* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier);
+			TTimeSeries<T>* Trim(TTimeSeries<T>* timeSeries);
+			TTimeSeries<T>* ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier);
+
+		private:
+			ptime startDate;
+			ptime endDate;
+
+		};
+
 	}
 }

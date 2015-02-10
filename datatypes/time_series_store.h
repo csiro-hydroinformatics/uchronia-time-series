@@ -1,9 +1,11 @@
 #pragma once
 
-#include "time_series.h"
-
+#include <stdexcept> 
 #include <netcdf.h>
 #include <map>
+
+#include "time_series.h"
+
 
 namespace datatypes
 {
@@ -28,6 +30,11 @@ namespace datatypes
 			{
 				using string = std::string;
 
+			private:
+				void ThrowOnFileOpenFail(const string& filename, int code)
+				{
+					throw std::logic_error(string("Failed to open file ") + filename + " with code " + boost::lexical_cast<string>(code));
+				}
 			public:
 				SwiftNetCDFAccess(const string& filename);
 				SwiftNetCDFAccess(const string& filename, int nEns, int nLead, const string& timeUnits, std::vector<double>& timeVar, std::vector<string>& stationIds, std::vector<string>& varNames, std::map<string, VariableAttributes>& varAttributes);
@@ -203,5 +210,42 @@ namespace datatypes
 		private:
 			SwiftNetCDFAccess * dataAccess = nullptr;
 		};
+
+
+		template <typename T>
+		class DLL_LIB EnsembleTimeSeriesStore
+		{
+			using string = std::string;
+		public:
+			EnsembleTimeSeriesStore(const string& forecastDataFiles, const string& varName, const string& varIdentifier, int index);
+			MultiTimeSeries<T>* Read(const string& fileIdentifier);
+		private:
+			string forecastDataFiles;
+			string varName;
+			string varIdentifier;
+			int index;
+		};
+
+		//template <typename T>
+		//class DLL_LIB MultifileNetCDFTimeSeriesStore : public SwiftTimeSeriesStore < T >
+		//{
+		//	using string = std::string;
+		//public:
+		//	MultifileNetCDFTimeSeriesStore(const string& directoryname);
+		//	MultifileNetCDFTimeSeriesStore(const string& directoryname, int nEns, int nLead, const string& timeUnits, std::vector<double>& timeVar, std::vector<string>& stationIds, std::vector<string>& varNames,
+		//		std::map<string, VariableAttributes>& varAttributes = std::map<string, VariableAttributes>());
+		//	~MultifileNetCDFTimeSeriesStore();
+
+		//	SwiftNetCDFTimeSeries<T> * Get(const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1) override;
+		//	//void Set(SwiftNetCDFTimeSeries<T> * series, const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1) override;
+		//	int GetEnsembleSize() override;
+		//	int GetLeadTimeCount() override;
+		//	ptime * GetTimeDim() override;
+		//	int GetTimeLength();
+		//	ptime GetStart() override;
+		//	int IndexForIdentifier(const string& identifier) override;
+		//	//int IndexForTime(const ptime* time) override;
+
+		//};
 	}
 }
