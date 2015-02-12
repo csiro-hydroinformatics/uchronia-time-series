@@ -52,8 +52,8 @@ namespace datatypes
 			ptime AddTimeStep(ptime& start, int numSteps);
 			void CopyNonData(const TTimeSeries<T>& src, bool deep);
 			void SetDefaults();
-			ptime * startDate;
-			ptime * endDate;
+			ptime * startDate = nullptr;
+			ptime * endDate = nullptr;
 			void DeleteInnerData()
 			{
 				if (data != nullptr)
@@ -64,8 +64,8 @@ namespace datatypes
 			}
 			void DeleteInnerTimeSpan()
 			{
-				if (this->startDate == nullptr) delete (this->startDate);
-				if (this->endDate == nullptr) delete (this->endDate);
+				if (this->startDate != nullptr) delete (this->startDate);
+				if (this->endDate != nullptr) delete (this->endDate);
 			}
 		};
 
