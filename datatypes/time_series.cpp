@@ -1,5 +1,6 @@
 #include "common.h"
 #include "time_series.h"
+#include "time_series_store.h"
 #include "exception_utilities.h"
 
 using namespace boost::gregorian;
@@ -311,5 +312,185 @@ namespace datatypes
 		template class TTimeSeries < float > ;
 
 		template class MultiTimeSeries < double > ;
+
+		template <typename T>
+		TTimeSeries<T>* TimeSeriesOperations<T>::Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier)
+		{
+			SwiftNetCDFTimeSeriesStore<T> store(netCdfFilePath);
+
+			SwiftNetCDFTimeSeries<T>* netCdfTimeSeries = store.Get(varName, identifier);
+
+			MultiTimeSeries<T>* mtsForDate = netCdfTimeSeries->GetForecasts(0);
+			ptime startDate = mtsForDate->GetStart();
+			delete mtsForDate;
+			int length = netCdfTimeSeries->GetTimeLength();
+
+			double* data = new double[length];
+
+			for (int i = 0; i < length; i++)
+			{
+				MultiTimeSeries<T>* multiTimeSeries = netCdfTimeSeries->GetForecasts(i);
+				TTimeSeries<T>* timeSeries = multiTimeSeries->Get(0);
+				delete multiTimeSeries;
+				data[i] = timeSeries->GetValue(0);
+				delete timeSeries;
+			}
+
+			delete netCdfTimeSeries;
+
+			TTimeSeries<T>* result = new TTimeSeries<T>(data, length, startDate);
+
+			delete[] data;
+
+			return result;
+		}
+
+		template <typename T>
+		TTimeSeries<T>* TimeSeriesOperations<T>::TrimTimeSeries(TTimeSeries<T>* timeSeries, const ptime& startDate, const ptime& endDate)
+		{
+			ptime sd = timeSeries->GetStartDate();
+			ptime ed = timeSeries->GetEndDate();
+
+			auto timeStepSpan = seconds(timeSeries->GetTimeStepSeconds());
+
+			int offset = 0;
+			for (ptime dt = sd; dt < startDate; dt += timeStepSpan)
+				offset++;
+			int startOffset = offset;
+
+			for (ptime dt = startDate; dt < endDate; dt += timeStepSpan)
+				offset++;
+			int endOffset = offset;
+
+			double* data = new double[endOffset - startOffset + 1];
+			timeSeries->CopyTo(data, startOffset, endOffset);
+
+			TTimeSeries<T>* result = new TTimeSeries<T>(data, endOffset - startOffset + 1, startDate);
+
+			delete[] data;
+
+			return result;
+		}
+
+		template <typename T>
+		TTimeSeries<T>* TimeSeriesOperations<T>::DailyToHourly(TTimeSeries<T>* dailyTimeSeries)
+		{
+			int length = dailyTimeSeries->GetLength();
+
+			double* data = new double[length * 24];
+
+			for (int i = 0; i < length; i++)
+				for (int j = 0; j < 24; j++)
+					data[(i * 24) + j] = dailyTimeSeries->GetValue(i) / 24;
+
+			TTimeSeries<T>* result = new TTimeSeries<T>(data, length * 24, dailyTimeSeries->GetStartDate());
+
+			delete[] data;
+
+			return result;
+		}
+
+		template <typename T>
+		TTimeSeries<T>* TimeSeriesOperations<T>::JoinTimeSeries(TTimeSeries<T>* head, TTimeSeries<T>* tail)
+		{
+			ptime startDate = head->GetStartDate();
+
+			int headLength = head->GetLength();
+			int tailLength = tail->GetLength();
+
+			int length = headLength + tailLength;
+
+			double* data = new double[length];
+
+			for (int i = 0; i < length; i++)
+			{
+				if (i < headLength)
+					data[i] = head->GetValue(i);
+				else
+					data[i] = tail->GetValue(i - headLength);
+			}
+
+			TTimeSeries<T>* result = new TTimeSeries<T>(data, length, startDate);
+
+			delete[] data;
+
+			return result;
+		}
+
+		template <typename T>
+		bool TimeSeriesOperations<T>::AreTimeSeriesEqual(TTimeSeries<T>* a, TTimeSeries<T>* b)
+		{
+			ptime startA = a->GetStartDate();
+			ptime startB = b->GetStartDate();
+
+			if (startA != startB)
+				return false;
+
+			int lengthA = a->GetLength();
+			int lengthB = b->GetLength();
+
+			if (lengthA != lengthB)
+				return false;
+
+			for (int i = 0; i < lengthA; i++)
+			{
+				auto valA = a->GetValue(i);
+				auto valB = b->GetValue(i);
+
+				if (std::abs(valA - valB) > 1.0e-12)
+					return false;
+			}
+
+			return true;
+		}
+
+		template <typename T>
+		MultiTimeSeries<T>* TimeSeriesOperations<T>::ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index)
+		{
+			SwiftNetCDFTimeSeriesStore<T> rainfallStore(netCdfFilepath);
+			SwiftNetCDFTimeSeries<T>* forecastRainEnsemble = rainfallStore.Get(varName, identifier);
+			MultiTimeSeries<T>* forecastRainMultiTimeSeries = forecastRainEnsemble->GetForecasts(index);
+			delete forecastRainEnsemble;
+			return forecastRainMultiTimeSeries;
+		}
+
+
+		template <typename T>
+		TimeWindow<T>::TimeWindow(const ptime& startDate, const ptime& endDate)
+		{
+			this->startDate = startDate;
+			this->endDate = endDate;
+		}
+
+		template class TimeSeriesOperations < double >;
+
+		template <typename T>
+		TTimeSeries<T>* TimeWindow<T>::Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier)
+		{
+			auto tmp = TimeSeriesOperations<T>::Read(netCdfFilePath, varName, identifier);
+			auto result = Trim(tmp);
+			delete tmp;
+			return result;
+		}
+
+		template <typename T>
+		TTimeSeries<T>* TimeWindow<T>::Trim(TTimeSeries<T>* timeSeries)
+		{
+			return TimeSeriesOperations<T>::TrimTimeSeries(timeSeries, startDate, endDate);
+		}
+
+		template <typename T>
+		TTimeSeries<T>* TimeWindow<T>::ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier)
+		{
+			TTimeSeries<T>* fullDailyObsPetTimeSeries = TimeSeriesOperations<T>::Read(netCdfFilePath, varName, identifier);
+			TTimeSeries<T>* fullHourlyObsPetTimeSeries = TimeSeriesOperations<T>::DailyToHourly(fullDailyObsPetTimeSeries);
+			auto result = Trim(fullHourlyObsPetTimeSeries);
+			delete fullDailyObsPetTimeSeries;
+			delete fullHourlyObsPetTimeSeries;
+			return result;
+		}
+
+		template class TimeWindow < double >;
+
 	}
 }
