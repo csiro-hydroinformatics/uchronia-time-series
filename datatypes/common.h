@@ -6,13 +6,13 @@
 #include <map> 
 
 #ifdef _WIN32
-  #ifdef USING_SWIFT_CORE
-    #define DLL_LIB __declspec(dllimport)
+  #ifdef USING_DATATYPES
+    #define DATATYPES_DLL_LIB __declspec(dllimport)
   #else
-    #define DLL_LIB __declspec(dllexport)
+    #define DATATYPES_DLL_LIB __declspec(dllexport)
   #endif
 #else
-  #define DLL_LIB // nothing
+  #define DATATYPES_DLL_LIB // nothing
 #endif
 
 // You can define the following to activate the Visual Leak Detector tool for visual C++

@@ -3,6 +3,7 @@
 #include <stdexcept> 
 #include <netcdf.h>
 #include <map>
+#include <boost/function.hpp>
 
 #include "time_series.h"
 
@@ -11,7 +12,9 @@ namespace datatypes
 {
 	namespace timeseries
 	{
-		class DLL_LIB VariableAttributes
+
+		/** \brief	A class to hold the attributes of a netCDF variable stored in the SWIFT netCDF format*/
+		class DATATYPES_DLL_LIB VariableAttributes
 		{
 			using string = std::string;
 
@@ -26,7 +29,9 @@ namespace datatypes
 
 		namespace io
 		{
-			class DLL_LIB SwiftNetCDFAccess
+
+			/** \brief	Class responsible for the low-level read/write operations from/to a SWIFT netCDF file */
+			class DATATYPES_DLL_LIB SwiftNetCDFAccess
 			{
 				using string = std::string;
 
@@ -36,20 +41,183 @@ namespace datatypes
 					throw std::logic_error(string("Failed to open file ") + filename + " with code " + boost::lexical_cast<string>(code));
 				}
 			public:
+
+				/**
+				 * \brief	Constructor to wrap an existing SWIFT netCDF file
+				 *
+				 * \param	filename	SWIFT netCDF file.
+				 */
 				SwiftNetCDFAccess(const string& filename);
+
+				/**
+				 * \brief	Constructor to create a new SWIFT netCDF file
+				 *
+				 * \param	filename			 	name of the new file to create.
+				 * \param	nEns				 	Size of the ensembles
+				 * \param	nLead				 	Length of the lead time for each of the time series in the ensemble forecast for a given time.
+				 * \param	timeUnits			 	Units of the temporal dimension(s).
+				 * \param [in]	timeVar		 	The values of the "main" time dimension, consistent with the temporal units given with the previous parameter
+				 * \param [in]	stationIds   	List of identifiers for the stations.
+				 * \param [in]	varNames	 	List of names of the variables.
+				 * \param [in]	varAttributes	Attributes for each variables; the keys of the dictionary must be found in the varNames parameter.
+				 */
 				SwiftNetCDFAccess(const string& filename, int nEns, int nLead, const string& timeUnits, std::vector<double>& timeVar, std::vector<string>& stationIds, std::vector<string>& varNames, std::map<string, VariableAttributes>& varAttributes);
+
 				~SwiftNetCDFAccess();
 
+				/**
+				 * \brief	Gets ensemble size.
+				 *
+				 * \return	The ensemble size.
+				 */
 				int GetEnsembleSize();
+
+				/**
+				 * \brief	Gets the lengths of the lead time dimension.
+				 *
+				 * \return	The lead time length.
+				 */
 				int GetLeadTimeCount();
+
+				/**
+				* \brief	Gets the lengths of the main time dimension.
+				*
+				* \return	The time length.
+				*/
 				int GetTimeLength();
+
+				/**
+				 * \brief	Gets the vector with the values of the main time dimension
+				 *
+				 * \return	the values of the main time dimension
+				 */
 				ptime * GetTimeDim();
+
+				/**
+				 * \brief	Gets the first time in the main time dimension of this netCDF data set.
+				 *
+				 * \return	The start date of the data set.
+				 */
 				ptime GetStart();
+
+				/**
+				 * \brief	Corresponding index for a string identifier for a variable in this data set.
+				 *
+				 * \param	identifier	The identifier.
+				 *
+				 * \return	An int.
+				 */
 				int IndexForIdentifier(const string& identifier);
+
 				//int IndexForTime(const ptime* time);
+
+				/**
+				 * \brief	Time value for an index of the time dimension.
+				 *
+				 * \param	timeIndex	Zero-based index of the time.
+				 *
+				 * \return	A ptime.
+				 */
 				ptime TimeForIndex(int timeIndex);
-				std::vector<double*> * GetForecasts(const string& varName, int catchmentNumber, int timeIndex);
-				void SetForecasts(const string& varName, int catchmentNumber, int timeIndex, std::vector<double*> &values);
+
+				/**
+				* \brief	Gets the values of an ensemble forecast for a variable, for a starting date in the main time dimension.
+				*
+				* \tparam	ElementType	type of element expected for this variable.
+				* \param	varName		   	Name of the variable.
+				* \param	catchmentNumber	The catchment number.
+				* \param	timeIndex	   	Zero-based index of the time dimension.
+				*
+				* \return	null if it fails, else the forecasts.
+				*/
+				template<typename ElementType>
+				std::vector<ElementType*> * GetForecasts(const string& varName, int catchmentNumber, int timeIndex)
+				{
+					int dataVarId = GetVarId(varName);
+					size_t startp[4];
+					size_t countp[4];
+					GetEnsembleNetcdfWindow(catchmentNumber, timeIndex, startp, countp);
+					auto vardata = GetForecastDataBuffer();
+
+					// KLUDGE
+					// The use of nc_get_vara_double is clearly at odd with the declaration of GetForecasts as a template method 
+					// This is a known limitation. This is likely something that can be overcome one way or another. Going with a generic approach for the API.
+					int code = nc_get_vara_double(ncid, dataVarId, startp, countp, vardata);
+
+					auto result = new std::vector<ElementType*>();
+					ElementType * dest;
+					for (int i = 0; i < ensembleSize; i++)
+					{
+						dest = new ElementType[leadTimeLength];
+						memcpy(dest, vardata + i * leadTimeLength, leadTimeLength * sizeof(ElementType));
+						result->push_back(dest);
+					}
+					delete[] vardata;
+					return result;
+				}
+
+
+				/**
+				* \brief	Sets the values for an ensemble forecast,  for a variable, for a starting date in the main time dimension.
+				*
+				* \tparam	ElementType	type of element expected for this variable.
+				* \param	varName		   	Name of the variable.
+				* \param	catchmentNumber	The catchment number.
+				* \param	timeIndex	   	Zero-based index of the time.
+				* \param [in]	values 	[in] the values to write to file.
+				*/
+				template<typename ElementType>
+				void SetForecasts(const string& varName, int catchmentNumber, int timeIndex, std::vector<ElementType*> &values) 	// TODO: checks on 'values'
+				{
+					int dataVarId = GetVarId(varName);
+					size_t startp[4];
+					size_t countp[4];
+					GetEnsembleNetcdfWindow(catchmentNumber, timeIndex, startp, countp);
+					auto vardata = GetForecastDataBuffer();
+
+					ElementType * dest;
+					for (int i = 0; i < ensembleSize; i++)
+					{
+						dest = vardata + i * leadTimeLength;
+						memcpy(dest, values[i], leadTimeLength * sizeof(ElementType));
+					}
+
+					// KLUDGE
+					// The use of nc_get_vara_double is clearly at odd with the declaration of GetForecasts as a template method 
+					// This is a known limitation. This is likely something that can be overcome one way or another. Going with a generic approach for the API.
+					int code = nc_put_vara_double(ncid, dataVarId, startp, countp, vardata);
+
+					delete[] vardata;
+				}
+
+				/**
+				 * \brief	Gets the values of a variable stored as an non-ensemble series.
+				 *
+				 * \tparam	ElementType	type of element expected for this variable.
+				 * \param	varName		   	Name of the variable.
+				 * \param	catchmentNumber	The catchment number.
+				 *
+				 * \return	All the values for the time series defined with this variable name.
+				 */
+				template<typename ElementType>
+				ElementType* GetValues(const string& varName, int catchmentNumber)
+				{
+					int dataVarId = GetVarId(varName);
+					size_t startp[3];
+					size_t countp[3];
+					GetNetcdfWindow(catchmentNumber, startp, countp);
+					auto vardata = GetSingleSeriesDataBuffer(1, GetTimeLength());
+
+					// KLUDGE
+					// The use of nc_get_vara_double is clearly at odd with the declaration of GetForecasts as a template method 
+					// This is a known limitation. This is likely something that can be overcome one way or another. Going with a generic approach for the API.
+					int code = nc_get_vara_double(ncid, dataVarId, startp, countp, vardata);
+
+					ElementType * dest = new ElementType[GetTimeLength()];
+					memcpy(dest, vardata, GetTimeLength() * sizeof(ElementType));
+					delete[] vardata;
+					return dest;
+				}
 
 				static string CreateTimeUnitsAttribute(const ptime& utcStart, const string& units);
 				static ptime ParseStartDate(const string& unitsAttribute);
@@ -119,9 +287,27 @@ namespace datatypes
 				template<class T, class TStored>
 				T* GetVariable(int varId, int n);
 
-				void GetNetcdWindow(int catchmentNumber, int timeIndex, size_t *startp, size_t *countp);
+				/**
+				 * \brief	Gets the NetCDF start/count specifications for the data pertaining to a time index.
+				 *
+				 * \param	catchmentNumber	The catchment number.
+				 * \param	timeIndex	   	Zero-based index of the time.
+				 * \param [in,out]	startp 	the dimensions start indices.
+				 * \param [in,out]	countp 	the dimensions counts.
+				 */
+				void GetEnsembleNetcdfWindow(int catchmentNumber, int timeIndex, size_t *startp, size_t *countp);
+
+				/**
+				* \brief	Gets the NetCDF start/count specifications for the data pertaining to a time index.
+				*
+				* \param	catchmentNumber	The catchment number.
+				* \param [in,out]	startp 	the dimensions start indices.
+				* \param [in,out]	countp 	the dimensions counts.
+				*/
+				void GetNetcdfWindow(int catchmentNumber, size_t *startp, size_t *countp);
 				int GetVarId(const string& varName);
 				double * GetForecastDataBuffer(int numStations = 1, int numTimeSteps = 1);
+				double * GetSingleSeriesDataBuffer(int numStations, int numTimeSteps);
 				int ncid = -1;
 				int timeDimId, stationDimId, leadTimeDimId, ensMemberDimId, strLenDimId;
 				int timeVarId = -1, stationNameVarId = -1, stationIdVarId = -1, leadTimeVarId = -1, ensMemberVarId = -1, latVarId = -1, lonVarId = -1, elevationVarId = -1;
@@ -142,7 +328,7 @@ namespace datatypes
 				int * timeVec = nullptr;
 				int * variableVarIds;
 				int leadTimeLength;
-				//int stepMultiplier;
+				//int stepMultiplier ;
 				int ensembleSize;
 				string catchmentName;
 			};
@@ -150,13 +336,42 @@ namespace datatypes
 
 		using namespace datatypes::timeseries::io;
 
+		/**
+		 * \brief	Representation of an univariate, ensemble time series with a SWIFT netCDF back end.
+		 *
+		 * \tparam	T	The type of the elements in the series; typically double or float.
+		 */
 		template <typename T>
-		class DLL_LIB SwiftNetCDFTimeSeries
+		class DATATYPES_DLL_LIB SwiftNetCDFTimeSeries
 		{
 			using string = std::string;
 		public:
+
+			/**
+			 * \brief	Constructor.
+			 *
+			 * \param [in]          	dataAccess	SWIFT netCDF data access object to read/write the back end file.
+			 * \param	varName			  	Name of the variable for this time series (the netCDF back end may have several variables).
+			 * \param	identifier		  	The identifier.
+			 */
 			SwiftNetCDFTimeSeries(SwiftNetCDFAccess * dataAccess, const string& varName, const string& identifier);
+
+			/**
+			 * \brief	Gets the ensemble forecast for a given index in the time dimension
+			 *
+			 * \param	i	Zero-based index of the time step of interest.
+			 *
+			 * \return	a pointer to a new MultiTimeSeries.
+			 */
 			MultiTimeSeries<T> * GetForecasts(int i);
+
+			/**
+			 * \brief	Gets a non-ensemble time series. There must be such a record, otherwise an exception is thrown.
+			 *
+			 * \return	null if it fails, else the series.
+			 */
+			TTimeSeries<T> * GetSeries();
+
 			void SetForecasts(int i, MultiTimeSeries<T> * forecasts);
 			int GetEnsembleSize();
 			int GetLeadTimeCount();
@@ -170,42 +385,58 @@ namespace datatypes
 			int catchmentNumber;
 		};
 
+
 		template <typename T>
-		class DLL_LIB SwiftTimeSeriesStore
+		class DATATYPES_DLL_LIB SwiftNetCDFTimeSeriesStore
 		{
 			using string = std::string;
 		public:
-			virtual SwiftNetCDFTimeSeries<T> * Get(const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1) = 0;
-			//virtual void Set(SwiftNetCDFTimeSeries<T> * series, const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1) = 0;
-			virtual int GetEnsembleSize() = 0;
-			virtual int GetLeadTimeCount() = 0;
-			virtual ptime * GetTimeDim() = 0;
-			virtual ptime GetStart() = 0;
-			// ??? GetValues(const string& varName) = 0;
-			virtual int IndexForIdentifier(const string& identifier) = 0;
-			//virtual int IndexForTime(const ptime* time) = 0;
 
-		};
-
-		template <typename T>
-		class DLL_LIB SwiftNetCDFTimeSeriesStore : public SwiftTimeSeriesStore < T >
-		{
-			using string = std::string;
-		public:
+			/**
+			 * \brief	Create a wrapper time series store around an existing SWIFT netCDF file.
+			 *
+			 * \param	filename	Filename of the file.
+			 */
 			SwiftNetCDFTimeSeriesStore(const string& filename);
+
+			/**
+             *\brief	Constructor to create a new SWIFT netCDF file
+             *
+             * \param	filename			 	name of the new file to create.
+             * \param	nEns				 	Size of the ensembles
+             * \param	nLead				 	Length of the lead time for each of the time series in the ensemble forecast for a given time.
+             * \param	timeUnits			 	Units of the temporal dimension(s).
+             * \param[in]	timeVar		 	The values of the "main" time dimension, consistent with the temporal units given with the previous parameter
+             * \param[in]	stationIds   	List of identifiers for the stations.
+             * \param[in]	varNames	 	List of names of the variables.
+             * \param[in]	varAttributes	Attributes for each variables; the keys of the dictionary must be found in the varNames parameter.
+			 */
 			SwiftNetCDFTimeSeriesStore(const string& filename, int nEns, int nLead, const string& timeUnits, std::vector<double>& timeVar, std::vector<string>& stationIds, std::vector<string>& varNames,
 				std::map<string, VariableAttributes>& varAttributes = std::map<string, VariableAttributes>());
+			
 			~SwiftNetCDFTimeSeriesStore();
 
-			SwiftNetCDFTimeSeries<T> * Get(const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1) override;
-			//void Set(SwiftNetCDFTimeSeries<T> * series, const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1) override;
-			int GetEnsembleSize() override;
-			int GetLeadTimeCount() override;
-			ptime * GetTimeDim() override;
+			/**
+			 * \brief	Create an univariate SWIFT netCDF time series using this netCDF time series store.
+			 *
+			 * \param	varName		 	Name of the variable.
+			 * \param	identifier   	The identifier; e.g. a catchment identifier.
+			 * \param	dimIdent	 	(Optional) name of the dimension in which to look for the location identifier (e.g. catchment identifier). Defaults to 'station_id' as per SWIFT netCDF schema
+			 * \param	startTime	 	(Optional) the start time. If null (default), the start time of the whole data set is used.
+			 * \param	leadTimeCount	(Optional) number of lead times to read. If negative (default), the maximum number of lead times returned by GetLeadTimeCount()
+			 *
+			 * \return	null if it fails, else a SwiftNetCDFTimeSeries&lt;T&gt;*.
+			 */
+			SwiftNetCDFTimeSeries<T> * Get(const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1);
+			//void Set(SwiftNetCDFTimeSeries<T> * series, const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1);
+
+			int GetEnsembleSize();
+			int GetLeadTimeCount();
+			ptime * GetTimeDim();
 			int GetTimeLength();
-			ptime GetStart() override;
-			int IndexForIdentifier(const string& identifier) override;
-			//int IndexForTime(const ptime* time) override;
+			ptime GetStart();
+			int IndexForIdentifier(const string& identifier);
+			//int IndexForTime(const ptime* time);
 
 		private:
 			SwiftNetCDFAccess * dataAccess = nullptr;
@@ -213,12 +444,22 @@ namespace datatypes
 
 
 		template <typename T>
-		class DLL_LIB EnsembleTimeSeriesStore
+		class DATATYPES_DLL_LIB EnsembleTimeSeriesStore
+		{
+		public:
+			virtual ~EnsembleTimeSeriesStore() {};
+			virtual MultiTimeSeries<T>* Read(const std::string& ensembleIdentifier) = 0;
+		};
+
+
+		template <typename T>
+		class DATATYPES_DLL_LIB MultiFileEnsembleTimeSeriesStore : public EnsembleTimeSeriesStore < T >
 		{
 			using string = std::string;
 		public:
-			EnsembleTimeSeriesStore(const string& forecastDataFiles, const string& varName, const string& varIdentifier, int index);
-			MultiTimeSeries<T>* Read(const string& fileIdentifier);
+			MultiFileEnsembleTimeSeriesStore(const string& forecastDataFiles, const string& varName, const string& varIdentifier, int index);
+			MultiTimeSeries<T>* Read(const string& fileIdentifier) override;
+			virtual ~MultiFileEnsembleTimeSeriesStore() {/*TODO*/ };
 		private:
 			string forecastDataFiles;
 			string varName;
@@ -226,26 +467,81 @@ namespace datatypes
 			int index;
 		};
 
-		//template <typename T>
-		//class DLL_LIB MultifileNetCDFTimeSeriesStore : public SwiftTimeSeriesStore < T >
-		//{
-		//	using string = std::string;
-		//public:
-		//	MultifileNetCDFTimeSeriesStore(const string& directoryname);
-		//	MultifileNetCDFTimeSeriesStore(const string& directoryname, int nEns, int nLead, const string& timeUnits, std::vector<double>& timeVar, std::vector<string>& stationIds, std::vector<string>& varNames,
-		//		std::map<string, VariableAttributes>& varAttributes = std::map<string, VariableAttributes>());
-		//	~MultifileNetCDFTimeSeriesStore();
 
-		//	SwiftNetCDFTimeSeries<T> * Get(const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1) override;
-		//	//void Set(SwiftNetCDFTimeSeries<T> * series, const string& varName, const string& identifier, const string& dimIdent = "station_id", const ptime* startTime = nullptr, int leadTimeCount = -1) override;
-		//	int GetEnsembleSize() override;
-		//	int GetLeadTimeCount() override;
-		//	ptime * GetTimeDim() override;
-		//	int GetTimeLength();
-		//	ptime GetStart() override;
-		//	int IndexForIdentifier(const string& identifier) override;
-		//	//int IndexForTime(const ptime* time) override;
+		template <typename T>
+		class SingleSeriesInformation
+		{
+			using string = std::string;
+		public:
+			SingleSeriesInformation(SwiftNetCDFTimeSeriesStore<T> * dataAccess, const string& ncVarName, const string& identifier) :
+				dataAccess(dataAccess), ncVarName(ncVarName), identifier(identifier) 
+			{
+			}
+			SwiftNetCDFTimeSeriesStore<T> * dataAccess;
+			string ncVarName;
+			string identifier;
+			TTimeSeries<T> GetSeries() {
+				return dataAccess->Get(ncVarName, identifier)->;
+			}
+		};
 
-		//};
+		/**
+		 * \brief	Library of time series, for high level access to sources of time series that nmay have varying on-disk representations
+		 *
+		 * \tparam	T	The element type of the time series dealt with, typically double or float.
+		 */
+		template <typename T>
+		class DATATYPES_DLL_LIB TimeSeriesLibrary
+		{
+			using string = std::string;
+		public:
+			// Maybe the following,m but may introduce too much coupling with on disk representation with SwiftNetCDFAccess.
+			// TTimeSeries<T>* GetSingle(const string& dataId, boost::function<TTimeSeries<T>*(SwiftNetCDFAccess * dataAccess)> tsTransform);
+
+			/**
+			 * \brief	Gets a single time series out of the library
+			 *
+			 * \param	dataId			   	Identifier for the time series
+			 * \param [in]	tsTransform	    If non-null, a time series transformation to perform on the raw data retrieved for dataId.
+			 *
+			 * \return	The univariate, single realization time series 
+			 */
+			TTimeSeries<T>* GetSingle(const string& dataId, boost::function<TTimeSeries<T>*(TTimeSeries<T>*)>& tsTransform);
+
+			/**
+			* \brief	Gets a single time series out of the library
+			*
+			* \param	dataId			   	Identifier for the time series
+			*
+			* \return	The univariate, single realization time series
+			*/
+			TTimeSeries<T>* GetSingle(const string& dataId);
+
+
+			MultiTimeSeries<T>* GetMultiple(const string& dataId, int index);
+
+			MultiTimeSeries<T>* GetEnsembleTimeSeries(const string& dataId);
+
+			void AddSwiftNetCDFSource(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier);
+			void AddSource(const string& dataId, SwiftNetCDFTimeSeriesStore<T> * dataAccess, const string& ncVarName, const string& identifier);
+			void AddSource(const string& dataId, SwiftNetCDFTimeSeries<T> * timeSeries);
+			void AddSource(const string& dataId, EnsembleTimeSeriesStore<T> * dataAccess);
+
+		private:
+			std::map < string, SingleSeriesInformation<T>* > timeSeriesProviders;
+			SwiftNetCDFTimeSeries<T> * GetSwiftNetCDFTimeSeries(const string& dataId);
+
+		};
+
+		template <typename T>
+		class DATATYPES_DLL_LIB TimeSeriesIOHelper
+		{
+		public:
+			static TTimeSeries<T>* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier);
+			static MultiTimeSeries<T>* ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index);
+			static TTimeSeries<T>* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window);
+			static TTimeSeries<T>* ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window);
+		};
+
 	}
 }
