@@ -1,7 +1,9 @@
 #pragma once
 
-#include "common.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include "common.h"
+#include "time_step.h"
+#include "exception_utilities.h"
 
 using namespace datatypes::sys;
 using namespace boost::posix_time;
@@ -14,16 +16,27 @@ namespace datatypes
 		/**
 		 * \brief	A template for univariate, single realisasion time series
 		 *
-		 * \tparam	T	Elemental type, typically double or float.
+		 * \tparam	T	Element type, typically double or float, but possibly a more complicated type such as another TTimeSeries.
 		 */
 		template <typename T>
-		class /*DATATYPES_DLL_LIB*/ TTimeSeries
+		class TTimeSeries
 		{
 		public:
 			TTimeSeries();
-			TTimeSeries(T default_value, int length, const ptime& startDate);
-			TTimeSeries(T * values, int length, const ptime& startDate);
+
+			/**
+			 * \brief	Time Series Constructor.
+			 *
+			 * \param	default_value	The default value.
+			 * \param	length		 	The length.
+			 * \param	startDate	 	The start date.
+			 * \param	timeStep	 	The time step of the time series.
+			 */
+			TTimeSeries(T default_value, int length, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly());
+			TTimeSeries(T * values, int length, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly());
 			TTimeSeries(const TTimeSeries<T>& src); // Copy constructor
+
+			TTimeSeries<T>& operator=(const TTimeSeries<T>& rhs);
 
 			/**
 			 * \brief	Constructor using the move semantics
@@ -44,8 +57,11 @@ namespace datatypes
 			int GetLength();
 			ptime GetStartDate();
 			ptime GetEndDate();
+			TimeStep GetTimeStep();
 			ptime TimeForIndex(int timeIndex);
-			int GetTimeStepSeconds();
+			int IndexForTime(const ptime& instant);
+			int UpperIndexForTime(const ptime& instant);
+			int LowerIndexForTime(const ptime& instant);
 
 			T& operator[](const ptime& instant);
 			T& operator[](const int i);
@@ -61,12 +77,13 @@ namespace datatypes
 			T * data = nullptr;
 			T naCode;
 		private:
-			int indexForTime(const ptime& instant);
-			ptime AddTimeStep(ptime& start, int numSteps);
-			void CopyNonData(const TTimeSeries<T>& src, bool deep);
+			ptime AddTimeStep(const ptime& start, int numSteps);
+			void DeepCopyFrom(const TTimeSeries<T>& src);
+			void CopyNonData(const TTimeSeries<T>& src);
 			void SetDefaults();
-			ptime * startDate;
-			ptime * endDate;
+			ptime startDate;
+			ptime endDate;
+			TimeStep timeStep;
 			void DeleteInnerData()
 			{
 				if (data != nullptr)
@@ -75,11 +92,11 @@ namespace datatypes
 					data = nullptr;
 				}
 			}
-			void DeleteInnerTimeSpan()
-			{
-				if (this->startDate == nullptr) delete (this->startDate);
-				if (this->endDate == nullptr) delete (this->endDate);
-			}
+			//void DeleteInnerTimeSpan()
+			//{
+			//	if (this->startDate == nullptr) delete (this->startDate);
+			//	if (this->endDate == nullptr) delete (this->endDate);
+			//}
 		};
 
 
@@ -158,6 +175,7 @@ namespace datatypes
 		void TTimeSeries<T>::SetDefaults()
 		{
 			naCode = std::numeric_limits<T>::min();
+			timeStep = TimeStep::GetHourly();
 		}
 
 		template <class T>
@@ -170,9 +188,8 @@ namespace datatypes
 			for (int i = 0; i < length; i++)
 				data[i] = val;
 
-			DeleteInnerTimeSpan();
-			this->startDate = new ptime(startDate);
-			this->endDate = new ptime(AddTimeStep(*(this->startDate), length));
+			this->startDate = startDate;
+			this->endDate = AddTimeStep((this->startDate), length-1);
 		}
 
 		template <class T>
@@ -183,9 +200,10 @@ namespace datatypes
 		}
 
 		template <class T>
-		TTimeSeries<T>::TTimeSeries(T default_value, int length, const ptime& startDate)
+		TTimeSeries<T>::TTimeSeries(T default_value, int length, const ptime& startDate, const TimeStep& timeStep)
 		{
 			SetDefaults();
+			this->timeStep = timeStep;
 			Reset(length, startDate);
 			for (int i = 0; i < length; i++)
 			{
@@ -194,9 +212,10 @@ namespace datatypes
 		}
 
 		template <class T>
-		TTimeSeries<T>::TTimeSeries(T * values, int length, const ptime& startDate)
+		TTimeSeries<T>::TTimeSeries(T * values, int length, const ptime& startDate, const TimeStep& timeStep)
 		{
 			SetDefaults();
+			this->timeStep = timeStep;
 			Reset(length, startDate);
 			for (int i = 0; i < length; i++)
 			{
@@ -206,31 +225,43 @@ namespace datatypes
 
 		template <class T>
 		TTimeSeries<T>::TTimeSeries(TTimeSeries<T>&& src) {   // Move constructor.
-			CopyNonData(src, false);
+			CopyNonData(src);
 			data = src.data;
 			src.data = nullptr;
 		}
 
 		template <class T>
 		TTimeSeries<T>::TTimeSeries(const TTimeSeries<T>& src) {   // (Deep) Copy constructor.
-			CopyNonData(src, true);
+			DeepCopyFrom(src);
+		}
+
+		template <class T>
+		void TTimeSeries<T>::DeepCopyFrom(const TTimeSeries<T>& src) { 
+			CopyNonData(src);
 			data = new T[length];
 			memcpy(data, src.data, length * sizeof(T));
 		}
 
 		template <class T>
-		void TTimeSeries<T>::CopyNonData(const TTimeSeries<T>& src, bool deep) {
+		TTimeSeries<T>& TTimeSeries<T>::operator=(const TTimeSeries<T>& rhs)
+		{
+			DeepCopyFrom(rhs);
+			return *this;
+		}
+
+		template <class T>
+		void TTimeSeries<T>::CopyNonData(const TTimeSeries<T>& src) {
 			naCode = src.naCode;
 			length = src.length;
-			startDate = (deep) ? new ptime(*src.startDate) : src.startDate;
-			endDate = (deep) ? new ptime(*src.endDate) : src.endDate;
+			timeStep = src.timeStep;
+			startDate = src.startDate;
+			endDate = src.endDate;
 		}
 
 		template <class T>
 		TTimeSeries<T>::~TTimeSeries()
 		{
 			DeleteInnerData();
-			DeleteInnerTimeSpan();
 		}
 
 		template <class T>
@@ -242,15 +273,25 @@ namespace datatypes
 		}
 
 		template <class T>
-		int TTimeSeries<T>::indexForTime(const ptime& instant) {
-			// TODO: make this generic WRT time step
-			return (instant - (*startDate)).hours();
+		int TTimeSeries<T>::IndexForTime(const ptime& instant) {
+			return LowerIndexForTime(instant);
 		}
 
+		template <class T>
+		int TTimeSeries<T>::UpperIndexForTime(const ptime& instant)
+		{
+			return timeStep.GetUpperNumSteps(startDate, instant);
+		}
+
+		template <class T>
+		int TTimeSeries<T>::LowerIndexForTime(const ptime& instant)
+		{
+			return timeStep.GetNumSteps(startDate, instant);
+		}
 
 		template <class T>
 		T& TTimeSeries<T>::operator[](const ptime& instant) {
-			return data[indexForTime(instant)];
+			return data[IndexForTime(instant)];
 		}
 
 		template <class T>
@@ -339,28 +380,27 @@ namespace datatypes
 		}
 
 		template <class T>
-		ptime TTimeSeries<T>::AddTimeStep(ptime& start, int numSteps)
+		ptime TTimeSeries<T>::AddTimeStep(const ptime& start, int numSteps)
 		{
-			// KLUDGE : this is an obviously temporary shortcut (TM)
-			return start + hours(numSteps - 1);
+			return timeStep.AddSteps(start, numSteps);
 		}
 
 		template <class T>
 		ptime TTimeSeries<T>::GetStartDate()
 		{
-			return ptime(*(this->startDate));
+			return ptime(startDate);
 		}
 
 		template <class T>
 		ptime TTimeSeries<T>::GetEndDate()
 		{
-			return ptime(*(this->endDate));
+			return ptime(endDate);
 		}
 
 		template <class T>
 		ptime TTimeSeries<T>::TimeForIndex(int timeIndex)
 		{
-			return AddTimeStep(*this->startDate, timeIndex);
+			return timeStep.AddSteps(this->startDate, timeIndex);
 		}
 
 		template <class T>
@@ -370,17 +410,12 @@ namespace datatypes
 		}
 
 		template <class T>
-		int TTimeSeries<T>::GetTimeStepSeconds()
+		TimeStep TTimeSeries<T>::GetTimeStep()
 		{
-			int n = GetLength();
-			// KLUDGE - TODO what to do with degenerate cases.
-			if (n <= 1) return 3600;
-			return (*endDate - *startDate).total_seconds() / (n - 1);
+			return this->timeStep;
 		}
 
-
-		typedef TTimeSeries < double > TimeSeries;
-		
+		typedef TTimeSeries < double > TimeSeries;		
 
 	}
 }

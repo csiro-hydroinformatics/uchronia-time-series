@@ -27,12 +27,18 @@
     <ClInclude Include="exception_utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="time_step.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="time_series.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="time_series_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="time_step.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

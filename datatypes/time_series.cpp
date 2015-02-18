@@ -96,21 +96,25 @@ namespace datatypes
 			ptime sd = timeSeries->GetStartDate();
 			ptime ed = timeSeries->GetEndDate();
 
-			auto timeStepSpan = seconds(timeSeries->GetTimeStepSeconds());
+			int sIndex = timeSeries->UpperIndexForTime(sd);
+			int eIndex = timeSeries->LowerIndexForTime(ed);
 
-			int offset = 0;
-			for (ptime dt = sd; dt < startDate; dt += timeStepSpan)
-				offset++;
-			int startOffset = offset;
+			//auto timeStepSpan = seconds(timeSeries->GetTimeStepSeconds());
 
-			for (ptime dt = startDate; dt < endDate; dt += timeStepSpan)
-				offset++;
-			int endOffset = offset;
+			//int offset = 0;
+			//for (ptime dt = sd; dt < startDate; dt += timeStepSpan)
+			//	offset++;
+			//int startOffset = offset;
 
-			double* data = new double[endOffset - startOffset + 1];
-			timeSeries->CopyTo(data, startOffset, endOffset);
+			//for (ptime dt = startDate; dt < endDate; dt += timeStepSpan)
+			//	offset++;
+			//int endOffset = offset;
 
-			TTimeSeries<T>* result = new TTimeSeries<T>(data, endOffset - startOffset + 1, startDate);
+			int n = eIndex - sIndex + 1;
+			double* data = new double[];
+			timeSeries->CopyTo(data, sIndex, eIndex);
+
+			TTimeSeries<T>* result = new TTimeSeries<T>(data, n, startDate);
 
 			delete[] data;
 
