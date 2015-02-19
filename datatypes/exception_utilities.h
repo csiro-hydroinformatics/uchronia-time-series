@@ -1,5 +1,6 @@
 #pragma once
 #include <string> 
+#include <boost/lexical_cast.hpp>
 #include <stdexcept> 
 #include "common.h"
 
@@ -19,8 +20,22 @@ namespace datatypes
 			static void ThrowOutOfRange(const string& msg) { throw out_of_range(msg); }
 			template <typename T>
 			static void CheckInRange(T value, T min, T max, const string& variableName) {
-				if (value < min) ExceptionUtilities::ThrowOutOfRange(string("variable '") + variableName + "' is less than the minimum value");
-				if (value > max) ExceptionUtilities::ThrowOutOfRange(string("variable '") + variableName + "' is more than the maximum value");
+				if (value >= min && value <= max)
+					return;
+				else
+				{
+					if (value < min)
+						ThrowNotInRange(value, min, variableName, "less", "minimum");
+					if (value > max)
+						ThrowNotInRange(value, max, variableName, "more", "maximum");
+				}
+			}
+		private:
+			template <typename T>
+			static void ThrowNotInRange(T value, T bound, const string& variableName, const string& condition, const string& boundType) {
+				string valStr = boost::lexical_cast<string,T>(value);
+				ExceptionUtilities::ThrowOutOfRange(string("variable '") + variableName + "' (=" + valStr + ") is " + condition +
+					" than its allowed " + boundType + " value " + boost::lexical_cast<string,T>(bound));
 			}
 		};
 	}

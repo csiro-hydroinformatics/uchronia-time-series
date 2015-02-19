@@ -72,6 +72,8 @@ namespace datatypes
 			void SetNA(T& naCode);
 			T GetNA();
 
+			string Tag;
+
 		protected:
 			int length;
 			T * data = nullptr;
@@ -189,7 +191,7 @@ namespace datatypes
 				data[i] = val;
 
 			this->startDate = startDate;
-			this->endDate = AddTimeStep((this->startDate), length-1);
+			this->endDate = AddTimeStep((this->startDate), length);
 		}
 
 		template <class T>
@@ -239,7 +241,8 @@ namespace datatypes
 		void TTimeSeries<T>::DeepCopyFrom(const TTimeSeries<T>& src) { 
 			CopyNonData(src);
 			data = new T[length];
-			memcpy(data, src.data, length * sizeof(T));
+			if (length > 0)
+				memcpy(data, src.data, length * sizeof(T));
 		}
 
 		template <class T>
@@ -256,6 +259,7 @@ namespace datatypes
 			timeStep = src.timeStep;
 			startDate = src.startDate;
 			endDate = src.endDate;
+			Tag = src.Tag;
 		}
 
 		template <class T>
