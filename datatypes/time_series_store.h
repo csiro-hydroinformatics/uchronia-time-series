@@ -481,7 +481,8 @@ namespace datatypes
 			string ncVarName;
 			string identifier;
 			TTimeSeries<T> GetSeries() {
-				return dataAccess->Get(ncVarName, identifier)->;
+				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("GetSeries() not implemented");
+				// return dataAccess->Get(ncVarName, identifier)->;
 			}
 		};
 

@@ -111,7 +111,7 @@ namespace datatypes
 			//int endOffset = offset;
 
 			int n = eIndex - sIndex + 1;
-			double* data = new double[];
+			double* data = new double[n];
 			timeSeries->CopyTo(data, sIndex, eIndex);
 
 			TTimeSeries<T>* result = new TTimeSeries<T>(data, n, startDate);

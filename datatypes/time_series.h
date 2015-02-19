@@ -181,7 +181,7 @@ namespace datatypes
 		}
 
 		template <class T>
-		void TTimeSeries<T>::Reset(int length, const ptime& startDate, T * value = nullptr)
+		void TTimeSeries<T>::Reset(int length, const ptime& startDate, T * value)
 		{
 			DeleteInnerData();
 			T val = value == nullptr ? naCode : *value;
