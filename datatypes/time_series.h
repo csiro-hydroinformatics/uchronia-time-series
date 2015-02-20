@@ -52,6 +52,7 @@ namespace datatypes
 			TTimeSeries(TTimeSeries<T>&& src); // Move constructor
 
 			virtual ~TTimeSeries();
+			T GetValue(size_t index);
 			void CopyTo(T * dest, size_t from = 0, size_t to = -1) const;
 			T * GetValues(size_t from = 0, size_t to = -1) const;
 			void SetValue(size_t index, T value);
@@ -277,6 +278,13 @@ namespace datatypes
 		}
 
 		template <class T>
+		T TTimeSeries<T>::GetValue(size_t index)
+		{
+			if (index < 0 || index >= GetLength())
+				datatypes::exceptions::ExceptionUtilities::ThrowOutOfRange("Trying to access a time series value with an index outside of its bounds");
+			return data[index];
+		}
+		template <class T>
 		size_t TTimeSeries<T>::IndexForTime(const ptime& instant) const {
 			return LowerIndexForTime(instant);
 		}
@@ -341,6 +349,7 @@ namespace datatypes
 		{
 			double a;
 			TTimeSeries<T> ts(*this);
+			auto length = GetLength();
 			for (size_t i = 0; i < length; i++)
 			{
 				a = this->data[i];
