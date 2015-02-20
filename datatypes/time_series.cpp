@@ -9,7 +9,7 @@ namespace datatypes
 	namespace timeseries
 	{
 		template <typename T>
-		MultiTimeSeries<T>::MultiTimeSeries(const std::vector<T*>& values, int length, const ptime& startDate)
+		MultiTimeSeries<T>::MultiTimeSeries(const std::vector<T*>& values, size_t length, const ptime& startDate)
 		{
 			series = new std::vector<TTimeSeries<T>*>();
 			this->startDate = ptime(startDate);
@@ -33,7 +33,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		TTimeSeries<T> * MultiTimeSeries<T>::Get(int i)
+		TTimeSeries<T> * MultiTimeSeries<T>::Get(size_t i)
 		{
 			TTimeSeries<T>* a = series->at(i);
 			return new TTimeSeries<T>(*a);
@@ -51,7 +51,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		void MultiTimeSeries<T>::Set(int i, int tsIndex, T val)
+		void MultiTimeSeries<T>::Set(size_t i, size_t tsIndex, T val)
 		{
 			TTimeSeries<T>* a = series->at(i);
 			(*a)[tsIndex] = val;
@@ -64,7 +64,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		int MultiTimeSeries<T>::Size()
+		size_t MultiTimeSeries<T>::Size()
 		{
 			return this->series->size();
 		}
@@ -75,7 +75,7 @@ namespace datatypes
 			this->startDate = ptime(src.startDate);
 			this->series = new vector<TTimeSeries<T>*>();
 			
-			for (int i = 0; i < src.series->size(); i++)
+			for (size_t i = 0; i < src.series->size(); i++)
 			{
 				TTimeSeries<T>* copy = new TTimeSeries<T>(*src.series->at(i));
 				this->series->push_back(copy);
@@ -91,28 +91,28 @@ namespace datatypes
 		template class MultiTimeSeries < double > ;
 
 		template <typename T>
-		TTimeSeries<T>* TimeSeriesOperations<T>::TrimTimeSeries(TTimeSeries<T>* timeSeries, const ptime& startDate, const ptime& endDate)
+		TTimeSeries<T>* TimeSeriesOperations<T>::TrimTimeSeries(const TTimeSeries<T>& timeSeries, const ptime& startDate, const ptime& endDate)
 		{
-			ptime sd = timeSeries->GetStartDate();
-			ptime ed = timeSeries->GetEndDate();
+			ptime sd = timeSeries.GetStartDate();
+			ptime ed = timeSeries.GetEndDate();
 
-			int sIndex = timeSeries->UpperIndexForTime(sd);
-			int eIndex = timeSeries->LowerIndexForTime(ed);
+			size_t sIndex = timeSeries.UpperIndexForTime(sd);
+			size_t eIndex = timeSeries.LowerIndexForTime(ed);
 
-			//auto timeStepSpan = seconds(timeSeries->GetTimeStepSeconds());
+			//auto timeStepSpan = seconds(timeSeries.GetTimeStepSeconds());
 
-			//int offset = 0;
+			//size_t offset = 0;
 			//for (ptime dt = sd; dt < startDate; dt += timeStepSpan)
 			//	offset++;
-			//int startOffset = offset;
+			//size_t startOffset = offset;
 
 			//for (ptime dt = startDate; dt < endDate; dt += timeStepSpan)
 			//	offset++;
-			//int endOffset = offset;
+			//size_t endOffset = offset;
 
-			int n = eIndex - sIndex + 1;
+			size_t n = eIndex - sIndex + 1;
 			double* data = new double[n];
-			timeSeries->CopyTo(data, sIndex, eIndex);
+			timeSeries.CopyTo(data, sIndex, eIndex);
 
 			TTimeSeries<T>* result = new TTimeSeries<T>(data, n, startDate);
 
@@ -122,17 +122,17 @@ namespace datatypes
 		}
 
 		template <typename T>
-		TTimeSeries<T>* TimeSeriesOperations<T>::DailyToHourly(TTimeSeries<T>* dailyTimeSeries)
+		TTimeSeries<T>* TimeSeriesOperations<T>::DailyToHourly(const TTimeSeries<T>& dailyTimeSeries)
 		{
-			int length = dailyTimeSeries->GetLength();
+			size_t length = dailyTimeSeries.GetLength();
 
-			double* data = new double[length * 24];
+			T * data = new T[length * 24];
 
-			for (int i = 0; i < length; i++)
-				for (int j = 0; j < 24; j++)
-					data[(i * 24) + j] = dailyTimeSeries->GetValue(i) / 24;
+			for (size_t i = 0; i < length; i++)
+				for (size_t j = 0; j < 24; j++)
+					data[(i * 24) + j] = (dailyTimeSeries[i] / 24);
 
-			TTimeSeries<T>* result = new TTimeSeries<T>(data, length * 24, dailyTimeSeries->GetStartDate());
+			TTimeSeries<T>* result = new TTimeSeries<T>(data, length * 24, dailyTimeSeries.GetStartDate());
 
 			delete[] data;
 
@@ -140,23 +140,23 @@ namespace datatypes
 		}
 
 		template <typename T>
-		TTimeSeries<T>* TimeSeriesOperations<T>::JoinTimeSeries(TTimeSeries<T>* head, TTimeSeries<T>* tail)
+		TTimeSeries<T>* TimeSeriesOperations<T>::JoinTimeSeries(const TTimeSeries<T>& head, const TTimeSeries<T>& tail)
 		{
-			ptime startDate = head->GetStartDate();
+			ptime startDate = head.GetStartDate();
 
-			int headLength = head->GetLength();
-			int tailLength = tail->GetLength();
+			size_t headLength = head.GetLength();
+			size_t tailLength = tail.GetLength();
 
-			int length = headLength + tailLength;
+			size_t length = headLength + tailLength;
 
-			double* data = new double[length];
+			T * data = new T[length];
 
-			for (int i = 0; i < length; i++)
+			for (size_t i = 0; i < length; i++)
 			{
 				if (i < headLength)
-					data[i] = head->GetValue(i);
+					data[i] = head[i];
 				else
-					data[i] = tail->GetValue(i - headLength);
+					data[i] = tail[i - headLength];
 			}
 
 			TTimeSeries<T>* result = new TTimeSeries<T>(data, length, startDate);
@@ -167,24 +167,24 @@ namespace datatypes
 		}
 
 		template <typename T>
-		bool TimeSeriesOperations<T>::AreTimeSeriesEqual(TTimeSeries<T>* a, TTimeSeries<T>* b)
+		bool TimeSeriesOperations<T>::AreTimeSeriesEqual(const TTimeSeries<T>& a, const TTimeSeries<T>& b)
 		{
-			ptime startA = a->GetStartDate();
-			ptime startB = b->GetStartDate();
+			ptime startA = a.GetStartDate();
+			ptime startB = b.GetStartDate();
 
 			if (startA != startB)
 				return false;
 
-			int lengthA = a->GetLength();
-			int lengthB = b->GetLength();
+			size_t lengthA = a.GetLength();
+			size_t lengthB = b.GetLength();
 
 			if (lengthA != lengthB)
 				return false;
 
-			for (int i = 0; i < lengthA; i++)
+			for (size_t i = 0; i < lengthA; i++)
 			{
-				auto valA = a->GetValue(i);
-				auto valB = b->GetValue(i);
+				auto valA = a[i];
+				auto valB = b[i];
 
 				if (std::abs(valA - valB) > 1.0e-12)
 					return false;
@@ -203,7 +203,7 @@ namespace datatypes
 		template class TimeSeriesOperations < double >;
 
 		template <typename T>
-		TTimeSeries<T>* TimeWindow<T>::Trim(TTimeSeries<T>* timeSeries) const
+		TTimeSeries<T>* TimeWindow<T>::Trim(const TTimeSeries<T>& timeSeries) const
 		{
 			return TimeSeriesOperations<T>::TrimTimeSeries(timeSeries, startDate, endDate);
 		}

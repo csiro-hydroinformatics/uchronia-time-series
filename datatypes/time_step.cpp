@@ -64,7 +64,7 @@ namespace datatypes
 				ExceptionUtilities::ThrowInvalidArgument("time step is neither daily nor hourly; formatting of an ID is not yet implemented");
 		}
 
-		const ptime TimeStep::AddSteps(const ptime& startTimeStep, int n) const
+		const ptime TimeStep::AddSteps(const ptime& startTimeStep, size_t n) const
 		{
 			return startTimeStep + (*regularStep) * n;
 		}
@@ -84,13 +84,13 @@ namespace datatypes
 			*t = *t + *regularStep;
 		}
 
-		const int TimeStep::GetUpperNumSteps(const ptime& start, const ptime& end) const
+		const size_t TimeStep::GetUpperNumSteps(const ptime& start, const ptime& end) const
 		{
 			auto delta = end - start;
 			return (int)ceil(GetLinearIndexing(start, end));
 		}
 
-		const int TimeStep::GetNumSteps(const ptime& start, const ptime& end) const
+		const size_t TimeStep::GetNumSteps(const ptime& start, const ptime& end) const
 		{
 			auto delta = end - start;
 			return (int)floor(GetLinearIndexing(start, end)); 
@@ -107,7 +107,7 @@ namespace datatypes
 			return integerPart + remainder / (double)deltaStep;
 		}
 
-		const int TimeStep::GetOffset(const ptime& start, const ptime& end) const
+		const size_t TimeStep::GetOffset(const ptime& start, const ptime& end) const
 		{
 //			return GetNumSteps(start, end) - 1;
 			return GetNumSteps(start, end);

@@ -795,7 +795,7 @@ namespace datatypes
 		TTimeSeries<T>* TimeSeriesIOHelper<T>::Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window)
 		{
 			auto tmp = Read(netCdfFilePath, varName, identifier);
-			auto result = window.Trim(tmp);
+			auto result = window.Trim(*tmp);
 			delete tmp;
 			return result;
 		}
@@ -804,8 +804,8 @@ namespace datatypes
 		TTimeSeries<T>* TimeSeriesIOHelper<T>::ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window)
 		{
 			TTimeSeries<T>* fullDailyObsPetTimeSeries = Read(netCdfFilePath, varName, identifier);
-			TTimeSeries<T>* fullHourlyObsPetTimeSeries = TimeSeriesOperations<T>::DailyToHourly(fullDailyObsPetTimeSeries);
-			auto result = window.Trim(fullHourlyObsPetTimeSeries);
+			TTimeSeries<T>* fullHourlyObsPetTimeSeries = TimeSeriesOperations<T>::DailyToHourly(*fullDailyObsPetTimeSeries);
+			auto result = window.Trim(*fullHourlyObsPetTimeSeries);
 			delete fullDailyObsPetTimeSeries;
 			delete fullHourlyObsPetTimeSeries;
 			return result;

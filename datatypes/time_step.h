@@ -19,12 +19,12 @@ namespace datatypes
 
 			TimeStep& operator=(const TimeStep &rhs);
 
-			const ptime AddSteps(const ptime& startTimeStep, int n) const;
+			const ptime AddSteps(const ptime& startTimeStep, size_t n) const;
 
 			const time_duration GetTimeStepDuration(const ptime& startTimeStep) const;
-			const int GetUpperNumSteps(const ptime& start, const ptime& end) const;
-			const int GetNumSteps(const ptime& start, const ptime& end) const;
-			const int GetOffset(const ptime& start, const ptime& end) const;
+			const size_t GetUpperNumSteps(const ptime& start, const ptime& end) const;
+			const size_t GetNumSteps(const ptime& start, const ptime& end) const;
+			const size_t GetOffset(const ptime& start, const ptime& end) const;
 			const void Increment(ptime* t) const;
 			static TimeStep Parse(const std::string& name);
 

@@ -1,9 +1,12 @@
 #pragma once
 
+
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "common.h"
 #include "time_step.h"
 #include "exception_utilities.h"
+
+#include <iterator>
 
 using namespace datatypes::sys;
 using namespace boost::posix_time;
@@ -32,12 +35,12 @@ namespace datatypes
 			 * \param	startDate	 	The start date.
 			 * \param	timeStep	 	The time step of the time series.
 			 */
-			TTimeSeries(T default_value, int length, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly());
-			TTimeSeries(T * values, int length, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly());
+			TTimeSeries(T default_value, size_t length, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly());
+			TTimeSeries(T * values, size_t length, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly());
 			TTimeSeries(const TTimeSeries<T>& src); // Copy constructor
 
 			TTimeSeries<T>& operator=(const TTimeSeries<T>& rhs);
-
+			TTimeSeries<T>& operator=(TTimeSeries<T>&& src);
 			/**
 			 * \brief	Constructor using the move semantics
 			 *
@@ -49,51 +52,54 @@ namespace datatypes
 			TTimeSeries(TTimeSeries<T>&& src); // Move constructor
 
 			virtual ~TTimeSeries();
-			T GetValue(int index);
-			void CopyTo(T * dest, int from = 0, int to = -1);
-			T * GetValues(int from = 0, int to = -1);
-			void SetValue(int index, T value);
-			void Reset(int length, const ptime& startDate, T * value = nullptr);
-			int GetLength();
-			ptime GetStartDate();
-			ptime GetEndDate();
-			TimeStep GetTimeStep();
-			ptime TimeForIndex(int timeIndex);
-			int IndexForTime(const ptime& instant);
-			int UpperIndexForTime(const ptime& instant);
-			int LowerIndexForTime(const ptime& instant);
+			void CopyTo(T * dest, size_t from = 0, size_t to = -1) const;
+			T * GetValues(size_t from = 0, size_t to = -1) const;
+			void SetValue(size_t index, T value);
+			void Reset(size_t length, const ptime& startDate, T * value = nullptr);
+			size_t GetLength() const;
+			ptime GetStartDate() const;
+			ptime GetEndDate() const;
+			TimeStep GetTimeStep() const;
+			ptime TimeForIndex(size_t timeIndex) const;
+			size_t IndexForTime(const ptime& instant) const;
+			size_t UpperIndexForTime(const ptime& instant) const;
+			size_t LowerIndexForTime(const ptime& instant) const;
 
 			T& operator[](const ptime& instant);
-			T& operator[](const int i);
+			T& operator[](const size_t i);
+			const T& operator[](const ptime& instant) const;
+			const T& operator[](const size_t i) const;
 			TTimeSeries<T> operator+(const TTimeSeries<T>& rhs) const;
 			template<typename M>
 			TTimeSeries<T> operator*(M multiplicator) const;
 
 			void SetNA(T& naCode);
-			T GetNA();
+			T GetNA() const;
 
 			string Tag;
 
 		protected:
-			int length;
-			T * data = nullptr;
+			//size_t length;
+			std::vector<T> data;
+			//T * data = nullptr;
 			T naCode;
 		private:
-			ptime AddTimeStep(const ptime& start, int numSteps);
+			ptime AddTimeStep(const ptime& start, size_t numSteps);
 			void DeepCopyFrom(const TTimeSeries<T>& src);
 			void CopyNonData(const TTimeSeries<T>& src);
 			void SetDefaults();
 			ptime startDate;
 			ptime endDate;
 			TimeStep timeStep;
-			void DeleteInnerData()
-			{
-				if (data != nullptr)
-				{
-					delete[] data;
-					data = nullptr;
-				}
-			}
+			//void DeleteInnerData()
+			//{
+			//	// do nothing, if data is a vector<T>
+			//	//if (data != nullptr)
+			//	//{
+			//	//	delete[] data;
+			//	//	data = nullptr;
+			//	//}
+			//}
 			//void DeleteInnerTimeSpan()
 			//{
 			//	if (this->startDate == nullptr) delete (this->startDate);
@@ -107,8 +113,8 @@ namespace datatypes
 		//{
 		//public:
 		//	TimeSeries() : TTimeSeries() {}
-		//	TimeSeries(double default_value, int length, const ptime& startDate) : TTimeSeries(default_value, length, startDate) {}
-		//	TimeSeries(double * values, int length, const ptime& startDate) : TTimeSeries(values, length, startDate) {}
+		//	TimeSeries(double default_value, size_t length, const ptime& startDate) : TTimeSeries(default_value, length, startDate) {}
+		//	TimeSeries(double * values, size_t length, const ptime& startDate) : TTimeSeries(values, length, startDate) {}
 
 		//	// TODO: generalize. Expediency, fbut a refactor to generic types is cascading to a lot more. Basically, no TimeSeries anymore. 
 		//	TimeSeries(const TTimeSeries<double>& src) : TTimeSeries(src) {}
@@ -125,13 +131,13 @@ namespace datatypes
 		class DATATYPES_DLL_LIB MultiTimeSeries // This may become an abstract class with specializations for lazy loading time series from the data store.
 		{
 		public:
-			MultiTimeSeries(const std::vector<T*>& values, int length, const ptime& startDate);
+			MultiTimeSeries(const std::vector<T*>& values, size_t length, const ptime& startDate);
 			MultiTimeSeries(const MultiTimeSeries<T>& src);
 			~MultiTimeSeries();
-			TTimeSeries<T> * Get(int i);
-			void Set(int i, int tsIndex, T val);
+			TTimeSeries<T> * Get(size_t i);
+			void Set(size_t i, size_t tsIndex, T val);
 			std::vector<T*>* GetValues();
-			int Size();
+			size_t Size();
 			ptime GetStart();
 
 		private:
@@ -146,10 +152,10 @@ namespace datatypes
 		class DATATYPES_DLL_LIB TimeSeriesOperations
 		{
 		public:
-			static TTimeSeries<T>* TrimTimeSeries(TTimeSeries<T>* timeSeries, const ptime& startDate, const ptime& endDate);
-			static TTimeSeries<T>* DailyToHourly(TTimeSeries<T>* dailyTimeSeries);
-			static TTimeSeries<T>* JoinTimeSeries(TTimeSeries<T>* head, TTimeSeries<T>* tail);
-			static bool AreTimeSeriesEqual(TTimeSeries<T>* a, TTimeSeries<T>* b);
+			static TTimeSeries<T>* TrimTimeSeries(const TTimeSeries<T>& timeSeries, const ptime& startDate, const ptime& endDate);
+			static TTimeSeries<T>* DailyToHourly(const TTimeSeries<T>& dailyTimeSeries);
+			static TTimeSeries<T>* JoinTimeSeries(const TTimeSeries<T>& head, const TTimeSeries<T>& tail);
+			static bool AreTimeSeriesEqual(const TTimeSeries<T>& a, const TTimeSeries<T>& b);
 		};
 
 		template <typename T>
@@ -157,7 +163,7 @@ namespace datatypes
 		{
 		public:
 			TimeWindow(const ptime& startDate, const ptime& endDate);
-			TTimeSeries<T>* Trim(TTimeSeries<T>* timeSeries) const;
+			TTimeSeries<T>* Trim(const TTimeSeries<T>& timeSeries) const;
 			TTimeSeries<T>* ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier) const;
 
 		private:
@@ -181,15 +187,16 @@ namespace datatypes
 		}
 
 		template <class T>
-		void TTimeSeries<T>::Reset(int length, const ptime& startDate, T * value)
+		void TTimeSeries<T>::Reset(size_t length, const ptime& startDate, T * value)
 		{
-			DeleteInnerData();
-			T val = value == nullptr ? naCode : *value;
-			data = new T[length];
-			this->length = length;
-			for (int i = 0; i < length; i++)
-				data[i] = val;
-
+			if (value == nullptr)
+				data = vector<T>(length, naCode);
+			else
+			{
+				data.clear();
+				data.reserve(length);
+				data.assign(value, value + length);
+			}
 			this->startDate = startDate;
 			this->endDate = AddTimeStep((this->startDate), length);
 		}
@@ -202,93 +209,86 @@ namespace datatypes
 		}
 
 		template <class T>
-		TTimeSeries<T>::TTimeSeries(T default_value, int length, const ptime& startDate, const TimeStep& timeStep)
+		TTimeSeries<T>::TTimeSeries(T default_value, size_t length, const ptime& startDate, const TimeStep& timeStep)
 		{
 			SetDefaults();
 			this->timeStep = timeStep;
 			Reset(length, startDate);
-			for (int i = 0; i < length; i++)
-			{
-				data[i] = default_value;
-			}
+			data = vector<T>(length, default_value);
 		}
 
 		template <class T>
-		TTimeSeries<T>::TTimeSeries(T * values, int length, const ptime& startDate, const TimeStep& timeStep)
+		TTimeSeries<T>::TTimeSeries(T * values, size_t length, const ptime& startDate, const TimeStep& timeStep)
 		{
 			SetDefaults();
 			this->timeStep = timeStep;
-			Reset(length, startDate);
-			for (int i = 0; i < length; i++)
-			{
-				data[i] = values[i];
-			}
+			Reset(length, startDate, values);
 		}
 
 		template <class T>
 		TTimeSeries<T>::TTimeSeries(TTimeSeries<T>&& src) {   // Move constructor.
-			CopyNonData(src);
-			data = src.data;
-			src.data = nullptr;
+			*this = std::move(src);
 		}
 
 		template <class T>
-		TTimeSeries<T>::TTimeSeries(const TTimeSeries<T>& src) {   // (Deep) Copy constructor.
-			DeepCopyFrom(src);
-		}
-
-		template <class T>
-		void TTimeSeries<T>::DeepCopyFrom(const TTimeSeries<T>& src) { 
-			CopyNonData(src);
-			data = new T[length];
-			if (length > 0)
-				memcpy(data, src.data, length * sizeof(T));
-		}
-
-		template <class T>
-		TTimeSeries<T>& TTimeSeries<T>::operator=(const TTimeSeries<T>& rhs)
-		{
-			DeepCopyFrom(rhs);
+		TTimeSeries<T>& TTimeSeries<T>::operator=(TTimeSeries<T>&& src){
+			// Avoid self assignment
+			if (&src == this){
+				return *this;
+			}
+			std::swap(naCode, src.naCode);
+			std::swap(timeStep, src.timeStep);
+			std::swap(startDate, src.startDate);
+			std::swap(endDate, src.endDate);
+			std::swap(Tag, src.Tag);
+			std::swap(data, src.data);
 			return *this;
 		}
 
 		template <class T>
-		void TTimeSeries<T>::CopyNonData(const TTimeSeries<T>& src) {
+		TTimeSeries<T>::TTimeSeries(const TTimeSeries<T>& src) {   // (Deep) Copy constructor.
+			*this = src;
+		}
+
+		template <class T>
+		TTimeSeries<T>& TTimeSeries<T>::operator=(const TTimeSeries<T>& src)
+		{
+			if (&src == this){
+				return *this;
+			}
+			DeepCopyFrom(src);
+			return *this;
+		}
+
+		template <class T>
+		void TTimeSeries<T>::DeepCopyFrom(const TTimeSeries<T>& src) {
 			naCode = src.naCode;
-			length = src.length;
 			timeStep = src.timeStep;
 			startDate = src.startDate;
 			endDate = src.endDate;
 			Tag = src.Tag;
+			data = src.data;
 		}
 
 		template <class T>
 		TTimeSeries<T>::~TTimeSeries()
 		{
-			DeleteInnerData();
+			// nothing to do here after using std::vector for data.
 		}
 
 		template <class T>
-		T TTimeSeries<T>::GetValue(int index)
-		{
-			if (index < 0 || index >= length)
-				datatypes::exceptions::ExceptionUtilities::ThrowOutOfRange("Trying to access a time series value with an index outside of its bounds");
-			return data[index];
-		}
-
-		template <class T>
-		int TTimeSeries<T>::IndexForTime(const ptime& instant) {
+		size_t TTimeSeries<T>::IndexForTime(const ptime& instant) const {
 			return LowerIndexForTime(instant);
 		}
 
 		template <class T>
-		int TTimeSeries<T>::UpperIndexForTime(const ptime& instant)
+		size_t TTimeSeries<T>::UpperIndexForTime(const ptime& instant) const
 		{
 			return timeStep.GetUpperNumSteps(startDate, instant);
 		}
 
 		template <class T>
-		int TTimeSeries<T>::LowerIndexForTime(const ptime& instant)
+		size_t TTimeSeries<T>::LowerIndexForTime(const ptime& instant) const
 		{
 			return timeStep.GetNumSteps(startDate, instant);
 		}
@@ -299,7 +299,18 @@ namespace datatypes
 		}
 
 		template <class T>
-		T& TTimeSeries<T>::operator[](const int i) {
+		T& TTimeSeries<T>::operator[](const size_t i) {
+			T& vRef = data[i];
+			return vRef;
+		}
+
+		template <class T>
+		const T& TTimeSeries<T>::operator[](const ptime& instant) const {
+			return this->operator[](IndexForTime(instant));
+		}
+
+		template <class T>
+		const T& TTimeSeries<T>::operator[](const size_t i) const {
 			return data[i];
 		}
 
@@ -308,7 +319,9 @@ namespace datatypes
 		{
 			// TODO check geometry compatibility
 			T a, b;
-			TTimeSeries<T> ts(*this);
+			size_t length = rhs.GetLength();
+			TTimeSeries<T> ts(naCode, length, startDate, timeStep);
+			ts.naCode = this->naCode;
 			for (size_t i = 0; i < length; i++)
 			{
 				a = this->data[i];
@@ -340,33 +353,31 @@ namespace datatypes
 		}
 
 		template <class T>
-		T * TTimeSeries<T>::GetValues(int from, int to)
+		T * TTimeSeries<T>::GetValues(size_t from, size_t to) const
 		{
-			int tsLen = this->GetLength();
-			datatypes::exceptions::ExceptionUtilities::CheckInRange(from, 0, tsLen - 1, "from");
-			datatypes::exceptions::ExceptionUtilities::CheckInRange(to, -1, tsLen - 1, "to");
+			size_t tsLen = this->GetLength();
 			if (to < 0) to = (tsLen - 1);
+			datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(from, 0, tsLen - 1, "from");
+			datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(to, -1, tsLen - 1, "to");
 
-			int len = (to - from) + 1;
+			size_t len = (to - from) + 1;
 			T * values = new T[len];
 			this->CopyTo(values, from, to);
 			return values;
 		}
 
 		template <class T>
-		void TTimeSeries<T>::CopyTo(T * dest, int from, int to)
+		void TTimeSeries<T>::CopyTo(T * dest, size_t from, size_t to) const
 		{
-			int tsLen = this->GetLength();
-			datatypes::exceptions::ExceptionUtilities::CheckInRange(from, 0, tsLen - 1, "from");
-			datatypes::exceptions::ExceptionUtilities::CheckInRange(to, -1, tsLen - 1, "to");
+			size_t tsLen = this->GetLength();
 			if (to < 0) to = (tsLen - 1);
-
-			for (int i = from; i <= to; i++)
-				dest[i - from] = data[i]; // TODO: faster options? memcopy?
+			datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(from, 0, tsLen - 1, "from");
+			datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(to, -1, tsLen - 1, "to");
+			std::copy(data.begin()+from, data.begin()+to, stdext::checked_array_iterator<T*>(dest, to - from + 1));
 		}
 
 		template <class T>
-		void TTimeSeries<T>::SetValue(int index, T value)
+		void TTimeSeries<T>::SetValue(size_t index, T value)
 		{
 			data[index] = value;
 		}
@@ -378,43 +389,43 @@ namespace datatypes
 		}
 
 		template <class T>
-		T TTimeSeries<T>::GetNA()
+		T TTimeSeries<T>::GetNA() const
 		{
 			return this->naCode;
 		}
 
 		template <class T>
-		ptime TTimeSeries<T>::AddTimeStep(const ptime& start, int numSteps)
+		ptime TTimeSeries<T>::AddTimeStep(const ptime& start, size_t numSteps)
 		{
 			return timeStep.AddSteps(start, numSteps);
 		}
 
 		template <class T>
-		ptime TTimeSeries<T>::GetStartDate()
+		ptime TTimeSeries<T>::GetStartDate() const
 		{
 			return ptime(startDate);
 		}
 
 		template <class T>
-		ptime TTimeSeries<T>::GetEndDate()
+		ptime TTimeSeries<T>::GetEndDate() const
 		{
 			return ptime(endDate);
 		}
 
 		template <class T>
-		ptime TTimeSeries<T>::TimeForIndex(int timeIndex)
+		ptime TTimeSeries<T>::TimeForIndex(size_t timeIndex) const
 		{
 			return timeStep.AddSteps(this->startDate, timeIndex);
 		}
 
 		template <class T>
-		int TTimeSeries<T>::GetLength()
+		size_t TTimeSeries<T>::GetLength() const
 		{
-			return this->length;
+			return data.size();
 		}
 
 		template <class T>
-		TimeStep TTimeSeries<T>::GetTimeStep()
+		TimeStep TTimeSeries<T>::GetTimeStep() const
 		{
 			return this->timeStep;
 		}
