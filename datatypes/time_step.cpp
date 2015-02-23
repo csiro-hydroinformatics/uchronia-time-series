@@ -64,7 +64,7 @@ namespace datatypes
 				ExceptionUtilities::ThrowInvalidArgument("time step is neither daily nor hourly; formatting of an ID is not yet implemented");
 		}
 
-		const ptime TimeStep::AddSteps(const ptime& startTimeStep, size_t n) const
+		const ptime TimeStep::AddSteps(const ptime& startTimeStep, ptrdiff_t n) const
 		{
 			return startTimeStep + (*regularStep) * n;
 		}
@@ -84,16 +84,30 @@ namespace datatypes
 			*t = *t + *regularStep;
 		}
 
-		const size_t TimeStep::GetUpperNumSteps(const ptime& start, const ptime& end) const
+		const ptrdiff_t TimeStep::GetUpperNumInstants(const ptime& start, const ptime& end) const
 		{
-			auto delta = end - start;
-			return (int)ceil(GetLinearIndexing(start, end));
+			return GetUpperNumSteps(start, end) + 1;
 		}
 
-		const size_t TimeStep::GetNumSteps(const ptime& start, const ptime& end) const
+		const ptrdiff_t TimeStep::GetNumInstants(const ptime& start, const ptime& end) const
+		{
+			return GetNumSteps(start, end) + 1;
+		}
+
+		const ptrdiff_t TimeStep::GetUpperNumSteps(const ptime& start, const ptime& end) const
 		{
 			auto delta = end - start;
-			return (int)floor(GetLinearIndexing(start, end)); 
+			if (delta.ticks() < 0)
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Number of steps calculation must be such that end >= start");
+			return (ptrdiff_t)(ceil(GetLinearIndexing(start, end)) + 1);
+		}
+
+		const ptrdiff_t TimeStep::GetNumSteps(const ptime& start, const ptime& end) const
+		{
+			auto delta = end - start;
+			if (delta.ticks() < 0)
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Number of steps calculation must be such that end >= start");
+			return (ptrdiff_t)(floor(GetLinearIndexing(start, end)) + 1);
 		}
 
 		const double TimeStep::GetLinearIndexing(const ptime& start, const ptime& end) const
@@ -107,11 +121,9 @@ namespace datatypes
 			return integerPart + remainder / (double)deltaStep;
 		}
 
-		const size_t TimeStep::GetOffset(const ptime& start, const ptime& end) const
+		const ptrdiff_t TimeStep::GetOffset(const ptime& referenceTime, const ptime& testTime) const
 		{
-//			return GetNumSteps(start, end) - 1;
-			return GetNumSteps(start, end);
+			return (ptrdiff_t)(floor(GetLinearIndexing(referenceTime, testTime)));
 		}
-
 	}
 }

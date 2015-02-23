@@ -54,13 +54,15 @@ namespace datatypes
 			virtual ~TTimeSeries();
 			T GetValue(size_t index);
 			void CopyTo(T * dest, size_t from = 0, size_t to = -1) const;
-			T * GetValues(size_t from = 0, size_t to = -1) const;
+			T * GetValues(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const;
 			void SetValue(size_t index, T value);
 			void Reset(size_t length, const ptime& startDate, T * value = nullptr);
 			size_t GetLength() const;
 			ptime GetStartDate() const;
 			ptime GetEndDate() const;
 			TimeStep GetTimeStep() const;
+			void SetTimeStep(const TimeStep& timeStep);
+			void UpdateEndDate();
 			ptime TimeForIndex(size_t timeIndex) const;
 			size_t IndexForTime(const ptime& instant) const;
 			size_t UpperIndexForTime(const ptime& instant) const;
@@ -85,7 +87,9 @@ namespace datatypes
 			//T * data = nullptr;
 			T naCode;
 		private:
-			ptime AddTimeStep(const ptime& start, size_t numSteps);
+			ptime EndForStart(const ptime& start, const size_t& numSteps) const;
+			void CheckIntervalBounds(const size_t& from, size_t& to) const;
+			void UncheckedCopyTo(T * dest, const size_t& from, const size_t& to) const;
 			void DeepCopyFrom(const TTimeSeries<T>& src);
 			void CopyNonData(const TTimeSeries<T>& src);
 			void SetDefaults();
@@ -199,7 +203,13 @@ namespace datatypes
 				data.assign(value, value + length);
 			}
 			this->startDate = startDate;
-			this->endDate = AddTimeStep((this->startDate), length);
+			UpdateEndDate();
+		}
+
+		template <class T>
+		void TTimeSeries<T>::UpdateEndDate()
+		{
+			this->endDate = EndForStart((this->startDate), GetLength());
 		}
 
 		template <class T>
@@ -292,13 +302,17 @@ namespace datatypes
 		template <class T>
 		size_t TTimeSeries<T>::UpperIndexForTime(const ptime& instant) const
 		{
-			return timeStep.GetUpperNumSteps(startDate, instant);
+			auto uIndex = timeStep.GetUpperNumSteps(startDate, instant);
+			datatypes::exceptions::ExceptionUtilities::CheckInRange<ptrdiff_t>(uIndex, 0, GetLength() - 1, "UpperIndexForTime");
+			return (size_t)uIndex;
 		}
 
 		template <class T>
 		size_t TTimeSeries<T>::LowerIndexForTime(const ptime& instant) const
 		{
-			return timeStep.GetNumSteps(startDate, instant);
+			auto uIndex = timeStep.GetNumSteps(startDate, instant);
+			datatypes::exceptions::ExceptionUtilities::CheckInRange<ptrdiff_t>(uIndex, 0, GetLength() - 1, "LowerIndexForTime");
+			return (size_t)uIndex;
 		}
 
 		template <class T>
@@ -362,27 +376,36 @@ namespace datatypes
 		}
 
 		template <class T>
-		T * TTimeSeries<T>::GetValues(size_t from, size_t to) const
+		void TTimeSeries<T>::CheckIntervalBounds(const size_t& from, size_t& to) const
 		{
 			size_t tsLen = this->GetLength();
-			if (to < 0) to = (tsLen - 1);
+			if (to == std::numeric_limits<size_t>::max())
+				to = min(to, (tsLen - 1));
 			datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(from, 0, tsLen - 1, "from");
-			datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(to, -1, tsLen - 1, "to");
+			datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(to, 0, tsLen - 1, "to");
+		}
 
+		template <class T>
+		T * TTimeSeries<T>::GetValues(size_t from, size_t to) const
+		{
+			CheckIntervalBounds(from, to);
 			size_t len = (to - from) + 1;
 			T * values = new T[len];
-			this->CopyTo(values, from, to);
+			this->UncheckedCopyTo(values, from, to);
 			return values;
 		}
 
 		template <class T>
 		void TTimeSeries<T>::CopyTo(T * dest, size_t from, size_t to) const
 		{
-			size_t tsLen = this->GetLength();
-			if (to < 0) to = (tsLen - 1);
-			datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(from, 0, tsLen - 1, "from");
-			datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(to, -1, tsLen - 1, "to");
-			std::copy(data.begin()+from, data.begin()+to, stdext::checked_array_iterator<T*>(dest, to - from + 1));
+			CheckIntervalBounds(from, to);
+			UncheckedCopyTo(dest, from, to);
+		}
+
+		template <class T>
+		void TTimeSeries<T>::UncheckedCopyTo(T * dest, const size_t& from, const size_t& to) const
+		{
+			std::copy(data.begin() + from, data.begin() + to, stdext::checked_array_iterator<T*>(dest, to - from + 1));
 		}
 
 		template <class T>
@@ -404,9 +427,9 @@ namespace datatypes
 		}
 
 		template <class T>
-		ptime TTimeSeries<T>::AddTimeStep(const ptime& start, size_t numSteps)
+		ptime TTimeSeries<T>::EndForStart(const ptime& start, const size_t& numSteps) const
 		{
-			return timeStep.AddSteps(start, numSteps);
+			return timeStep.AddSteps(start, numSteps - 1);
 		}
 
 		template <class T>
@@ -439,7 +462,14 @@ namespace datatypes
 			return this->timeStep;
 		}
 
-		typedef TTimeSeries < double > TimeSeries;		
+		template <class T>
+		void TTimeSeries<T>::SetTimeStep(const TimeStep& timeStep)
+		{
+			this->timeStep = timeStep;
+			UpdateEndDate();
+		}
+
+		typedef TTimeSeries < double > TimeSeries;
 
 	}
 }

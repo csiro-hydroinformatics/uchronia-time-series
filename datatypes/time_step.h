@@ -18,13 +18,17 @@ namespace datatypes
 			~TimeStep();
 
 			TimeStep& operator=(const TimeStep &rhs);
+			bool operator==(const TimeStep &rhs) const
+			{
+				return (*regularStep) == *(rhs.regularStep);
+			}
 
-			const ptime AddSteps(const ptime& startTimeStep, size_t n) const;
+			const ptime AddSteps(const ptime& startTimeStep, ptrdiff_t n) const;
 
 			const time_duration GetTimeStepDuration(const ptime& startTimeStep) const;
-			const size_t GetUpperNumSteps(const ptime& start, const ptime& end) const;
-			const size_t GetNumSteps(const ptime& start, const ptime& end) const;
-			const size_t GetOffset(const ptime& start, const ptime& end) const;
+			const ptrdiff_t GetUpperNumSteps(const ptime& start, const ptime& end) const;
+			const ptrdiff_t GetNumSteps(const ptime& start, const ptime& end) const;
+			const ptrdiff_t GetOffset(const ptime& start, const ptime& end) const;
 			const void Increment(ptime* t) const;
 			static TimeStep Parse(const std::string& name);
 
@@ -34,6 +38,10 @@ namespace datatypes
 			std::string GetName();
 
 		private:
+			// May not need to have thiis comcept of instant.
+			const ptrdiff_t GetUpperNumInstants(const ptime& start, const ptime& end) const;
+			const ptrdiff_t GetNumInstants(const ptime& start, const ptime& end) const;
+
 			time_duration * regularStep = nullptr;
 			void CopyRegularStep(const TimeStep& src);
 
