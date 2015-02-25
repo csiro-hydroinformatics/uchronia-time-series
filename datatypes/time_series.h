@@ -55,6 +55,7 @@ namespace datatypes
 			T GetValue(size_t index);
 			void CopyTo(T * dest, size_t from = 0, size_t to = -1) const;
 			T * GetValues(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const;
+			TTimeSeries<T> Subset(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const;
 			void SetValue(size_t index, T value);
 			void Reset(size_t length, const ptime& startDate, T * value = nullptr);
 			size_t GetLength() const;
@@ -143,7 +144,7 @@ namespace datatypes
 			void Set(size_t i, size_t tsIndex, T val);
 			std::vector<T*>* GetValues();
 			size_t Size();
-			ptime GetStart();
+			ptime GetStartDate();
 
 		private:
 			std::vector<TTimeSeries<T>*> * series;
@@ -302,7 +303,7 @@ namespace datatypes
 		template <class T>
 		size_t TTimeSeries<T>::UpperIndexForTime(const ptime& instant) const
 		{
-			auto uIndex = timeStep.GetUpperNumSteps(startDate, instant);
+			auto uIndex = timeStep.GetUpperNumSteps(startDate, instant) - 1;
 			datatypes::exceptions::ExceptionUtilities::CheckInRange<ptrdiff_t>(uIndex, 0, GetLength() - 1, "UpperIndexForTime");
 			return (size_t)uIndex;
 		}
@@ -310,7 +311,7 @@ namespace datatypes
 		template <class T>
 		size_t TTimeSeries<T>::LowerIndexForTime(const ptime& instant) const
 		{
-			auto uIndex = timeStep.GetNumSteps(startDate, instant);
+			auto uIndex = timeStep.GetNumSteps(startDate, instant) - 1;
 			datatypes::exceptions::ExceptionUtilities::CheckInRange<ptrdiff_t>(uIndex, 0, GetLength() - 1, "LowerIndexForTime");
 			return (size_t)uIndex;
 		}
@@ -396,6 +397,17 @@ namespace datatypes
 		}
 
 		template <class T>
+		TTimeSeries<T> TTimeSeries<T>::Subset(size_t from, size_t to) const
+		{
+			CheckIntervalBounds(from, to);
+			size_t len = (to - from) + 1;
+			T * values = GetValues(from, to);
+			auto res = TTimeSeries<T>(values, len, TimeForIndex(from), timeStep);
+			delete[] values;
+			return res;
+		}
+
+		template <class T>
 		void TTimeSeries<T>::CopyTo(T * dest, size_t from, size_t to) const
 		{
 			CheckIntervalBounds(from, to);
@@ -405,7 +417,7 @@ namespace datatypes
 		template <class T>
 		void TTimeSeries<T>::UncheckedCopyTo(T * dest, const size_t& from, const size_t& to) const
 		{
-			std::copy(data.begin() + from, data.begin() + to, stdext::checked_array_iterator<T*>(dest, to - from + 1));
+			std::copy(data.begin() + from, data.begin() + to + 1, stdext::checked_array_iterator<T*>(dest, to - from + 1));
 		}
 
 		template <class T>

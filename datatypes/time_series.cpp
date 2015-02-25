@@ -58,7 +58,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		ptime MultiTimeSeries<T>::GetStart()
+		ptime MultiTimeSeries<T>::GetStartDate()
 		{
 			return ptime(startDate);
 		}
@@ -96,29 +96,10 @@ namespace datatypes
 			ptime sd = timeSeries.GetStartDate();
 			ptime ed = timeSeries.GetEndDate();
 
-			size_t sIndex = timeSeries.UpperIndexForTime(sd);
-			size_t eIndex = timeSeries.LowerIndexForTime(ed);
+			size_t sIndex = timeSeries.UpperIndexForTime(startDate);
+			size_t eIndex = timeSeries.LowerIndexForTime(endDate);
 
-			//auto timeStepSpan = seconds(timeSeries.GetTimeStepSeconds());
-
-			//size_t offset = 0;
-			//for (ptime dt = sd; dt < startDate; dt += timeStepSpan)
-			//	offset++;
-			//size_t startOffset = offset;
-
-			//for (ptime dt = startDate; dt < endDate; dt += timeStepSpan)
-			//	offset++;
-			//size_t endOffset = offset;
-
-			size_t n = eIndex - sIndex + 1;
-			double* data = new double[n];
-			timeSeries.CopyTo(data, sIndex, eIndex);
-
-			TTimeSeries<T>* result = new TTimeSeries<T>(data, n, startDate);
-
-			delete[] data;
-
-			return result;
+			return new TTimeSeries<T>(timeSeries.Subset(sIndex, eIndex));
 		}
 
 		template <typename T>

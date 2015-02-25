@@ -13,11 +13,11 @@ namespace datatypes
 		class ExceptionUtilities
 		{
 		public:
-			static void ThrowInvalidArgument(const string& msg) { throw invalid_argument(msg); }
-			static void ThrowInvalidOperation(const string& msg) { throw logic_error(msg); }
+			static void ThrowInvalidArgument(const string& msg = "Invalid argument") { throw invalid_argument(msg); }
+			static void ThrowInvalidOperation(const string& msg = "Invalid operation") { throw logic_error(msg); }
 			static void ThrowInvalidArgumentModelVariableId(const string& variableId) { throw invalid_argument(string("Unknown model variable identifier: ") + variableId); }
-			static void ThrowNotImplemented(const string& msg) { throw logic_error(msg); }
-			static void ThrowOutOfRange(const string& msg) { throw out_of_range(msg); }
+			static void ThrowNotImplemented(const string& msg = "Not implemented") { throw logic_error(msg); }
+			static void ThrowOutOfRange(const string& msg = "Operation led to a state out of range") { throw out_of_range(msg); }
 			template <typename T>
 			static void CheckInRange(T value, T min, T max, const string& variableName) {
 				if (value >= min && value <= max)

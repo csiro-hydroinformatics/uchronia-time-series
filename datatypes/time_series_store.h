@@ -40,6 +40,11 @@ namespace datatypes
 				{
 					throw std::logic_error(string("Failed to open file ") + filename + " with code " + boost::lexical_cast<string>(code));
 				}
+
+				void ThrowOnVarInquiryFail(const string& varName, int code)
+				{
+					throw std::logic_error(string("Failed to query on variable ") + varName + " with code " + boost::lexical_cast<string>(code));
+				}
 			public:
 
 				/**
@@ -72,12 +77,16 @@ namespace datatypes
 				 */
 				int GetEnsembleSize();
 
+				int GetEnsembleSize(const string& ncVarName);
+
 				/**
 				 * \brief	Gets the lengths of the lead time dimension.
 				 *
 				 * \return	The lead time length.
 				 */
 				int GetLeadTimeCount();
+
+				int GetLeadTimeCount(const string& ncVarName);
 
 				/**
 				* \brief	Gets the lengths of the main time dimension.
@@ -91,7 +100,7 @@ namespace datatypes
 				 *
 				 * \return	the values of the main time dimension
 				 */
-				ptime * GetTimeDim();
+				vector<ptime> * GetTimeDim();
 
 				/**
 				 * \brief	Gets the first time in the main time dimension of this netCDF data set.
@@ -136,7 +145,7 @@ namespace datatypes
 					int dataVarId = GetVarId(varName);
 					size_t startp[4];
 					size_t countp[4];
-					GetEnsembleNetcdfWindow(catchmentNumber, timeIndex, startp, countp);
+					GetEnsFcastNetcdfWindow(catchmentNumber, timeIndex, startp, countp);
 					auto vardata = GetForecastDataBuffer();
 
 					// KLUDGE
@@ -150,6 +159,33 @@ namespace datatypes
 					{
 						dest = new ElementType[leadTimeLength];
 						memcpy(dest, vardata + i * leadTimeLength, leadTimeLength * sizeof(ElementType));
+						result->push_back(dest);
+					}
+					delete[] vardata;
+					return result;
+				}
+
+				template<typename ElementType>
+				std::vector<ElementType*> * GetEnsemble(const string& varName, int catchmentNumber)
+				{
+					int dataVarId = GetVarId(varName);
+					size_t startp[3];
+					size_t countp[3];
+					GetEnsNetcdfWindow(catchmentNumber, startp, countp);
+					auto n = GetTimeLength();
+					auto vardata = GetEnsembleDataBuffer(1, n);
+
+					// KLUDGE
+					// The use of nc_get_vara_double is clearly at odd with the declaration of GetForecasts as a template method 
+					// This is a known limitation. This is likely something that can be overcome one way or another. Going with a generic approach for the API.
+					int code = nc_get_vara_double(ncid, dataVarId, startp, countp, vardata);
+
+					auto result = new std::vector<ElementType*>();
+					ElementType * dest;
+					for (int i = 0; i < ensembleSize; i++)
+					{
+						dest = new ElementType[n];
+						memcpy(dest, vardata + i * n, n * sizeof(ElementType));
 						result->push_back(dest);
 					}
 					delete[] vardata;
@@ -172,7 +208,7 @@ namespace datatypes
 					int dataVarId = GetVarId(varName);
 					size_t startp[4];
 					size_t countp[4];
-					GetEnsembleNetcdfWindow(catchmentNumber, timeIndex, startp, countp);
+					GetEnsFcastNetcdfWindow(catchmentNumber, timeIndex, startp, countp);
 					auto vardata = GetForecastDataBuffer();
 
 					ElementType * dest;
@@ -222,6 +258,9 @@ namespace datatypes
 				static string CreateTimeUnitsAttribute(const ptime& utcStart, const string& units);
 				static ptime ParseStartDate(const string& unitsAttribute);
 				static string ParseTimeUnits(const string& unitsAttribute);
+
+				TimeStep GetTimeStep();
+
 
 			private:
 
@@ -274,6 +313,7 @@ namespace datatypes
 				void InquireDimIds();
 				void InquireDimVarIds();
 				int InquireDimLength(int dimId);
+				int GetNumDims(const string& ncVarName);
 				void ReadTimeUnits();
 				std::vector<string> * GetStringVariable(int strLen, int varId, int n);
 				string GetStringAttribute(const string& attName);
@@ -288,14 +328,23 @@ namespace datatypes
 				T* GetVariable(int varId, int n);
 
 				/**
-				 * \brief	Gets the NetCDF start/count specifications for the data pertaining to a time index.
+				 * \brief	Gets the NetCDF start/count specifications for an ensemble forecast time series.
 				 *
 				 * \param	catchmentNumber	The catchment number.
 				 * \param	timeIndex	   	Zero-based index of the time.
 				 * \param [in,out]	startp 	the dimensions start indices.
 				 * \param [in,out]	countp 	the dimensions counts.
 				 */
-				void GetEnsembleNetcdfWindow(int catchmentNumber, int timeIndex, size_t *startp, size_t *countp);
+				void GetEnsFcastNetcdfWindow(int catchmentNumber, int timeIndex, size_t *startp, size_t *countp);
+
+				/**
+				* \brief	Gets the NetCDF start/count specifications for the data pertaining to an ensemble of time series.
+				*
+				* \param	catchmentNumber	The catchment number.
+				* \param [in,out]	startp 	the dimensions start indices.
+				* \param [in,out]	countp 	the dimensions counts.
+				*/
+				void GetEnsNetcdfWindow(int catchmentNumber, size_t *startp, size_t *countp);
 
 				/**
 				* \brief	Gets the NetCDF start/count specifications for the data pertaining to a time index.
@@ -307,6 +356,7 @@ namespace datatypes
 				void GetNetcdfWindow(int catchmentNumber, size_t *startp, size_t *countp);
 				int GetVarId(const string& varName);
 				double * GetForecastDataBuffer(int numStations = 1, int numTimeSteps = 1);
+				double * GetEnsembleDataBuffer(int numStations, int numTimeSteps);
 				double * GetSingleSeriesDataBuffer(int numStations, int numTimeSteps);
 				int ncid = -1;
 				int timeDimId, stationDimId, leadTimeDimId, ensMemberDimId, strLenDimId;
@@ -372,6 +422,8 @@ namespace datatypes
 			 */
 			TTimeSeries<T> * GetSeries();
 
+			MultiTimeSeries<T> * GetEnsembleSeries();
+
 			void SetForecasts(int i, MultiTimeSeries<T> * forecasts);
 			int GetEnsembleSize();
 			int GetLeadTimeCount();
@@ -432,7 +484,7 @@ namespace datatypes
 
 			int GetEnsembleSize();
 			int GetLeadTimeCount();
-			ptime * GetTimeDim();
+			vector<ptime> * GetTimeDim();
 			int GetTimeLength();
 			ptime GetStart();
 			int IndexForIdentifier(const string& identifier);
@@ -484,6 +536,11 @@ namespace datatypes
 				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("GetSeries() not implemented");
 				// return dataAccess->Get(ncVarName, identifier)->;
 			}
+			SwiftNetCDFTimeSeries<T> * GetSwiftNetCDFTimeSeries()
+			{
+				return dataAccess->Get(ncVarName, identifier);
+			}
+
 		};
 
 		/**
@@ -531,6 +588,7 @@ namespace datatypes
 		private:
 			std::map < string, SingleSeriesInformation<T>* > timeSeriesProviders;
 			SwiftNetCDFTimeSeries<T> * GetSwiftNetCDFTimeSeries(const string& dataId);
+			SingleSeriesInformation<T> * GetSeriesInformation(const string& dataId);
 
 		};
 

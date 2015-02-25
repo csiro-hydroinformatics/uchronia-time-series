@@ -47,7 +47,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		ptime * SwiftNetCDFTimeSeriesStore<T>::GetTimeDim()
+		vector<ptime> * SwiftNetCDFTimeSeriesStore<T>::GetTimeDim()
 		{
 			return dataAccess->GetTimeDim();
 		}
@@ -524,15 +524,54 @@ namespace datatypes
 				return this->ensembleSize;
 			}
 
+			int SwiftNetCDFAccess::GetEnsembleSize(const string& ncVarName)
+			{
+				if (GetNumDims(ncVarName)> 2)  
+					// double var2_fcast_ens[lead_time,station,ens_member,time]
+					//   double var1_ens[station,ens_member,time]  
+					return this->ensembleSize;  
+				else
+					// double var2_obs[station,time]
+					return 0;
+			}
+
+			int SwiftNetCDFAccess::GetNumDims(const string& ncVarName)
+			{
+				int ndimsp;
+				int code = nc_inq_varndims(ncid, this->GetVarId(ncVarName), &ndimsp);
+				if (NC_NOERR != code)
+				{
+					ThrowOnVarInquiryFail(ncVarName, code);
+				}
+				return ndimsp;
+			}
+
+			int SwiftNetCDFAccess::GetLeadTimeCount(const string& ncVarName)
+			{
+				if (GetNumDims(ncVarName)> 3) 
+					// double var2_fcast_ens[lead_time,station,ens_member,time]
+					return leadTimeLength;
+				else
+					//   double var1_ens[station,ens_member,time]  
+					// double var2_obs[station,time]
+					return 0; 
+			}
+
 			int SwiftNetCDFAccess::GetLeadTimeCount()
 			{
 				return leadTimeLength;
 			}
 
-			ptime * SwiftNetCDFAccess::GetTimeDim()
+			vector<ptime> * SwiftNetCDFAccess::GetTimeDim()
 			{
-				exceptions::ExceptionUtilities::ThrowNotImplemented("SwiftNetCDFAccess::GetTimeDim is not implemented");
-				return nullptr;
+				int timeLen = this->GetTimeLength();
+				auto tstep = GetTimeStep();
+				vector<ptime> * result = new vector<ptime>(timeLen);
+				for (size_t i = 0; i < timeLen; i++)
+				{
+					(*result)[i] = tstep.AddSteps(startDate, timeVec[i]);
+				}
+				return result;
 			}
 
 			int SwiftNetCDFAccess::GetTimeLength()
@@ -561,12 +600,17 @@ namespace datatypes
 			{
 				int delta = timeVec[timeIndex];
 				auto timeStart = GetStart();
+				return GetTimeStep().AddSteps(timeStart, timeIndex);
+			}
+
+			TimeStep SwiftNetCDFAccess::GetTimeStep()
+			{
 				// TODO: revise this. See also ParseTimeUnits
-				if (timeUnits == string("hr")) return (timeStart + hours(delta));
-				else if (timeUnits == string("da")) return (timeStart + hours(24 * delta));
-				else if (timeUnits == string("mo")) 
+				if (timeUnits == string("hr")) return TimeStep::GetHourly();
+				else if (timeUnits == string("da")) return TimeStep::GetDaily();
+				else if (timeUnits == string("mo"))
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Monthly time step is not supported");
-				else 
+				else
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Unknown time unit identifier " + timeUnits);
 			}
 
@@ -574,6 +618,12 @@ namespace datatypes
 			{
 				// double rain_fcast_ens[lead_time,station,ens_member,time] in R; rev conventions for C, but order does not matter here
 				return new double[leadTimeLength * numStations * ensembleSize * numTimeSteps];
+			}
+
+			double * SwiftNetCDFAccess::GetEnsembleDataBuffer(int numStations, int numTimeSteps)
+			{
+				// double rain_ens[station,ens_member,time] in R; rev conventions for C, but order does not matter here
+				return new double[numStations * ensembleSize * numTimeSteps];
 			}
 
 			double * SwiftNetCDFAccess::GetSingleSeriesDataBuffer(int numStations, int numTimeSteps)
@@ -595,7 +645,7 @@ namespace datatypes
 				return dataVarId;
 			}
 
-			void SwiftNetCDFAccess::GetEnsembleNetcdfWindow(int catchmentNumber, int timeIndex, size_t *startp, size_t *countp)
+			void SwiftNetCDFAccess::GetEnsFcastNetcdfWindow(int catchmentNumber, int timeIndex, size_t *startp, size_t *countp)
 			{
 				// size_t startp[4]; // double rain_fcast_ens[lead_time,station,ens_member,time] in R; rev conventions for C
 				startp[0] = timeIndex;
@@ -608,6 +658,18 @@ namespace datatypes
 				countp[1] = ensembleSize;
 				countp[2] = 1;
 				countp[3] = leadTimeLength;
+			}
+
+			void SwiftNetCDFAccess::GetEnsNetcdfWindow(int catchmentNumber, size_t *startp, size_t *countp)
+			{
+				// double q_ens[station, ens_member, time]  in R; rev conventions for C
+				startp[0] = 0;
+				startp[1] = 0;
+				startp[2] = catchmentNumber;
+
+				countp[0] = this->GetTimeLength();
+				countp[1] = ensembleSize;
+				countp[2] = 1;
 			}
 
 			void SwiftNetCDFAccess::GetNetcdfWindow(int catchmentNumber, size_t *startp, size_t *countp)
@@ -636,6 +698,19 @@ namespace datatypes
 			auto values = dataAccess->GetValues<T>(varName, catchmentNumber);
 			auto result = new TTimeSeries<T>(values, this->GetTimeLength(), this->TimeForIndex(0));
 			delete values;
+			return result;
+		}
+
+		template <typename T>
+		MultiTimeSeries<T> * SwiftNetCDFTimeSeries<T>::GetEnsembleSeries()
+		{
+			auto series = dataAccess->GetEnsemble<T>(varName, catchmentNumber);
+			auto result = new MultiTimeSeries<T>(*series, this->GetTimeLength(), this->TimeForIndex(0));
+			for (auto& d : (*series))
+			{
+				if (d != nullptr) delete[] d;
+			}
+			delete series;
 			return result;
 		}
 
@@ -674,13 +749,13 @@ namespace datatypes
 		template <typename T>
 		int SwiftNetCDFTimeSeries<T>::GetEnsembleSize()
 		{
-			return dataAccess->GetEnsembleSize();
+			return dataAccess->GetEnsembleSize(varName);
 		}
 
 		template <typename T>
 		int SwiftNetCDFTimeSeries<T>::GetLeadTimeCount()
 		{
-			return dataAccess->GetLeadTimeCount();
+			return dataAccess->GetLeadTimeCount(varName);
 		}
 
 		template <typename T>
@@ -714,11 +789,13 @@ namespace datatypes
 		template <typename T>
 		void TimeSeriesLibrary<T>::AddSource(const string& dataId, EnsembleTimeSeriesStore<T> * dataAccess)
 		{
+			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
 		}
 
 		template <typename T>
 		void TimeSeriesLibrary<T>::AddSource(const string& dataId, SwiftNetCDFTimeSeries<T> * timeSeries)
 		{
+			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
 		}
 
 		template <typename T>
@@ -740,8 +817,16 @@ namespace datatypes
 		template <typename T>
 		SwiftNetCDFTimeSeries<T> * TimeSeriesLibrary<T>::GetSwiftNetCDFTimeSeries(const string& dataId)
 		{
+			return GetSeriesInformation(dataId)->GetSwiftNetCDFTimeSeries();
+		}
+
+		template <typename T>
+		SingleSeriesInformation<T> * TimeSeriesLibrary<T>::GetSeriesInformation(const string& dataId)
+		{
 			SingleSeriesInformation<T> * dataAccess = timeSeriesProviders[dataId];
-			return dataAccess->dataAccess->Get(dataAccess->ncVarName, dataAccess->identifier);
+			if (dataAccess == nullptr)
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + dataId);
+			return dataAccess;
 		}
 
 		template <typename T>
