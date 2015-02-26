@@ -182,10 +182,17 @@ namespace datatypes
 
 					auto result = new std::vector<ElementType*>();
 					ElementType * dest;
+					auto maxT = this->GetTimeLength();
 					for (int i = 0; i < ensembleSize; i++)
 					{
+						// double q_ens[station, ens_member, time]  in R; rev conventions for C
+						// [time][ens_member][station]. There is only one station, so vardata is organised as
+						// [time][ens_member]
 						dest = new ElementType[n];
-						memcpy(dest, vardata + i * n, n * sizeof(ElementType));
+						for (size_t t = 0; t < maxT; t++)
+						{
+							dest[t] = vardata [ensembleSize * t + i];
+						}
 						result->push_back(dest);
 					}
 					delete[] vardata;
@@ -532,10 +539,6 @@ namespace datatypes
 			SwiftNetCDFTimeSeriesStore<T> * dataAccess;
 			string ncVarName;
 			string identifier;
-			TTimeSeries<T> GetSeries() {
-				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("GetSeries() not implemented");
-				// return dataAccess->Get(ncVarName, identifier)->;
-			}
 			SwiftNetCDFTimeSeries<T> * GetSwiftNetCDFTimeSeries()
 			{
 				return dataAccess->Get(ncVarName, identifier);
@@ -575,10 +578,11 @@ namespace datatypes
 			*/
 			TTimeSeries<T>* GetSingle(const string& dataId);
 
-
-			MultiTimeSeries<T>* GetMultiple(const string& dataId, int index);
+			MultiTimeSeries<T>* GetEnsemble(const string& dataId, const string& dataItemIdentifier);
 
 			MultiTimeSeries<T>* GetEnsembleTimeSeries(const string& dataId);
+
+			EnsembleForecastTimeSeries<T>* GetEnsembleForecasts(const string& dataId);
 
 			void AddSwiftNetCDFSource(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier);
 			void AddSource(const string& dataId, SwiftNetCDFTimeSeriesStore<T> * dataAccess, const string& ncVarName, const string& identifier);
@@ -586,6 +590,7 @@ namespace datatypes
 			void AddSource(const string& dataId, EnsembleTimeSeriesStore<T> * dataAccess);
 
 		private:
+			std::map < string, EnsembleTimeSeriesStore<T>* > ensTimeSeriesProviders;
 			std::map < string, SingleSeriesInformation<T>* > timeSeriesProviders;
 			SwiftNetCDFTimeSeries<T> * GetSwiftNetCDFTimeSeries(const string& dataId);
 			SingleSeriesInformation<T> * GetSeriesInformation(const string& dataId);

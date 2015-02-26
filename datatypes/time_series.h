@@ -152,7 +152,8 @@ namespace datatypes
 		};
 
 
-		typedef TTimeSeries<MultiTimeSeries<double>> EnsembleForecastTimeSeries;
+		template<class T>
+		using EnsembleForecastTimeSeries = TTimeSeries<MultiTimeSeries<T>>;
 
 		template <typename T>
 		class DATATYPES_DLL_LIB TimeSeriesOperations
@@ -482,6 +483,5 @@ namespace datatypes
 		}
 
 		typedef TTimeSeries < double > TimeSeries;
-
 	}
 }

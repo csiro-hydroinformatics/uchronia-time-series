@@ -789,7 +789,7 @@ namespace datatypes
 		template <typename T>
 		void TimeSeriesLibrary<T>::AddSource(const string& dataId, EnsembleTimeSeriesStore<T> * dataAccess)
 		{
-			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
+			ensTimeSeriesProviders[dataId] = dataAccess;
 		}
 
 		template <typename T>
@@ -815,6 +815,27 @@ namespace datatypes
 		}
 
 		template <typename T>
+		MultiTimeSeries<T>* TimeSeriesLibrary<T>::GetEnsemble(const string& dataId, const string& dataItemIdentifier)
+		{
+			EnsembleTimeSeriesStore<T>* dataSource = this->ensTimeSeriesProviders[dataId];
+			if (dataSource == nullptr)
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data source for data identifier ") + dataId + "not found");
+			auto rawTs = dataSource->Read(dataItemIdentifier);
+			return rawTs;
+		}
+
+		template <typename T>
+		MultiTimeSeries<T>* GetEnsembleTimeSeries(const string& dataId)
+		{
+			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
+		}
+
+		template <typename T>
+		EnsembleForecastTimeSeries<T>* GetEnsembleForecasts(const string& dataId)
+		{
+		}
+
+		template <typename T>
 		SwiftNetCDFTimeSeries<T> * TimeSeriesLibrary<T>::GetSwiftNetCDFTimeSeries(const string& dataId)
 		{
 			return GetSeriesInformation(dataId)->GetSwiftNetCDFTimeSeries();
@@ -827,15 +848,6 @@ namespace datatypes
 			if (dataAccess == nullptr)
 				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + dataId);
 			return dataAccess;
-		}
-
-		template <typename T>
-		MultiTimeSeries<T>* TimeSeriesLibrary<T>::GetMultiple(const string& dataId, int index)
-		{
-			auto snts = GetSwiftNetCDFTimeSeries(dataId);
-			auto rawTs = snts->GetForecasts(index);
-			delete snts;
-			return rawTs;
 		}
 
 
