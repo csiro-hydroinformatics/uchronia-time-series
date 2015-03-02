@@ -54,7 +54,9 @@ namespace datatypes
 			virtual ~TTimeSeries();
 			T GetValue(size_t index);
 			void CopyTo(T * dest, size_t from = 0, size_t to = -1) const;
+			void CopyTo(std::vector<T>& dest, size_t from = 0, size_t to = -1) const;
 			T * GetValues(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const;
+			std::vector<T> GetValuesVector(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const;
 			TTimeSeries<T> Subset(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const;
 			void SetValue(size_t index, T value);
 			void Reset(size_t length, const ptime& startDate, T * value = nullptr);
@@ -183,7 +185,7 @@ namespace datatypes
 		/*******************
 		Below are implementations of the template code; they would normally be found in a .cpp file, but as 
 		templates putting them here makes it more reusable from other programs.
-		/*******************/
+		******************/
 
 
 		template <class T>
@@ -398,6 +400,15 @@ namespace datatypes
 		}
 
 		template <class T>
+		std::vector<T> TTimeSeries<T>::GetValuesVector(size_t from, size_t to) const
+		{
+			CheckIntervalBounds(from, to);
+			std::vector<T> values;
+			this->CopyTo(values, from, to);
+			return values;
+		}
+
+		template <class T>
 		TTimeSeries<T> TTimeSeries<T>::Subset(size_t from, size_t to) const
 		{
 			CheckIntervalBounds(from, to);
@@ -416,9 +427,28 @@ namespace datatypes
 		}
 
 		template <class T>
+		void TTimeSeries<T>::CopyTo(std::vector<T>& dest, size_t from, size_t to) const
+		{
+			CheckIntervalBounds(from, to);
+			size_t len = (to - from) + 1;
+			if (dest.size() != len)
+			{
+				dest.clear();
+				dest.reserve(len);
+			};
+			std::copy(data.begin() + from, data.begin() + to + 1, dest.begin());
+		}
+
+		template <class T>
 		void TTimeSeries<T>::UncheckedCopyTo(T * dest, const size_t& from, const size_t& to) const
 		{
-			std::copy(data.begin() + from, data.begin() + to + 1, stdext::checked_array_iterator<T*>(dest, to - from + 1));
+			// The following is neat and safe but not portable...
+			//std::copy(data.begin() + from, data.begin() + to + 1, stdext::checked_array_iterator<T*>(dest, to - from + 1));
+			// so, looking potentially unsafe:
+			for (size_t i = from; i <= to; i++)
+			{
+				dest[i] = data[i];
+			}
 		}
 
 		template <class T>
