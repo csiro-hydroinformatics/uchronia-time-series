@@ -447,7 +447,7 @@ namespace datatypes
 			// so, looking potentially unsafe:
 			for (size_t i = from; i <= to; i++)
 			{
-				dest[i] = data[i];
+				dest[i-from] = data[i];
 			}
 		}
 
