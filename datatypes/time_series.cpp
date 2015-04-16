@@ -9,13 +9,14 @@ namespace datatypes
 	namespace timeseries
 	{
 		template <typename T>
-		MultiTimeSeries<T>::MultiTimeSeries(const std::vector<T*>& values, size_t length, const ptime& startDate)
+		MultiTimeSeries<T>::MultiTimeSeries(const std::vector<T*>& values, size_t length, const ptime& startDate, const TimeStep& timeStep)
 		{
 			series = new std::vector<TTimeSeries<T>*>();
 			this->startDate = ptime(startDate);
+			this->timeStep = TimeStep(timeStep);
 			for (auto d : values)
 			{
-				series->push_back(new TTimeSeries<T>(d, length, startDate));
+				series->push_back(new TTimeSeries<T>(d, length, startDate, timeStep));
 			}
 		}
 
@@ -74,6 +75,7 @@ namespace datatypes
 		{
 			this->startDate = ptime(src.startDate);
 			this->series = new vector<TTimeSeries<T>*>();
+			this->timeStep = TimeStep(src.timeStep);
 			
 			for (size_t i = 0; i < src.series->size(); i++)
 			{

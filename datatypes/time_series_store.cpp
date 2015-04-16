@@ -173,8 +173,12 @@ namespace datatypes
 				using namespace std;
 				DefineMandatoryDimensions(nEns, nLead, stationIds.size());
 				DefineDimVariables();
-				DefineVariables(varNames, varAttributes);
 				FillAttributes(timeUnits);
+
+				variableNames = vector<string>(varNames);
+				varAttributes = map<string, VariableAttributes>(varAttributes);
+
+				ncendef(ncid);
 				SetTimeVar(timeVar);
 
 				numTimeSteps = timeVar.size();
@@ -197,6 +201,8 @@ namespace datatypes
 				}
 				
 				this->timeUnits = ParseTimeUnits(string(timeUnits));
+
+				WriteCommonVarData();
 			}
 
 			int SwiftNetCDFAccess::AddGlobalAttribute(const string& attName, const string& attValue)
@@ -445,7 +451,28 @@ namespace datatypes
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation(string("The netCDF data type code ") + to_string(datatype) + " of the variable " + to_string(varId) + " is not supported ");
 			}
 
-			void SwiftNetCDFAccess::DefineVariables(std::vector<string>& varNames, std::map<string, VariableAttributes>& varAttributes)
+			void SwiftNetCDFAccess::WriteSingleSeriesVarData()
+			{
+				const int varNumDims = 2;
+				int vardimids[varNumDims];
+				vardimids[0] = timeDimId;
+				vardimids[1] = stationDimId;
+
+				DefineVariables(varNumDims, vardimids);
+			}
+
+			void SwiftNetCDFAccess::WriteEnsembleVarData()
+			{
+				const int varNumDims = 3;
+				int vardimids[varNumDims];
+				vardimids[0] = timeDimId;
+				vardimids[1] = ensMemberDimId;
+				vardimids[2] = stationDimId;
+
+				DefineVariables(varNumDims, vardimids);
+			}
+
+			void SwiftNetCDFAccess::WriteForecastsVarData()
 			{
 				const int varNumDims = 4;
 				int vardimids[varNumDims];
@@ -453,17 +480,27 @@ namespace datatypes
 				vardimids[1] = ensMemberDimId;
 				vardimids[2] = stationDimId;
 				vardimids[3] = leadTimeDimId;
-				int code;
-				variableVarIds = new int[varNames.size()];
-				variableVarNames = new std::vector<string>(varNames);
 
-				for (int i = 0; i < varNames.size(); i++)
+				DefineVariables(varNumDims, vardimids);
+			}
+
+			void SwiftNetCDFAccess::DefineVariables(const int varNumDims, int* varDimIDs)
+			{
+				ncredef(ncid);
+
+				int code;
+				variableVarIds = new int[variableNames.size()];
+				variableVarNames = new std::vector<string>(variableNames);
+
+				for (int i = 0; i < variableNames.size(); i++)
 				{
+					string varName = variableNames[i];
+					code = nc_def_var(ncid, varName.c_str(), NC_DOUBLE, varNumDims, varDimIDs, variableVarIds + i);
 					int varId = variableVarIds[i];
-					string varName = varNames[i];
-					code = nc_def_var(ncid, varName.c_str(), NC_DOUBLE, varNumDims, vardimids, variableVarIds + i);
-					AddAttributes(varId, varName, varAttributes);
+					AddAttributes(varId, varName, variableAttributes);
 				}
+
+				ncendef(ncid);
 			}
 
 			void SwiftNetCDFAccess::AddVariableAttributes(int varId, const string& longName, const string& units, const string& type, double fillValue)
@@ -517,6 +554,57 @@ namespace datatypes
 				code = nc_def_var(ncid, kLatVarName.c_str(), NC_FLOAT, 1, stationiddimids, &latVarId);
 				code = nc_def_var(ncid, kLonVarName.c_str(), NC_FLOAT, 1, stationiddimids, &lonVarId);
 				code = nc_def_var(ncid, kElevationVarName.c_str(), NC_FLOAT, 1, stationiddimids, &elevationVarId);
+			}
+
+			void SwiftNetCDFAccess::WriteCommonVarData()
+			{
+				int code;
+				size_t* startp;
+				size_t* countp;
+
+				startp = new size_t[1];
+				countp = new size_t[1];
+
+				// Set Station ID's
+
+				startp[0] = 0;
+				countp[0] = numStations;
+
+				code = nc_put_vara_int(ncid, stationIdVarId, startp, countp, stationIds);
+
+				// Set Ensemble No's
+
+				int eLen = GetEnsembleSize();
+
+				startp[0] = 0;
+				countp[0] = eLen;
+
+				int* ensArr = new int[eLen];
+				for (int i = 0; i < eLen; i++)
+					ensArr[i] = i;
+
+				code = nc_put_vara_int(ncid, ensMemberVarId, startp, countp, ensArr);
+
+				delete[] ensArr;
+
+				// Set Lead Time No's
+				
+				int fLen = GetLeadTimeCount();
+
+				startp[0] = 0;
+				countp[0] = fLen;
+
+				int* ldtArr = new int[fLen];
+				for (int i = 0; i < fLen; i++)
+					ldtArr[i] = i + 1;
+
+				code = nc_put_vara_int(ncid, leadTimeVarId, startp, countp, ldtArr);
+
+				delete[] ldtArr;
+
+
+				delete[] startp;
+				delete[] countp;
 			}
 
 			int SwiftNetCDFAccess::GetEnsembleSize()
@@ -696,16 +784,25 @@ namespace datatypes
 		TTimeSeries<T> * SwiftNetCDFTimeSeries<T>::GetSeries()
 		{
 			auto values = dataAccess->GetValues<T>(varName, catchmentNumber);
-			auto result = new TTimeSeries<T>(values, this->GetTimeLength(), this->TimeForIndex(0));
+			auto result = new TTimeSeries<T>(values, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
 			delete values;
 			return result;
+		}
+
+		template <typename T>
+		void SwiftNetCDFTimeSeries<T>::SetSeries(TTimeSeries<T> * timeSeries)
+		{
+			dataAccess->WriteSingleSeriesVarData();
+			T* values = timeSeries->GetValues();
+			dataAccess->SetValues(varName, catchmentNumber, values);
+			delete[] values;
 		}
 
 		template <typename T>
 		MultiTimeSeries<T> * SwiftNetCDFTimeSeries<T>::GetEnsembleSeries()
 		{
 			auto series = dataAccess->GetEnsemble<T>(varName, catchmentNumber);
-			auto result = new MultiTimeSeries<T>(*series, this->GetTimeLength(), this->TimeForIndex(0));
+			auto result = new MultiTimeSeries<T>(*series, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
 			for (auto& d : (*series))
 			{
 				if (d != nullptr) delete[] d;
@@ -714,12 +811,22 @@ namespace datatypes
 			return result;
 		}
 
+		template <typename T>
+		void SwiftNetCDFTimeSeries<T>::SetEnsemble(MultiTimeSeries<T> * ensemble)
+		{
+			dataAccess->WriteEnsembleVarData();
+			vector<T*>* values = ensemble->GetValues();
+			dataAccess->SetEnsembles(varName, catchmentNumber, *values);
+			for (T* data : *values)
+				if (data != nullptr) delete[] data;
+			delete values;
+		}
 
 		template <typename T>
 		MultiTimeSeries<T> * SwiftNetCDFTimeSeries<T>::GetForecasts(int i)
 		{
 			auto series = dataAccess->GetForecasts<T>(varName, catchmentNumber, i);
-			auto result = new MultiTimeSeries<T>(*series, this->GetLeadTimeCount(), this->dataAccess->TimeForIndex(i));
+			auto result = new MultiTimeSeries<T>(*series, this->GetLeadTimeCount(), this->dataAccess->TimeForIndex(i), this->GetTimeStep());
 			for (auto& d : (*series))
 			{
 				if (d != nullptr) delete[] d;
@@ -731,6 +838,7 @@ namespace datatypes
 		template <typename T>
 		void SwiftNetCDFTimeSeries<T>::SetForecasts(int i, MultiTimeSeries<T> * forecasts)
 		{
+			dataAccess->WriteForecastsVarData();
 			auto values = forecasts->GetValues();
 			dataAccess->SetForecasts(varName, catchmentNumber, i, (*values));
 			for (auto& d : (*values))
@@ -762,6 +870,12 @@ namespace datatypes
 		ptime SwiftNetCDFTimeSeries<T>::TimeForIndex(int timeIndex)
 		{
 			return dataAccess->TimeForIndex(timeIndex);
+		}
+
+		template <typename T>
+		TimeStep SwiftNetCDFTimeSeries<T>::GetTimeStep()
+		{
+			return dataAccess->GetTimeStep();
 		}
 
 		template <typename T>

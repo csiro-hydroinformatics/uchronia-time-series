@@ -139,7 +139,7 @@ namespace datatypes
 		class DATATYPES_DLL_LIB MultiTimeSeries // This may become an abstract class with specializations for lazy loading time series from the data store.
 		{
 		public:
-			MultiTimeSeries(const std::vector<T*>& values, size_t length, const ptime& startDate);
+			MultiTimeSeries(const std::vector<T*>& values, size_t length, const ptime& startDate, const TimeStep& timeStep);
 			MultiTimeSeries(const MultiTimeSeries<T>& src);
 			~MultiTimeSeries();
 			TTimeSeries<T> * Get(size_t i);
@@ -151,6 +151,7 @@ namespace datatypes
 		private:
 			std::vector<TTimeSeries<T>*> * series;
 			ptime startDate;
+			TimeStep timeStep;
 		};
 
 

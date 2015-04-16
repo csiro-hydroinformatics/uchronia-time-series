@@ -199,7 +199,35 @@ namespace datatypes
 					return result;
 				}
 
+				/**
+				* \brief	Gets the values of a variable stored as an non-ensemble series.
+				*
+				* \tparam	ElementType	type of element expected for this variable.
+				* \param	varName		   	Name of the variable.
+				* \param	catchmentNumber	The catchment number.
+				*
+				* \return	All the values for the time series defined with this variable name.
+				*/
+				template<typename ElementType>
+				ElementType* GetValues(const string& varName, int catchmentNumber)
+				{
+					int dataVarId = GetVarId(varName);
+					size_t startp[3];
+					size_t countp[3];
+					GetNetcdfWindow(catchmentNumber, startp, countp);
+					auto vardata = GetSingleSeriesDataBuffer(1, GetTimeLength());
 
+					// KLUDGE
+					// The use of nc_get_vara_double is clearly at odd with the declaration of GetForecasts as a template method 
+					// This is a known limitation. This is likely something that can be overcome one way or another. Going with a generic approach for the API.
+					int code = nc_get_vara_double(ncid, dataVarId, startp, countp, vardata);
+
+					ElementType * dest = new ElementType[GetTimeLength()];
+					memcpy(dest, vardata, GetTimeLength() * sizeof(ElementType));
+					delete[] vardata;
+					return dest;
+				}
+				
 				/**
 				* \brief	Sets the values for an ensemble forecast,  for a variable, for a starting date in the main time dimension.
 				*
@@ -233,34 +261,58 @@ namespace datatypes
 					delete[] vardata;
 				}
 
-				/**
-				 * \brief	Gets the values of a variable stored as an non-ensemble series.
-				 *
-				 * \tparam	ElementType	type of element expected for this variable.
-				 * \param	varName		   	Name of the variable.
-				 * \param	catchmentNumber	The catchment number.
-				 *
-				 * \return	All the values for the time series defined with this variable name.
-				 */
 				template<typename ElementType>
-				ElementType* GetValues(const string& varName, int catchmentNumber)
+				void SetEnsembles(const string& varName, int catchmentNumber, std::vector<ElementType*> &values)
 				{
 					int dataVarId = GetVarId(varName);
 					size_t startp[3];
 					size_t countp[3];
-					GetNetcdfWindow(catchmentNumber, startp, countp);
-					auto vardata = GetSingleSeriesDataBuffer(1, GetTimeLength());
+					GetEnsNetcdfWindow(catchmentNumber, startp, countp);
+					int n = GetTimeLength();
+					auto vardata = GetEnsembleDataBuffer(1, n);
+					
+					for (int i = 0; i < ensembleSize; i++)
+					{
+						ElementType* ensData = values[i];
+						for (int j = 0; j < n; j++)
+						{
+							vardata[ensembleSize * j + i] = ensData[j];
+						}
+					}
 
 					// KLUDGE
 					// The use of nc_get_vara_double is clearly at odd with the declaration of GetForecasts as a template method 
 					// This is a known limitation. This is likely something that can be overcome one way or another. Going with a generic approach for the API.
-					int code = nc_get_vara_double(ncid, dataVarId, startp, countp, vardata);
+					int code = nc_put_vara_double(ncid, dataVarId, startp, countp, vardata);
 
-					ElementType * dest = new ElementType[GetTimeLength()];
-					memcpy(dest, vardata, GetTimeLength() * sizeof(ElementType));
-					delete[] vardata;
-					return dest;
+					delete vardata;
 				}
+				
+				template<typename ElementType>
+				void SetValues(const string& varName, int catchmentNumber, ElementType* values)
+				{
+					int dataVarId = GetVarId(varName);
+					size_t startp[2];
+					size_t countp[2];
+					GetNetcdfWindow(catchmentNumber, startp, countp);
+					int n = GetTimeLength();
+					auto vardata = GetSingleSeriesDataBuffer(1, n);
+
+					memcpy(vardata, values, n * sizeof(ElementType));
+
+					// KLUDGE
+					// The use of nc_get_vara_double is clearly at odd with the declaration of GetForecasts as a template method 
+					// This is a known limitation. This is likely something that can be overcome one way or another. Going with a generic approach for the API.
+					int code = nc_put_vara_double(ncid, dataVarId, startp, countp, vardata);
+
+					delete vardata;
+				}
+
+				void WriteSingleSeriesVarData();
+
+				void WriteEnsembleVarData();
+
+				void WriteForecastsVarData();
 
 				static string CreateTimeUnitsAttribute(const ptime& utcStart, const string& units);
 				static ptime ParseStartDate(const string& unitsAttribute);
@@ -309,7 +361,8 @@ namespace datatypes
 				void WriteGeometry(int nEns, int nLead, const string& timeUnits, std::vector<double>& timeVar, std::vector<string>& stationIds, std::vector<string>& varNames, std::map<string, VariableAttributes>& varAttributes);
 				void DefineMandatoryDimensions(int nEns, int nLead, int nStations);
 				void DefineDimVariables();
-				void DefineVariables(std::vector<string>& varNames, std::map<string, VariableAttributes>& varAttributes);
+				void DefineVariables(const int varNumDims, int* varDimIDs);
+				void WriteCommonVarData();
 				int AddGlobalAttribute(const string& attName, const string& attValue);
 				int AddGlobalAttribute(char * attName, char * attValue);
 				int AddAttribute(int varId, const string& attName, const string& attValue);
@@ -383,11 +436,14 @@ namespace datatypes
 				double * stationLon = nullptr;
 				double * stationElevation = nullptr;
 				int * timeVec = nullptr;
-				int * variableVarIds;
+				int * variableVarIds = nullptr;
 				int leadTimeLength;
 				//int stepMultiplier ;
 				int ensembleSize;
 				string catchmentName;
+
+				std::vector<string> variableNames;
+				std::map<string, VariableAttributes> variableAttributes;
 			};
 		}
 
@@ -432,9 +488,12 @@ namespace datatypes
 			MultiTimeSeries<T> * GetEnsembleSeries();
 
 			void SetForecasts(int i, MultiTimeSeries<T> * forecasts);
+			void SetEnsemble(MultiTimeSeries<T> * ensemble);
+			void SetSeries(TTimeSeries<T> * timeSeries);
 			int GetEnsembleSize();
 			int GetLeadTimeCount();
 			int GetTimeLength();
+			TimeStep GetTimeStep();
 			ptime TimeForIndex(int timeIndex);
 
 		private:
