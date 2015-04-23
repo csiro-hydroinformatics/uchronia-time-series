@@ -125,15 +125,21 @@ namespace datatypes
 
 			}
 
-			std::string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, const string& units)
+			std::string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, TimeStep& timeStep)
 			{
-				using namespace boost::gregorian;
-				namespace bt = boost::posix_time;
+				string timeUnit;
 
-				// Not sure whether what is wanted. 
-				// See for instance, for formats: http://www.boost.org/doc/libs/1_56_0/doc/html/date_time/date_time_io.html
-				auto startStr = bt::to_iso_extended_string(utcStart);
-				return units + " since " + startStr + " +0000";
+				string name = timeStep.GetName();
+
+				if (name == "daily")
+					timeUnit = "days";
+				else if (name == "hourly")
+					timeUnit = "hours";
+				else
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Unsupported timestep " + name);
+				
+				auto startStr = boost::posix_time::to_iso_extended_string(utcStart);
+				return timeUnit + " since " + startStr + " +0000";
 			}
 
 			void SwiftNetCDFAccess::ReadGeometry()
@@ -720,7 +726,6 @@ namespace datatypes
 				// but order does not matter here
 				return new double[numStations * numTimeSteps];
 			}
-
 
 			int SwiftNetCDFAccess::GetVarId(const string& varName)
 			{
