@@ -314,6 +314,7 @@ namespace datatypes
 
 				void WriteForecastsVarData();
 
+				static string CreateTimeUnitsAttribute(const ptime& utcStart, const string& units);
 				static string CreateTimeUnitsAttribute(const ptime& utcStart, TimeStep& timeStep);
 				static ptime ParseStartDate(const string& unitsAttribute);
 				static string ParseTimeUnits(const string& unitsAttribute);

@@ -137,7 +137,13 @@ namespace datatypes
 					timeUnit = "hours";
 				else
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Unsupported timestep " + name);
-				
+
+				return CreateTimeUnitsAttribute(utcStart, timeUnit);
+			}
+
+			std::string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, const string& units)
+			{
+				string timeUnit(units);
 				auto startStr = boost::posix_time::to_iso_extended_string(utcStart);
 				return timeUnit + " since " + startStr + " +0000";
 			}
