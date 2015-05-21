@@ -113,6 +113,10 @@ namespace datatypes
 			//	if (this->startDate == nullptr) delete (this->startDate);
 			//	if (this->endDate == nullptr) delete (this->endDate);
 			//}
+		private:
+			static std::atomic<int> instances;
+		public:
+			static int NumInstances() { return TTimeSeries<T>::instances; };
 		};
 
 
@@ -222,6 +226,7 @@ namespace datatypes
 		{
 			SetDefaults();
 			Reset(1, ptime(date(2000, 1, 1)));
+			instances++;
 		}
 
 		template <class T>
@@ -231,6 +236,7 @@ namespace datatypes
 			this->timeStep = timeStep;
 			Reset(length, startDate);
 			data = vector<T>(length, default_value);
+			instances++;
 		}
 
 		template <class T>
@@ -239,11 +245,13 @@ namespace datatypes
 			SetDefaults();
 			this->timeStep = timeStep;
 			Reset(length, startDate, values);
+			instances++;
 		}
 
 		template <class T>
 		TTimeSeries<T>::TTimeSeries(TTimeSeries<T>&& src) {   // Move constructor.
 			*this = std::move(src);
+			instances++;
 		}
 
 		template <class T>
@@ -264,6 +272,7 @@ namespace datatypes
 		template <class T>
 		TTimeSeries<T>::TTimeSeries(const TTimeSeries<T>& src) {   // (Deep) Copy constructor.
 			*this = src;
+			instances++;
 		}
 
 		template <class T>
@@ -289,7 +298,7 @@ namespace datatypes
 		template <class T>
 		TTimeSeries<T>::~TTimeSeries()
 		{
-			// nothing to do here after using std::vector for data.
+			instances--;
 		}
 
 		template <class T>
@@ -512,6 +521,11 @@ namespace datatypes
 			this->timeStep = timeStep;
 			UpdateEndDate();
 		}
+
+		// I need to do this HERE, not a cpp file, otherwise LNK2001
+		template <typename T>
+		std::atomic<int> TTimeSeries<T>::instances(0);
+
 
 		typedef TTimeSeries < double > TimeSeries;
 	}
