@@ -899,6 +899,26 @@ namespace datatypes
 		}
 
 		template <typename T>
+		TimeSeriesLibrary<T>::TimeSeriesLibrary(const TimeSeriesLibraryDescription& description)
+		{
+			auto singleIds = description.GetDataIdSingle();
+			for (auto& id : singleIds)
+			{
+				AddSwiftNetCDFSource(id, description.GetFilename(id), description.GetFileVariableName(id), description.GetIdentifier(id));
+			}
+			auto ensIds = description.GetDataIdEnsemble();
+			for (auto& id : ensIds)
+			{
+				EnsembleTimeSeriesStore<double> * etss = new MultiFileEnsembleTimeSeriesStore<double>(
+					description.GetFilename(id),
+					description.GetFileVariableName(id),
+					description.GetIdentifier(id),
+					description.GetIndex(id));
+				AddSource(id, etss);
+			}
+		}
+
+		template <typename T>
 		void TimeSeriesLibrary<T>::AddSwiftNetCDFSource(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier)
 		{
 			auto dataAccess = new SwiftNetCDFTimeSeriesStore<T>(fileName);

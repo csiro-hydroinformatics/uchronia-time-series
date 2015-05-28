@@ -606,6 +606,33 @@ namespace datatypes
 
 		};
 
+		class DATATYPES_DLL_LIB TimeSeriesLibraryDescription
+		{
+			using string = std::string;
+		public:
+			void AddSingle(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier);
+			void AddEnsembleForecast(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier, int index);
+
+			std::vector<string> GetDataIdSingle() const;
+			std::vector<string> GetDataIdEnsemble() const;
+
+			string GetFilename(const string& dataId) const;
+			string GetFileVariableName(const string& dataId) const;
+			string GetIdentifier(const string& dataId) const;
+			int GetIndex(const string& dataId) const;
+			/*
+			dataLibrary.AddSwiftNetCDFSource(
+			rainObsId,
+			DataDirectory + "Obs_data\\Upper_Murray_rain_1hr.nc",
+			rainNcVarname,
+			historicalSeriesNcIdentifier);
+			*/
+			//std::map < std::string, EnsembleTimeSeriesStore<T>* > ensTimeSeriesProviders;
+			//std::map < std::string, SingleSeriesInformation<T>* > timeSeriesProviders;
+		};
+
+
+
 		/**
 		 * \brief	Library of time series, for high level access to sources of time series that nmay have varying on-disk representations
 		 *
@@ -616,6 +643,9 @@ namespace datatypes
 		{
 			using string = std::string;
 		public:
+			TimeSeriesLibrary() {}
+			TimeSeriesLibrary(const TimeSeriesLibraryDescription& description);
+
 			// Maybe the following,m but may introduce too much coupling with on disk representation with SwiftNetCDFAccess.
 			// TTimeSeries<T>* GetSingle(const string& dataId, boost::function<TTimeSeries<T>*(SwiftNetCDFAccess * dataAccess)> tsTransform);
 
@@ -665,6 +695,8 @@ namespace datatypes
 			static MultiTimeSeries<T>* ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index);
 			static TTimeSeries<T>* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window);
 			static TTimeSeries<T>* ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window);
+			static TimeSeriesLibrary<T>* CreateTimeSeriesLibrary(const std::string& filename);
+			static TimeSeriesLibrary<T>* CreateTimeSeriesLibrary(const TimeSeriesLibraryDescription& description);
 		};
 
 	}

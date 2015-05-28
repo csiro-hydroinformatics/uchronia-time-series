@@ -172,6 +172,11 @@ namespace datatypes
 			static bool AreTimeSeriesEqual(const TTimeSeries<T>& a, const TTimeSeries<T>& b);
 		};
 
+		/**
+		 * \brief	An object that represents a time window, defining subset/trim operations on time series
+		 *
+		 * \tparam	T	Generic type parameter, element type of the time series
+		 */
 		template <typename T>
 		class DATATYPES_DLL_LIB TimeWindow
 		{
