@@ -620,15 +620,28 @@ namespace datatypes
 			string GetFileVariableName(const string& dataId) const;
 			string GetIdentifier(const string& dataId) const;
 			int GetIndex(const string& dataId) const;
-			/*
-			dataLibrary.AddSwiftNetCDFSource(
-			rainObsId,
-			DataDirectory + "Obs_data\\Upper_Murray_rain_1hr.nc",
-			rainNcVarname,
-			historicalSeriesNcIdentifier);
-			*/
-			//std::map < std::string, EnsembleTimeSeriesStore<T>* > ensTimeSeriesProviders;
-			//std::map < std::string, SingleSeriesInformation<T>* > timeSeriesProviders;
+		private:
+			class SourceInfo
+			{
+			public:
+				SourceInfo(){}
+				SourceInfo(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier, int index = -1)
+				{
+					this->dataId = dataId;
+					this->fileName = fileName;
+					this->ncVarName = ncVarName;
+					this->identifier = identifier;
+					this->index = index;
+				}
+				string dataId;
+				string fileName;
+				string ncVarName;
+				string identifier;
+				int index;
+			};
+			std::map < std::string, SourceInfo > ensProviders;
+			std::map < std::string, SourceInfo > singleProviders;
+			SourceInfo GetInfo(const string& dataId) const;
 		};
 
 

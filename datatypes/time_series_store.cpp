@@ -995,6 +995,61 @@ namespace datatypes
 			return dataAccess;
 		}
 
+		
+		void TimeSeriesLibraryDescription::AddSingle(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier)
+		{
+			singleProviders[dataId] = SourceInfo(dataId, fileName, ncVarName, identifier);
+		}
+		void TimeSeriesLibraryDescription::AddEnsembleForecast(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier, int index)
+		{
+			ensProviders[dataId] = SourceInfo(dataId, fileName, ncVarName, identifier, index);
+		}
+
+		std::vector<string> TimeSeriesLibraryDescription::GetDataIdSingle() const
+		{
+			std::vector<string> ids;
+			for (auto& x : singleProviders) {
+				ids.push_back(std::string(x.first));
+			}
+			return ids;
+		}
+
+		std::vector<string> TimeSeriesLibraryDescription::GetDataIdEnsemble() const
+		{
+			std::vector<string> ids;
+			for (auto& x : singleProviders) {
+				ids.push_back(std::string(x.first));
+			}
+			return ids;
+		}
+
+		TimeSeriesLibraryDescription::SourceInfo TimeSeriesLibraryDescription::GetInfo(const string& dataId) const
+		{
+			if (singleProviders.find(dataId) != singleProviders.end())
+				return singleProviders.at(string(dataId));
+			if (ensProviders.find(dataId) != ensProviders.end())
+				return ensProviders.at(string(dataId));
+			datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("Data Id not found: " + dataId));
+		}
+
+		string TimeSeriesLibraryDescription::GetFilename(const string& dataId) const
+		{
+			return GetInfo(dataId).fileName;
+		}
+		string TimeSeriesLibraryDescription::GetFileVariableName(const string& dataId) const
+		{
+			return GetInfo(dataId).ncVarName;
+		}
+
+		string TimeSeriesLibraryDescription::GetIdentifier(const string& dataId) const
+		{
+			return GetInfo(dataId).identifier;
+		}
+
+		int TimeSeriesLibraryDescription::GetIndex(const string& dataId) const
+		{
+			return GetInfo(dataId).index;
+		}
 
 		// explicit instantiations. Without these, code using this DL library would fail at link time.
 		// see http://stackoverflow.com/a/495056/2752565
@@ -1053,6 +1108,16 @@ namespace datatypes
 			return result;
 		}
 
+		template <typename T>
+		static TimeSeriesLibrary<T>* CreateTimeSeriesLibrary(const std::string& filename)
+		{
+		}
+
+		template <typename T>
+		static TimeSeriesLibrary<T>* CreateTimeSeriesLibrary(const TimeSeriesLibraryDescription& description)
+		{
+			return new TimeSeriesLibrary<T>(description);
+		}
 
 		template class MultiFileEnsembleTimeSeriesStore < double >;
 		template class TimeSeriesLibrary < double >;
