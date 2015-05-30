@@ -1109,11 +1109,6 @@ namespace datatypes
 		}
 
 		template <typename T>
-		static TimeSeriesLibrary<T>* CreateTimeSeriesLibrary(const std::string& filename)
-		{
-		}
-
-		template <typename T>
 		static TimeSeriesLibrary<T>* CreateTimeSeriesLibrary(const TimeSeriesLibraryDescription& description)
 		{
 			return new TimeSeriesLibrary<T>(description);
