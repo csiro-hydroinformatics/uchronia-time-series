@@ -1017,7 +1017,7 @@ namespace datatypes
 		std::vector<string> TimeSeriesLibraryDescription::GetDataIdEnsemble() const
 		{
 			std::vector<string> ids;
-			for (auto& x : singleProviders) {
+			for (auto& x : ensProviders) {
 				ids.push_back(std::string(x.first));
 			}
 			return ids;
