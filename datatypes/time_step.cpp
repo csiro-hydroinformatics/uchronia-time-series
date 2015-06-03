@@ -54,7 +54,7 @@ namespace datatypes
 			return time_duration(*regularStep);
 		}
 
-		std::string TimeStep::GetName()
+		std::string TimeStep::GetName() const
 		{
 			if (*(regularStep) == dailyTd)
 				return std::string("daily");

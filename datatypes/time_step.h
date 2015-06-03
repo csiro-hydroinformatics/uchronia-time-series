@@ -35,7 +35,7 @@ namespace datatypes
 			static TimeStep GetDaily();
 			static TimeStep GetHourly();
 
-			std::string GetName();
+			std::string GetName() const;
 
 		private:
 			// May not need to have thiis comcept of instant.
