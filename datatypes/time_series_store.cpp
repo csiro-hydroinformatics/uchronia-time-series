@@ -899,6 +899,24 @@ namespace datatypes
 		}
 
 		template <typename T>
+		TimeSeriesLibrary<T>& TimeSeriesLibrary<T>::operator=(TimeSeriesLibrary<T>&& src)
+		{
+			// Avoid self assignment
+			if (&src == this){
+				return *this;
+			}
+			std::swap(ensTimeSeriesProviders, src.ensTimeSeriesProviders);
+			std::swap(timeSeriesProviders, src.timeSeriesProviders);
+			return *this;
+		}
+
+		template <typename T>
+		TimeSeriesLibrary<T>::TimeSeriesLibrary(TimeSeriesLibrary<T>&& src)
+		{
+			*this = std::move(src);
+		}
+
+		template <typename T>
 		TimeSeriesLibrary<T>::TimeSeriesLibrary(const TimeSeriesLibraryDescription& description)
 		{
 			auto singleIds = description.GetDataIdSingle();

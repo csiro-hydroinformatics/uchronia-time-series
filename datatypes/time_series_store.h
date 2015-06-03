@@ -658,6 +658,17 @@ namespace datatypes
 		public:
 			TimeSeriesLibrary() {}
 			TimeSeriesLibrary(const TimeSeriesLibraryDescription& description);
+			TimeSeriesLibrary<T>& operator=(TimeSeriesLibrary<T>&& src);
+			/**
+			* \brief	Constructor using the move semantics
+			*
+			* \param [in,out]	src	time series library from which to move data.
+			* \remarks 		C++ for the Impatient
+			* 					Appendix A. A Painless Introduction to Rvalue References (C++11)
+			* 					See also http://stackoverflow.com/a/3109981/2752565 for information on move semantic
+			*/
+			TimeSeriesLibrary(TimeSeriesLibrary<T>&& src); // Move constructor
+
 
 			// Maybe the following,m but may introduce too much coupling with on disk representation with SwiftNetCDFAccess.
 			// TTimeSeries<T>* GetSingle(const string& dataId, boost::function<TTimeSeries<T>*(SwiftNetCDFAccess * dataAccess)> tsTransform);
