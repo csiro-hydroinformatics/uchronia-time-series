@@ -56,12 +56,15 @@ namespace datatypes
 
 		std::string TimeStep::GetName() const
 		{
+			if (!IsRegular())
+				ExceptionUtilities::ThrowNotImplemented("non-regular time steps not implemented");
 			if (*(regularStep) == dailyTd)
 				return std::string("daily");
 			else if (*(regularStep) == hourlyTd)
 				return std::string("hourly");
 			else
-				ExceptionUtilities::ThrowInvalidArgument("time step is neither daily nor hourly; formatting of an ID is not yet implemented");
+				return to_iso_string(*regularStep);
+				//ExceptionUtilities::ThrowInvalidArgument("time step is neither daily nor hourly; formatting of an ID is not yet implemented");
 		}
 
 		const ptime TimeStep::AddSteps(const ptime& startTimeStep, ptrdiff_t n) const

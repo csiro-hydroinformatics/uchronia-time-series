@@ -169,6 +169,7 @@ namespace datatypes
 			static TTimeSeries<T>* TrimTimeSeries(const TTimeSeries<T>& timeSeries, const ptime& startDate, const ptime& endDate);
 			static TTimeSeries<T>* DailyToHourly(const TTimeSeries<T>& dailyTimeSeries);
 			static TTimeSeries<T>* JoinTimeSeries(const TTimeSeries<T>& head, const TTimeSeries<T>& tail);
+			static TTimeSeries<T>* Resample(const TTimeSeries<T>& timeSeries, const string& method);
 			static bool AreTimeSeriesEqual(const TTimeSeries<T>& a, const TTimeSeries<T>& b);
 		};
 

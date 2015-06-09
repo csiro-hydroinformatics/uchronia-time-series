@@ -105,6 +105,20 @@ namespace datatypes
 		}
 
 		template <typename T>
+		TTimeSeries<T>* TimeSeriesOperations<T>::Resample(const TTimeSeries<T>& timeSeries, const string& method)
+		{
+			using namespace boost::algorithm;
+			string m = method;
+			to_lower(m);
+			if (m == "")
+				return new TimeSeries(timeSeries);
+			else if (m == "daily_to_hourly")
+				return DailyToHourly(timeSeries);
+			else
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Time series resampling method not known: " + method);
+		}
+
+		template <typename T>
 		TTimeSeries<T>* TimeSeriesOperations<T>::DailyToHourly(const TTimeSeries<T>& dailyTimeSeries)
 		{
 			size_t length = dailyTimeSeries.GetLength();

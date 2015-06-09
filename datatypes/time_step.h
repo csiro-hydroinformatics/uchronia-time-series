@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include "common.h"
+#include "exception_utilities.h"
 
 using namespace boost::posix_time;
 
@@ -21,6 +22,23 @@ namespace datatypes
 			bool operator==(const TimeStep &rhs) const
 			{
 				return (*regularStep) == *(rhs.regularStep);
+			}
+
+			bool operator!=(const TimeStep &rhs) const
+			{
+				return (*regularStep) != *(rhs.regularStep);
+			}
+
+			bool IsRegular() const
+			{
+				return (regularStep != nullptr);
+			}
+
+			time_duration GetRegularStepDuration() const
+			{
+				if (!IsRegular())
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("This is not a regular time step");
+				return *regularStep;
 			}
 
 			const ptime AddSteps(const ptime& startTimeStep, ptrdiff_t n) const;
