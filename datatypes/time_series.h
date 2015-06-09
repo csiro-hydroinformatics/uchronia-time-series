@@ -70,6 +70,7 @@ namespace datatypes
 			size_t IndexForTime(const ptime& instant) const;
 			size_t UpperIndexForTime(const ptime& instant) const;
 			size_t LowerIndexForTime(const ptime& instant) const;
+			string GetSummary() const;
 
 			T& operator[](const ptime& instant);
 			T& operator[](const size_t i);
@@ -528,11 +529,33 @@ namespace datatypes
 			UpdateEndDate();
 		}
 
+		template <class T>
+		string TTimeSeries<T>::GetSummary() const
+		{
+			string result = "[" + to_iso_extended_string(GetStartDate()) + "-" + to_iso_extended_string(GetEndDate()) + "];" +
+				std::to_string(GetLength()) + ";" + timeStep.GetName();
+			return result;
+		}
+
 		// I need to do this HERE, not a cpp file, otherwise LNK2001
 		template <typename T>
 		std::atomic<int> TTimeSeries<T>::instances(0);
 
 
 		typedef TTimeSeries < double > TimeSeries;
+	}
+
+
+	namespace exceptions
+	{
+		class TimeSeriesChecks
+		{
+		public:
+			static void CheckOutOfRange(const string& msg, const datatypes::timeseries::TimeSeries& ts, const ptime& d)
+			{
+				if (d < ts.GetStartDate() || d > ts.GetEndDate())
+					throw out_of_range(msg + ": " + to_iso_extended_string(d) + " out of range for " + ts.GetSummary());
+			}
+		};
 	}
 }
