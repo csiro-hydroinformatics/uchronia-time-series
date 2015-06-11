@@ -11,17 +11,39 @@ namespace datatypes
 		template <typename T>
 		MultiTimeSeries<T>::MultiTimeSeries(const std::vector<T*>& values, size_t length, const ptime& startDate, const TimeStep& timeStep)
 		{
-			series = new std::vector<TTimeSeries<T>*>();
-			this->startDate = ptime(startDate);
-			this->timeStep = TimeStep(timeStep);
-			for (auto d : values)
+			ResetSeries(values.size(), length, startDate, timeStep);
+			for (auto& d : values)
 			{
 				series->push_back(new TTimeSeries<T>(d, length, startDate, timeStep));
 			}
 		}
 
 		template <typename T>
+		void MultiTimeSeries<T>::ResetSeries(const size_t& numSeries, const size_t& length, const ptime& startDate, const TimeStep& timeStep)
+		{
+			Clear();
+			series = new std::vector<TTimeSeries<T>*>(numSeries);
+			this->startDate = ptime(startDate);
+			this->timeStep = TimeStep(timeStep);
+		}
+
+
+		template <typename T>
+		MultiTimeSeries<T>::MultiTimeSeries()
+		{
+			series = new std::vector<TTimeSeries<T>*>();
+			this->startDate = ptime(not_a_date_time);
+			this->timeStep = TimeStep::GetHourly();
+		}
+
+		template <typename T>
 		MultiTimeSeries<T>::~MultiTimeSeries()
+		{
+			Clear();
+		}
+
+		template <typename T>
+		void MultiTimeSeries<T>::Clear()
 		{
 			if (series != nullptr)
 			{
@@ -88,9 +110,11 @@ namespace datatypes
 		// see http://stackoverflow.com/a/495056/2752565
 
 		template class TTimeSeries < double > ;
-		template class TTimeSeries < float > ;
+		template class TTimeSeries < float >;
 
-		template class MultiTimeSeries < double > ;
+		template class TTimeSeries < std::vector<double> >;
+
+		template class MultiTimeSeries < double >;
 
 		template <typename T>
 		TTimeSeries<T>* TimeSeriesOperations<T>::TrimTimeSeries(const TTimeSeries<T>& timeSeries, const ptime& startDate, const ptime& endDate)

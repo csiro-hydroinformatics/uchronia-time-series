@@ -2,6 +2,7 @@
 
 
 #include "boost/date_time/posix_time/posix_time.hpp"
+#include <boost/function.hpp>
 #include "common.h"
 #include "time_step.h"
 #include "exception_utilities.h"
@@ -16,14 +17,64 @@ namespace datatypes
 {
 	namespace timeseries
 	{
+
+
+		template<typename T>
+		class MissingValueCheck {
+		private:
+
+			// Could not find an easy if_then_else in the STL or Boost. IfThenElse will probably be replaced.
+			// primary template: yield second or third argument depending on first argument 
+			template<bool C, typename Ta, typename Tb>
+			class IfThenElse;
+			// Credits:
+			// C++ templates : the complete guide / David Vandevoorde, Nicolai M. Josuttis.
+			//				ISBN 0 - 201 - 73484 - 2 (alk.paper)
+
+			// partial specialization: true yields second argument 
+			template<typename Ta, typename Tb>
+			class IfThenElse<true, Ta, Tb> {
+			public:
+				typedef Ta ResultT;
+			};
+
+			// partial specialization: false yields third argument 
+			template<typename Ta, typename Tb>
+			class IfThenElse<false, Ta, Tb> {
+			public:
+				typedef Tb ResultT;
+			};
+
+		public:
+			typedef typename IfThenElse<std::is_arithmetic<T>::value,
+				T,
+				T*>::ResultT Type;
+		};
+
 		/**
 		 * \brief	A template for univariate, single realisasion time series
 		 *
 		 * \tparam	T	Element type, typically double or float, but possibly a more complicated type such as another TTimeSeries.
 		 */
-		template <typename T>
+		template <typename T = double>
+		//template <typename T = double, typename MissingValuesHandler<T>>
+		//template <typename T = double, bool isSimple = std::is_fundamental<T>::value>
 		class TTimeSeries
 		{
+		public:
+			typedef MissingValueCheck<T>::Type U;
+			typedef boost::function<bool(U)> Predicate;
+
+		protected:
+
+			std::vector<T> data;
+
+			Predicate missingValueTest;
+			bool IsMissingValue(U value)
+			{
+				return false;
+			}
+			//std::enable_if_t<std::is_arithmetic<T>::value, T> naCode;
 		public:
 			TTimeSeries();
 
@@ -59,7 +110,23 @@ namespace datatypes
 			std::vector<T> GetValuesVector(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const;
 			TTimeSeries<T> Subset(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const;
 			void SetValue(size_t index, T value);
-			void Reset(size_t length, const ptime& startDate, T * value = nullptr);
+
+			//std::enable_if_t<std::is_arithmetic<T>::value, void>
+			//	Reset(size_t length, const ptime& startDate, T * value = nullptr)
+			void Reset(size_t length, const ptime& startDate, T * value = nullptr)
+			{
+				if (value == nullptr)
+					data = vector<T>(length, 0);
+				else
+				{
+					data.clear();
+					data.reserve(length);
+					data.assign(value, value + length);
+				}
+				this->startDate = startDate;
+				UpdateEndDate();
+			}
+
 			size_t GetLength() const;
 			ptime GetStartDate() const;
 			ptime GetEndDate() const;
@@ -80,42 +147,36 @@ namespace datatypes
 			template<typename M>
 			TTimeSeries<T> operator*(M multiplicator) const;
 
-			void SetNA(T& naCode);
-			T GetNA() const;
+			//std::enable_if_t<std::is_arithmetic<T>::value, void>
+			//	SetNA(T& naCode)
+			//{
+			//	this->naCode = naCode;
+			//}
+			//std::enable_if_t<std::is_arithmetic<T>::value, T>
+			//	GetNA() const { return naCode; }
 
 			string Tag;
 
-		protected:
-			//size_t length;
-			std::vector<T> data;
-			//T * data = nullptr;
-			T naCode;
 		private:
 			ptime EndForStart(const ptime& start, const size_t& numSteps) const;
 			void CheckIntervalBounds(const size_t& from, size_t& to) const;
 			void UncheckedCopyTo(T * dest, const size_t& from, const size_t& to) const;
 			void DeepCopyFrom(const TTimeSeries<T>& src);
 			void CopyNonData(const TTimeSeries<T>& src);
-			void SetDefaults();
+			
 			ptime startDate;
 			ptime endDate;
 			TimeStep timeStep;
-			//void DeleteInnerData()
-			//{
-			//	// do nothing, if data is a vector<T>
-			//	//if (data != nullptr)
-			//	//{
-			//	//	delete[] data;
-			//	//	data = nullptr;
-			//	//}
-			//}
-			//void DeleteInnerTimeSpan()
-			//{
-			//	if (this->startDate == nullptr) delete (this->startDate);
-			//	if (this->endDate == nullptr) delete (this->endDate);
-			//}
-		private:
 			static std::atomic<int> instances;
+
+			//std::enable_if_t<std::is_arithmetic<T>::value, void>
+			//	SetDefaults()
+				void SetDefaults()
+			{
+				//naCode = std::numeric_limits<T>::min();
+				timeStep = TimeStep::GetHourly();
+			}
+
 		public:
 			static int NumInstances() { return TTimeSeries<T>::instances; };
 		};
@@ -146,12 +207,15 @@ namespace datatypes
 		public:
 			MultiTimeSeries(const std::vector<T*>& values, size_t length, const ptime& startDate, const TimeStep& timeStep);
 			MultiTimeSeries(const MultiTimeSeries<T>& src);
+			MultiTimeSeries();
 			~MultiTimeSeries();
 			TTimeSeries<T> * Get(size_t i);
 			void Set(size_t i, size_t tsIndex, T val);
 			std::vector<T*>* GetValues();
 			size_t Size();
 			ptime GetStartDate();
+			void ResetSeries(const size_t& numSeries, const size_t& length, const ptime& startDate, const TimeStep& timeStep);
+			void Clear();
 
 		private:
 			std::vector<TTimeSeries<T>*> * series;
@@ -162,6 +226,9 @@ namespace datatypes
 
 		template<class T>
 		using EnsembleForecastTimeSeries = TTimeSeries<MultiTimeSeries<T>>;
+
+		template<class T>
+		using ForecastTimeSeries = TTimeSeries<TTimeSeries<T>>;
 
 		template <typename T>
 		class DATATYPES_DLL_LIB TimeSeriesOperations
@@ -199,28 +266,6 @@ namespace datatypes
 		templates putting them here makes it more reusable from other programs.
 		******************/
 
-
-		template <class T>
-		void TTimeSeries<T>::SetDefaults()
-		{
-			naCode = std::numeric_limits<T>::min();
-			timeStep = TimeStep::GetHourly();
-		}
-
-		template <class T>
-		void TTimeSeries<T>::Reset(size_t length, const ptime& startDate, T * value)
-		{
-			if (value == nullptr)
-				data = vector<T>(length, naCode);
-			else
-			{
-				data.clear();
-				data.reserve(length);
-				data.assign(value, value + length);
-			}
-			this->startDate = startDate;
-			UpdateEndDate();
-		}
 
 		template <class T>
 		void TTimeSeries<T>::UpdateEndDate()
@@ -267,7 +312,7 @@ namespace datatypes
 			if (&src == this){
 				return *this;
 			}
-			std::swap(naCode, src.naCode);
+			//std::swap(naCode, src.naCode);
 			std::swap(timeStep, src.timeStep);
 			std::swap(startDate, src.startDate);
 			std::swap(endDate, src.endDate);
@@ -294,7 +339,7 @@ namespace datatypes
 
 		template <class T>
 		void TTimeSeries<T>::DeepCopyFrom(const TTimeSeries<T>& src) {
-			naCode = src.naCode;
+			//naCode = src.naCode;
 			timeStep = src.timeStep;
 			startDate = src.startDate;
 			endDate = src.endDate;
@@ -382,7 +427,7 @@ namespace datatypes
 		template<typename M>
 		TTimeSeries<T> TTimeSeries<T>::operator*(M multiplicator) const
 		{
-			double a;
+			T a;
 			TTimeSeries<T> ts(*this);
 			auto length = GetLength();
 			for (size_t i = 0; i < length; i++)
@@ -474,17 +519,11 @@ namespace datatypes
 			data[index] = value;
 		}
 
-		template <class T>
-		void TTimeSeries<T>::SetNA(T& naCode)
-		{
-			this->naCode = naCode;
-		}
-
-		template <class T>
-		T TTimeSeries<T>::GetNA() const
-		{
-			return this->naCode;
-		}
+		//template <class T>
+		//void TTimeSeries<T>::SetNA(T& naCode)
+		//{
+		//	this->naCode = naCode;
+		//}
 
 		template <class T>
 		ptime TTimeSeries<T>::EndForStart(const ptime& start, const size_t& numSteps) const
