@@ -25,7 +25,17 @@ namespace datatypes
 		template <typename T>
 		SwiftNetCDFTimeSeriesStore<T>::~SwiftNetCDFTimeSeriesStore()
 		{
-			delete dataAccess;
+			Close();
+		}
+
+		template <typename T>
+		void SwiftNetCDFTimeSeriesStore<T>::Close()
+		{
+			if (dataAccess != nullptr)
+			{
+				delete dataAccess;
+				dataAccess = nullptr;
+			}
 		}
 
 		template <typename T>

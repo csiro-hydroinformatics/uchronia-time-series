@@ -535,6 +535,9 @@ namespace datatypes
 			
 			~SwiftNetCDFTimeSeriesStore();
 
+			void Close();
+
+
 			/**
 			 * \brief	Create an univariate SWIFT netCDF time series using this netCDF time series store.
 			 *

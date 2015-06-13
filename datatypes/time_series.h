@@ -117,16 +117,17 @@ namespace datatypes
 			StorageType data;
 
 			inline T GetNACode() const { return this->mvp.GetMissingValue(); }
-			inline bool IsMissingValue(T value) const { return this->mvp.IsMissingValue(value); }
 
 		public:
+
+			inline bool IsMissingValue(T value) const { return this->mvp.IsMissingValue(value); }
 
 			typedef typename T ElementType;
 
 			TTimeSeries()
 			{
 				SetDefaults();
-				Reset(mvp.GetMissingValue(), ptime(date(2000, 1, 1)));
+				Reset(1, ptime(date(2000, 1, 1)));
 				instances++;
 			}
 
@@ -484,10 +485,10 @@ namespace datatypes
 
 			MultiTimeSeries(const std::vector<ElementType*>& values, size_t length, const ptime& startDate, const TimeStep& timeStep)
 			{
-				ResetSeries(values.size(), length, startDate, timeStep);
+				ResetSeries(length, startDate, timeStep);
 				for (auto& d : values)
 				{
-					series->push_back(new TsType(d, length, startDate, timeStep));
+					series.push_back(new TsType(d, length, startDate, timeStep));
 				}
 			}
 
@@ -497,10 +498,10 @@ namespace datatypes
 				this->series = new vector<TsType*>();
 				this->timeStep = TimeStep(src.timeStep);
 
-				for (size_t i = 0; i < src.series->size(); i++)
+				for (size_t i = 0; i < src.series.size(); i++)
 				{
-					TsType* copy = new TsType(*src.series->at(i));
-					this->series->push_back(copy);
+					TsType* copy = new TsType(*src.series.at(i));
+					this->series.push_back(copy);
 				}
 			}
 
@@ -516,17 +517,16 @@ namespace datatypes
 				Clear();
 			}
 
-			void ResetSeries(const size_t& numSeries, const size_t& length, const ptime& startDate, const TimeStep& timeStep)
+			void ResetSeries(const size_t& length, const ptime& startDate, const TimeStep& timeStep)
 			{
 				Clear();
-				series = new std::vector<TsType*>(numSeries);
 				this->startDate = ptime(startDate);
 				this->timeStep = TimeStep(timeStep);
 			}
 
 			TsType * Get(size_t i)
 			{
-				TsType* a = series->at(i);
+				TsType* a = series.at(i);
 				return new TsType(*a);
 			}
 
@@ -537,14 +537,14 @@ namespace datatypes
 
 			void Set(size_t i, size_t tsIndex, ElementType val)
 			{
-				TsType* a = series->at(i);
+				TsType* a = series.at(i);
 				(*a)[tsIndex] = val;
 			}
 
 			std::vector<ElementType*>* GetValues()
 			{
 				std::vector<ElementType*>* result = new std::vector<ElementType*>();
-				for (auto& d : (*series))
+				for (auto& d : series)
 				{
 					result->push_back(d->GetValues());
 				}
@@ -553,7 +553,7 @@ namespace datatypes
 
 			size_t Size()
 			{
-				return this->series->size();
+				return this->series.size();
 			}
 
 			ptime GetStartDate()
@@ -564,18 +564,15 @@ namespace datatypes
 
 			void Clear()
 			{
-				if (series != nullptr)
+				for (auto& d : series)
 				{
-					for (auto& d : *series)
-					{
-						if (d != nullptr) delete d;
-					}
-					delete series;
+					if (d != nullptr) delete d;
 				}
+				series.clear();
 			}
 
 		private:
-			std::vector<TsType*> * series;
+			std::vector<TsType*> series;
 			ptime startDate;
 			TimeStep timeStep;
 		};
