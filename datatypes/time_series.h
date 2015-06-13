@@ -18,44 +18,28 @@ namespace datatypes
 	namespace timeseries
 	{
 
-		/*
-		template<typename T>
-		class IsMissingValueHandler {
-		private:
+		// Could not find an easy if_then_else in the STL or Boost. IfThenElse will probably be replaced.
+		// primary template: yield second or third argument depending on first argument
+		template<bool C, typename Ta, typename Tb>
+		class IfThenElse;
+		// Credits:
+		// C++ templates : the complete guide / David Vandevoorde, Nicolai M. Josuttis.
+		//				ISBN 0 - 201 - 73484 - 2 (alk.paper)
 
-		//// Could not find an easy if_then_else in the STL or Boost. IfThenElse will probably be replaced.
-		//// primary template: yield second or third argument depending on first argument
-		//template<bool C, typename Ta, typename Tb>
-		//class IfThenElse;
-		//// Credits:
-		//// C++ templates : the complete guide / David Vandevoorde, Nicolai M. Josuttis.
-		////				ISBN 0 - 201 - 73484 - 2 (alk.paper)
-
-		//// partial specialization: true yields second argument
-		//template<typename Ta, typename Tb>
-		//class IfThenElse<true, Ta, Tb> {
-		//public:
-		//	typedef Ta ResultT;
-		//};
-
-		//// partial specialization: false yields third argument
-		//template<typename Ta, typename Tb>
-		//class IfThenElse<false, Ta, Tb> {
-		//public:
-		//	typedef Tb ResultT;
-		//};
-
+		// partial specialization: true yields second argument
+		template<typename Ta, typename Tb>
+		class IfThenElse<true, Ta, Tb> {
 		public:
-		//typedef typename IfThenElse<std::is_arithmetic<T>::value,
-		//	T,
-		//	T*>::ResultT Type;
-
-		virtual ~IsMissingValueHandler() {}
-		virtual bool IsMissingValue(T a) { return false };
-		virtual T GetMissingValue() { throw datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented(""); };
+			typedef Ta ResultT;
 		};
 
-		*/
+		// partial specialization: false yields third argument
+		template<typename Ta, typename Tb>
+		class IfThenElse<false, Ta, Tb> {
+		public:
+			typedef Tb ResultT;
+		};
+
 
 		template <typename T = double>
 		class DefaultMissingFloatingPointPolicy{
@@ -65,6 +49,15 @@ namespace datatypes
 			inline bool IsMissingValue(T a) const { return (a == missingValue); };
 			inline T GetMissingValue() const { return missingValue; };
 		};
+
+		// Use something like at http://en.cppreference.com/w/cpp/types/enable_if, maybe.
+		template <typename T>
+		class NullPointerIsMissingPolicy{
+		public:
+			inline bool IsMissingValue(T a) const { return (a == nullptr); };
+			inline T GetMissingValue() const { return nullptr; };
+		};
+
 
 		template <typename T = double>
 		class NegativeIsMissingFloadingPointPolicy{
@@ -148,6 +141,15 @@ namespace datatypes
 				instances++;
 			}
 
+			TTimeSeries(size_t length, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly())
+			{
+				SetDefaults();
+				this->timeStep = timeStep;
+				Reset(length, startDate);
+				data = vector<T>(length, mvp.GetMissingValue());
+				instances++;
+			}
+
 			TTimeSeries(T * values, size_t length, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly())
 			{
 				SetDefaults();
@@ -158,6 +160,11 @@ namespace datatypes
 
 			TTimeSeries(const TTimeSeries<T, StP, MvP>& src) {   // (Deep) Copy constructor.
 				*this = src;
+				instances++;
+			}
+
+			TTimeSeries(const TTimeSeries<T, StP, MvP>* src) {   // (Deep) Copy constructor.
+				*this = *src;
 				instances++;
 			}
 
@@ -258,8 +265,6 @@ namespace datatypes
 				data[index] = value;
 			}
 
-			//std::enable_if_t<std::is_arithmetic<T>::value, void>
-			//	Reset(size_t length, const ptime& startDate, T * value = nullptr)
 			void Reset(size_t length, const ptime& startDate, T * values = nullptr)
 			{
 				if (values == nullptr)
@@ -480,22 +485,25 @@ namespace datatypes
 		class MultiTimeSeries // This may become an abstract class with specializations for lazy loading time series from the data store.
 		{
 		public:
-			
-			typedef typename TsType::ElementType ElementType;
+
+			typedef typename std::remove_pointer<TsType>::type Type;
+			typedef typename std::add_pointer<Type>::type PtrType;
+			typedef typename Type::ElementType ElementType;
 
 			MultiTimeSeries(const std::vector<ElementType*>& values, size_t length, const ptime& startDate, const TimeStep& timeStep)
 			{
-				ResetSeries(length, startDate, timeStep);
+				Clear();
+				this->startDate = startDate;
+				this->timeStep = timeStep;
 				for (auto& d : values)
 				{
-					series.push_back(new TsType(d, length, startDate, timeStep));
+					series.push_back(new Type(d, length, startDate, timeStep));
 				}
 			}
 
 			MultiTimeSeries(const MultiTimeSeries<TsType>& src)
 			{
 				this->startDate = ptime(src.startDate);
-				this->series = new vector<TsType*>();
 				this->timeStep = TimeStep(src.timeStep);
 
 				for (size_t i = 0; i < src.series.size(); i++)
@@ -507,7 +515,6 @@ namespace datatypes
 
 			MultiTimeSeries()
 			{
-				series = new std::vector<TsType*>();
 				this->startDate = ptime(not_a_date_time);
 				this->timeStep = TimeStep::GetHourly();
 			}
@@ -517,17 +524,20 @@ namespace datatypes
 				Clear();
 			}
 
-			void ResetSeries(const size_t& length, const ptime& startDate, const TimeStep& timeStep)
+			void ResetSeries(const size_t& numSeries, const size_t& lengthSeries, const ptime& startDate, const TimeStep& timeStep)
 			{
 				Clear();
-				this->startDate = ptime(startDate);
-				this->timeStep = TimeStep(timeStep);
+				for (size_t i = 0; i < numSeries; i++)
+				{
+					series.push_back(new Type(lengthSeries, startDate, timeStep));
+				}
+				this->startDate = startDate;
+				this->timeStep = timeStep;
 			}
 
-			TsType * Get(size_t i)
+			TsType Get(size_t i)
 			{
-				TsType* a = series.at(i);
-				return new TsType(*a);
+				return TsType(series.at(i));
 			}
 
 			ElementType Get(size_t i, size_t tsIndex)
@@ -537,7 +547,7 @@ namespace datatypes
 
 			void Set(size_t i, size_t tsIndex, ElementType val)
 			{
-				TsType* a = series.at(i);
+				PtrType a = series.at(i);
 				(*a)[tsIndex] = val;
 			}
 
@@ -572,19 +582,21 @@ namespace datatypes
 			}
 
 		private:
-			std::vector<TsType*> series;
+
+			std::vector<PtrType> series;
 			ptime startDate;
 			TimeStep timeStep;
 		};
 
-		template <typename Tts = TimeSeries>
-		using EnsembleForecastTimeSeries = TTimeSeries < MultiTimeSeries<Tts> > ;
 
-		template <typename T = double,
-			template <typename> class StP = DefaultStorageFloatingPointPolicy,
-			template <typename> class MvP = DefaultMissingFloatingPointPolicy
-		>
-		using ForecastTimeSeries = TTimeSeries < TTimeSeries<T, StP, MvP> > ;
+		template <typename ClassStorage>
+		using PointerTypeTimeSeries = TTimeSeries < ClassStorage*, DefaultStorageFloatingPointPolicy, NullPointerIsMissingPolicy > ;
+
+		template <typename Tts = TimeSeries>
+		using ForecastTimeSeries = PointerTypeTimeSeries < Tts > ;
+
+		template <typename Tts = TimeSeries>
+		using EnsembleForecastTimeSeries = PointerTypeTimeSeries < MultiTimeSeries<Tts> > ;
 
 		template <typename Tts = TimeSeries>
 		class TimeSeriesOperations

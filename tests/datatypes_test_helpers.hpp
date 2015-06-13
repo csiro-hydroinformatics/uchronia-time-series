@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../datatypes/datatypes/time_series.h"
+#include "../datatypes/time_series.h"
 #include <boost/filesystem.hpp>
 
 using namespace boost::gregorian;

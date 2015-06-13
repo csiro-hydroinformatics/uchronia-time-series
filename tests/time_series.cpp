@@ -76,9 +76,48 @@ SUITE("Time Series")
 
 	// what about the cases where the time series falls between two known instants
 
-	FACT("Multiple realizations")
+	FACT("Time series of forecasts")
 	{
-		// I think I meant by that a time series that is an ensemble of realizations. Really necessary?
+		ForecastTimeSeries<TimeSeries> forecast;
+		ptime s(date(2009, 1, 1));
+		forecast.Reset(3, s, nullptr);
+		Assert.Null(forecast[0]);
+		Assert.True(forecast.IsMissingValue(forecast[0]));
+		Assert.Null(forecast[2]);
+		Assert.True(forecast.IsMissingValue(forecast[2]));
+	}
+
+	FACT("Time Series of ensemble forecasts")
+	{
+		EnsembleForecastTimeSeries<> forecasts;
+		ptime s(date(2009, 1, 1));
+		forecasts.Reset(3, s, nullptr);
+		Assert.Null(forecasts[0]);
+		Assert.True(forecasts.IsMissingValue(forecasts[0]));
+		Assert.Null(forecasts[2]);
+		Assert.True(forecasts.IsMissingValue(forecasts[2]));
+	}
+
+	FACT("MultiTimeSeries - template argument is TimeSeries i.e. not a pointer")
+	{
+		MultiTimeSeries<TimeSeries> mts;
+		ptime s(date(2009, 1, 1));
+		mts.ResetSeries(3, 4, s, TimeStep::GetDaily());
+		double mypi = 3.1415;
+		mts.Set(0, 1, mypi);
+		TimeSeries ts = mts.Get(0);
+		Assert.Equal(mypi, ts[1]);
+		mts.Set(0, 1, mypi*2);
+		Assert.Equal(mypi, ts[1]);
+
+		MultiTimeSeries<TimeSeries*> mtsPtr;
+		mtsPtr.ResetSeries(3, 4, s, TimeStep::GetDaily());
+		mtsPtr.Set(0, 1, mypi);
+		TimeSeries * pts = mtsPtr.Get(0);
+		Assert.Equal(mypi, (*pts)[1]);
+		mtsPtr.Set(0, 1, mypi*2);
+		Assert.Equal(mypi*2, (*pts)[1]);
+
 	}
 
 	FACT("Different time steps")
@@ -171,28 +210,23 @@ SUITE("Time Series")
 
 	}
 
-	FACT("Multiple variables")
-	{
-		// TODO
-		// There may be advantages in having a class that represent multivariate time series
-		// and/or with quality code for time series data. 
-		// This is a feature that needs several well defined use cases. 
-		// Meanwhile the fact that netCDF data storage is multi-variate need 
-		// not be reflected in the high-level concept of time series 
-	}
+	//FACT("Multiple variables")
+	//{
+	//	// TODO
+	//	// There may be advantages in having a class that represent multivariate time series
+	//	// and/or with quality code for time series data. 
+	//	// This is a feature that needs several well defined use cases. 
+	//	// Meanwhile the fact that netCDF data storage is multi-variate need 
+	//	// not be reflected in the high-level concept of time series 
+	//}
 
-	FACT("Disaggregation of time series to finer time step using semantics")
-	{
-	}
+	//FACT("Disaggregation of time series to finer time step using semantics")
+	//{
+	//}
 
-	FACT("Transparently write to a back end that is not an array")
-	{
-	}
-
-	FACT("Ensemble forecast over a lead time")
-	{
-		// That is to say, the collation of hindcast and a forecast ensemble.
-	}
+	//FACT("Transparently write to a back end that is not an array")
+	//{
+	//}
 
 	// maybe the netCDF handling should be in a separate test suite.
 	FACT("Read operations from a netCDF SWIFT data file")
@@ -229,7 +263,7 @@ SUITE("Time Series")
 		Assert.Equal(0, singleTsStore->GetEnsembleSize());
 		Assert.Equal(0, singleTsStore->GetLeadTimeCount());
 
-		auto singleTs = singleTsStore->GetSeries();
+		auto singleTsPtr = singleTsStore->GetSeries();
 
 		/*
 		> head(snc$getSingleSeries('var2_obs', 456))
@@ -252,12 +286,12 @@ SUITE("Time Series")
 		2010-08-03 13:00:00 48.682
 		*/
 
-		Assert.Equal(1.212, (*singleTs)[0]);
-		Assert.Equal(48, singleTs->GetLength());
-		Assert.Equal(48.682, (*singleTs)[47]);
-		Assert.Equal(startDate, singleTs->GetStartDate());
+		Assert.Equal(1.212, (*singleTsPtr)[0]);
+		Assert.Equal(48, singleTsPtr->GetLength());
+		Assert.Equal(48.682, (*singleTsPtr)[47]);
+		Assert.Equal(startDate, singleTsPtr->GetStartDate());
 
-		delete singleTs;
+		delete singleTsPtr;
 		delete singleTsStore;
 
 
@@ -269,20 +303,20 @@ SUITE("Time Series")
 
 		Assert.Equal(3, ensTs->Size());
 		Assert.Equal(startDate, ensTs->GetStartDate());
-		singleTs = ensTs->Get(0);
+		auto singleTs = ensTs->Get(0);
 
-		Assert.Equal(0.55, (*singleTs)[0]);
-		Assert.Equal(0.80, (*singleTs)[1]);
-		Assert.Equal(48, singleTs->GetLength());
-		Assert.Equal(12.3, (*singleTs)[47]);
-		Assert.Equal(startDate, singleTs->GetStartDate());
+		Assert.Equal(0.55, (singleTs)[0]);
+		Assert.Equal(0.80, (singleTs)[1]);
+		Assert.Equal(48, singleTs.GetLength());
+		Assert.Equal(12.3, (singleTs)[47]);
+		Assert.Equal(startDate, singleTs.GetStartDate());
 
 		singleTs = ensTs->Get(1);
 
-		Assert.Equal(0.80, (*singleTs)[0]);
-		Assert.Equal(48, singleTs->GetLength());
-		Assert.Equal(12.55, (*singleTs)[47]);
-		Assert.Equal(startDate, singleTs->GetStartDate());
+		Assert.Equal(0.80, (singleTs)[0]);
+		Assert.Equal(48, singleTs.GetLength());
+		Assert.Equal(12.55, (singleTs)[47]);
+		Assert.Equal(startDate, singleTs.GetStartDate());
 
 		/*
 		> head(snc$getEnsSeries('var1_ens', 123))
@@ -358,15 +392,14 @@ SUITE("Time Series")
 		int stationNum = 2; // "456" is the second station
 
 		auto ts = mts->Get(replicateIndex);
-		Assert.Equal(nLead, ts->GetLength());
+		Assert.Equal(nLead, ts.GetLength());
 
-		ptime start = ts->GetStartDate();
+		ptime start = ts.GetStartDate();
 		Assert.Equal(store.GetStart() + hours(offset), start);
 
 		// finally, a check on a value in the time series
-		Assert.Equal(mult * (offsetR + 0.1 * replicateNum + leadTimeIndexR*0.01 + stationNum*0.1), ts->GetValue(leadTimeIndex));
+		Assert.Equal(mult * (offsetR + 0.1 * replicateNum + leadTimeIndexR*0.01 + stationNum*0.1), ts.GetValue(leadTimeIndex));
 		// We do need to reclaim the memory of these time series.
-		delete ts;
 
 		delete mts;
 		delete ensts;
@@ -527,16 +560,15 @@ SUITE("Time Series")
 
 		for (int i = 0; i < numberOfEnsembles; i++)
 		{
-			TTimeSeries<double>* outputTs = outputMts->Get(i);
+			TimeSeries outputTs = outputMts->Get(i);
 
-			Assert.Equal(numberOfTimeSteps, outputTs->GetLength());
-			Assert.Equal(startDate, outputTs->GetStartDate());
-			Assert.Equal(timeStep.GetName(), outputTs->GetTimeStep().GetName());
+			Assert.Equal(numberOfTimeSteps, outputTs.GetLength());
+			Assert.Equal(startDate, outputTs.GetStartDate());
+			Assert.Equal(timeStep.GetName(), outputTs.GetTimeStep().GetName());
 
 			for (int j = 0; j < numberOfTimeSteps; j++)
-				Assert.Equal(numberOfEnsembles * i + j, outputTs->GetValue(j));
+				Assert.Equal(numberOfEnsembles * i + j, outputTs.GetValue(j));
 
-			delete outputTs;
 		}
 
 		delete outputMts;
@@ -635,16 +667,15 @@ SUITE("Time Series")
 
 			for (int j = 0; j < numberOfEnsembles; j++)
 			{
-				TTimeSeries<double>* outputTs = outputMts->Get(j);
+				TimeSeries outputTs = outputMts->Get(j);
 
-				Assert.Equal(numberOfTimeSteps, outputTs->GetLength());
-				Assert.Equal(sDate, outputTs->GetStartDate());
-				Assert.Equal(timeStep.GetName(), outputTs->GetTimeStep().GetName());
+				Assert.Equal(numberOfTimeSteps, outputTs.GetLength());
+				Assert.Equal(sDate, outputTs.GetStartDate());
+				Assert.Equal(timeStep.GetName(), outputTs.GetTimeStep().GetName());
 
 				for (int k = 0; k < numberOfTimeSteps; k++)
-					Assert.Equal((leadTime * i) + (numberOfEnsembles * j) + k, outputTs->GetValue(k));
+					Assert.Equal((leadTime * i) + (numberOfEnsembles * j) + k, outputTs.GetValue(k));
 
-				delete outputTs;
 			}
 
 			delete outputMts;
