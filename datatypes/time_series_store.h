@@ -477,7 +477,7 @@ namespace datatypes
 			 *
 			 * \return	a pointer to a new MultiTimeSeries.
 			 */
-			MultiTimeSeries<T> * GetForecasts(int i);
+			MultiTimeSeries<TimeSeries> * GetForecasts(int i);
 
 			/**
 			 * \brief	Gets a non-ensemble time series. There must be such a record, otherwise an exception is thrown.
@@ -486,10 +486,10 @@ namespace datatypes
 			 */
 			TTimeSeries<T> * GetSeries();
 
-			MultiTimeSeries<T> * GetEnsembleSeries();
+			MultiTimeSeries<TimeSeries> * GetEnsembleSeries();
 
-			void SetForecasts(int i, MultiTimeSeries<T> * forecasts);
-			void SetEnsemble(MultiTimeSeries<T> * ensemble);
+			void SetForecasts(int i, MultiTimeSeries<TimeSeries> * forecasts);
+			void SetEnsemble(MultiTimeSeries<TimeSeries> * ensemble);
 			void SetSeries(TTimeSeries<T> * timeSeries);
 			int GetEnsembleSize();
 			int GetLeadTimeCount();
@@ -567,7 +567,7 @@ namespace datatypes
 		{
 		public:
 			virtual ~EnsembleTimeSeriesStore() {};
-			virtual MultiTimeSeries<T>* Read(const std::string& ensembleIdentifier) = 0;
+			virtual MultiTimeSeries<TimeSeries>* Read(const std::string& ensembleIdentifier) = 0;
 		};
 
 
@@ -577,7 +577,7 @@ namespace datatypes
 			using string = std::string;
 		public:
 			MultiFileEnsembleTimeSeriesStore(const string& forecastDataFiles, const string& varName, const string& varIdentifier, int index);
-			MultiTimeSeries<T>* Read(const string& fileIdentifier) override;
+			MultiTimeSeries<TimeSeries>* Read(const string& fileIdentifier) override;
 			virtual ~MultiFileEnsembleTimeSeriesStore() {/*TODO*/ };
 		private:
 			string forecastDataFiles;
@@ -692,9 +692,9 @@ namespace datatypes
 			*/
 			TTimeSeries<T>* GetSingle(const string& dataId);
 
-			MultiTimeSeries<T>* GetEnsemble(const string& dataId, const string& dataItemIdentifier);
+			MultiTimeSeries<TimeSeries>* GetEnsemble(const string& dataId, const string& dataItemIdentifier);
 
-			MultiTimeSeries<T>* GetEnsembleTimeSeries(const string& dataId);
+			MultiTimeSeries<TimeSeries>* GetEnsembleTimeSeries(const string& dataId);
 
 			EnsembleForecastTimeSeries<T>* GetEnsembleForecasts(const string& dataId);
 
@@ -715,10 +715,11 @@ namespace datatypes
 		class DATATYPES_DLL_LIB TimeSeriesIOHelper
 		{
 		public:
-			static TTimeSeries<T>* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier);
-			static MultiTimeSeries<T>* ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index);
-			static TTimeSeries<T>* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window);
-			static TTimeSeries<T>* ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window);
+			typedef typename TTimeSeries<T> Tts;
+			static Tts* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier);
+			static MultiTimeSeries<TimeSeries>* ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index);
+			static Tts* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<Tts>& window);
+			static Tts* ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<Tts>& window);
 			static TimeSeriesLibrary<T>* CreateTimeSeriesLibrary(const TimeSeriesLibraryDescription& description);
 		};
 

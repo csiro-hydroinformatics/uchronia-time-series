@@ -810,10 +810,10 @@ namespace datatypes
 		}
 
 		template <typename T>
-		MultiTimeSeries<T> * SwiftNetCDFTimeSeries<T>::GetEnsembleSeries()
+		MultiTimeSeries<TimeSeries> * SwiftNetCDFTimeSeries<T>::GetEnsembleSeries()
 		{
 			auto series = dataAccess->GetEnsemble<T>(varName, catchmentNumber);
-			auto result = new MultiTimeSeries<T>(*series, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
+			auto result = new MultiTimeSeries<TimeSeries>(*series, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
 			for (auto& d : (*series))
 			{
 				if (d != nullptr) delete[] d;
@@ -823,7 +823,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		void SwiftNetCDFTimeSeries<T>::SetEnsemble(MultiTimeSeries<T> * ensemble)
+		void SwiftNetCDFTimeSeries<T>::SetEnsemble(MultiTimeSeries<TimeSeries> * ensemble)
 		{
 			dataAccess->WriteEnsembleVarData();
 			vector<T*>* values = ensemble->GetValues();
@@ -834,10 +834,10 @@ namespace datatypes
 		}
 
 		template <typename T>
-		MultiTimeSeries<T> * SwiftNetCDFTimeSeries<T>::GetForecasts(int i)
+		MultiTimeSeries<TimeSeries> * SwiftNetCDFTimeSeries<T>::GetForecasts(int i)
 		{
 			auto series = dataAccess->GetForecasts<T>(varName, catchmentNumber, i);
-			auto result = new MultiTimeSeries<T>(*series, this->GetLeadTimeCount(), this->dataAccess->TimeForIndex(i), this->GetTimeStep());
+			auto result = new MultiTimeSeries<TimeSeries>(*series, this->GetLeadTimeCount(), this->dataAccess->TimeForIndex(i), this->GetTimeStep());
 			for (auto& d : (*series))
 			{
 				if (d != nullptr) delete[] d;
@@ -847,7 +847,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		void SwiftNetCDFTimeSeries<T>::SetForecasts(int i, MultiTimeSeries<T> * forecasts)
+		void SwiftNetCDFTimeSeries<T>::SetForecasts(int i, MultiTimeSeries<TimeSeries> * forecasts)
 		{
 			dataAccess->WriteForecastsVarData();
 			auto values = forecasts->GetValues();
@@ -978,7 +978,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		MultiTimeSeries<T>* TimeSeriesLibrary<T>::GetEnsemble(const string& dataId, const string& dataItemIdentifier)
+		MultiTimeSeries<TimeSeries>* TimeSeriesLibrary<T>::GetEnsemble(const string& dataId, const string& dataItemIdentifier)
 		{
 			EnsembleTimeSeriesStore<T>* dataSource = this->ensTimeSeriesProviders[dataId];
 			if (dataSource == nullptr)
@@ -988,7 +988,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		MultiTimeSeries<T>* GetEnsembleTimeSeries(const string& dataId)
+		MultiTimeSeries<TimeSeries>* GetEnsembleTimeSeries(const string& dataId)
 		{
 			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
 		}
@@ -1077,7 +1077,7 @@ namespace datatypes
 		template class SwiftNetCDFTimeSeries < double > ;
 
 		template <typename T>
-		MultiTimeSeries<T>* MultiFileEnsembleTimeSeriesStore<T>::Read(const string& fileIdentifier)
+		MultiTimeSeries<TimeSeries>* MultiFileEnsembleTimeSeriesStore<T>::Read(const string& fileIdentifier)
 		{
 			string fileName(forecastDataFiles);
 			boost::algorithm::replace_first(fileName, "{0}", fileIdentifier);
@@ -1086,11 +1086,11 @@ namespace datatypes
 
 
 		template <typename T>
-		MultiTimeSeries<T>* TimeSeriesIOHelper<T>::ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index)
+		MultiTimeSeries<TimeSeries>* TimeSeriesIOHelper<T>::ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index)
 		{
 			SwiftNetCDFTimeSeriesStore<T> rainfallStore(netCdfFilepath);
 			SwiftNetCDFTimeSeries<T>* forecastRainEnsemble = rainfallStore.Get(varName, identifier);
-			MultiTimeSeries<T>* forecastRainMultiTimeSeries = forecastRainEnsemble->GetForecasts(index);
+			MultiTimeSeries<TimeSeries>* forecastRainMultiTimeSeries = forecastRainEnsemble->GetForecasts(index);
 			delete forecastRainEnsemble;
 			return forecastRainMultiTimeSeries;
 		}
@@ -1107,7 +1107,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		TTimeSeries<T>* TimeSeriesIOHelper<T>::Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window)
+		TTimeSeries<T>* TimeSeriesIOHelper<T>::Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<Tts>& window)
 		{
 			auto tmp = Read(netCdfFilePath, varName, identifier);
 			auto result = window.Trim(*tmp);
@@ -1116,10 +1116,10 @@ namespace datatypes
 		}
 
 		template <typename T>
-		TTimeSeries<T>* TimeSeriesIOHelper<T>::ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window)
+		TTimeSeries<T>* TimeSeriesIOHelper<T>::ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<Tts>& window)
 		{
 			TTimeSeries<T>* fullDailyObsPetTimeSeries = Read(netCdfFilePath, varName, identifier);
-			TTimeSeries<T>* fullHourlyObsPetTimeSeries = TimeSeriesOperations<T>::DailyToHourly(*fullDailyObsPetTimeSeries);
+			TTimeSeries<T>* fullHourlyObsPetTimeSeries = TimeSeriesOperations<Tts>::DailyToHourly(*fullDailyObsPetTimeSeries);
 			auto result = window.Trim(*fullHourlyObsPetTimeSeries);
 			delete fullDailyObsPetTimeSeries;
 			delete fullHourlyObsPetTimeSeries;
