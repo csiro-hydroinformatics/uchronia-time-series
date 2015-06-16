@@ -303,20 +303,24 @@ SUITE("Time Series")
 
 		Assert.Equal(3, ensTs->Size());
 		Assert.Equal(startDate, ensTs->GetStartDate());
-		auto singleTs = ensTs->Get(0);
 
-		Assert.Equal(0.55, (singleTs)[0]);
-		Assert.Equal(0.80, (singleTs)[1]);
-		Assert.Equal(48, singleTs.GetLength());
-		Assert.Equal(12.3, (singleTs)[47]);
-		Assert.Equal(startDate, singleTs.GetStartDate());
+		singleTsPtr = ensTs->Get(0);
 
-		singleTs = ensTs->Get(1);
+		Assert.Equal(0.55, (*singleTsPtr)[0]);
+		Assert.Equal(0.80, (*singleTsPtr)[1]);
+		Assert.Equal(48, singleTsPtr->GetLength());
+		Assert.Equal(12.3, (*singleTsPtr)[47]);
+		Assert.Equal(startDate, singleTsPtr->GetStartDate());
 
-		Assert.Equal(0.80, (singleTs)[0]);
-		Assert.Equal(48, singleTs.GetLength());
-		Assert.Equal(12.55, (singleTs)[47]);
-		Assert.Equal(startDate, singleTs.GetStartDate());
+		delete singleTsPtr;
+		singleTsPtr = ensTs->Get(1);
+
+		Assert.Equal(0.80, (*singleTsPtr)[0]);
+		Assert.Equal(48, singleTsPtr->GetLength());
+		Assert.Equal(12.55, (*singleTsPtr)[47]);
+		Assert.Equal(startDate, singleTsPtr->GetStartDate());
+
+		delete singleTsPtr;
 
 		/*
 		> head(snc$getEnsSeries('var1_ens', 123))
@@ -379,7 +383,7 @@ SUITE("Time Series")
 
 		int offset = 22;
 
-		MultiTimeSeries<TimeSeries> * mts = ensts->GetForecasts(offset);
+		MultiTimeSeries<TimeSeries*> * mts = ensts->GetForecasts(offset);
 
 		Assert.Equal(nEns, mts->Size());
 
@@ -392,13 +396,13 @@ SUITE("Time Series")
 		int stationNum = 2; // "456" is the second station
 
 		auto ts = mts->Get(replicateIndex);
-		Assert.Equal(nLead, ts.GetLength());
+		Assert.Equal(nLead, ts->GetLength());
 
-		ptime start = ts.GetStartDate();
+		ptime start = ts->GetStartDate();
 		Assert.Equal(store.GetStart() + hours(offset), start);
 
 		// finally, a check on a value in the time series
-		Assert.Equal(mult * (offsetR + 0.1 * replicateNum + leadTimeIndexR*0.01 + stationNum*0.1), ts.GetValue(leadTimeIndex));
+		Assert.Equal(mult * (offsetR + 0.1 * replicateNum + leadTimeIndexR*0.01 + stationNum*0.1), ts->GetValue(leadTimeIndex));
 		// We do need to reclaim the memory of these time series.
 
 		delete mts;
@@ -533,7 +537,7 @@ SUITE("Time Series")
 			inputTimeSeriesVec.push_back(inputTimeSeriesData);
 		}
 
-		MultiTimeSeries<TimeSeries> inputMts(inputTimeSeriesVec, numberOfTimeSteps, startDate, timeStep);
+		MultiTimeSeries<TimeSeries*> inputMts(inputTimeSeriesVec, numberOfTimeSteps, startDate, timeStep);
 
 		writeSeries->SetEnsemble(&inputMts);
 
@@ -554,7 +558,7 @@ SUITE("Time Series")
 		Assert.Equal(0, readSeries->GetLeadTimeCount());
 		Assert.Equal(numberOfTimeSteps, readSeries->GetTimeLength());
 
-		MultiTimeSeries<TimeSeries>* outputMts = readSeries->GetEnsembleSeries();
+		MultiTimeSeries<TimeSeries*>* outputMts = readSeries->GetEnsembleSeries();
 
 		Assert.Equal(numberOfEnsembles, outputMts->Size());
 
@@ -634,7 +638,7 @@ SUITE("Time Series")
 				inputTimeSeriesDataVec.push_back(inputData);
 			}
 
-			MultiTimeSeries<TimeSeries>* inputMts = new MultiTimeSeries<TimeSeries>(inputTimeSeriesDataVec, numberOfTimeSteps, sDate, timeStep);
+			MultiTimeSeries<TimeSeries*>* inputMts = new MultiTimeSeries<TimeSeries*>(inputTimeSeriesDataVec, numberOfTimeSteps, sDate, timeStep);
 			writeSeries->SetForecasts(i, inputMts);
 
 			for (double* d : inputTimeSeriesDataVec)
@@ -661,7 +665,7 @@ SUITE("Time Series")
 
 		for (int i = 0; i < leadTime; i++)
 		{
-			MultiTimeSeries<TimeSeries>* outputMts = readSeries->GetForecasts(i);
+			MultiTimeSeries<TimeSeries*>* outputMts = readSeries->GetForecasts(i);
 
 			Assert.Equal(numberOfEnsembles, outputMts->Size());
 
@@ -733,11 +737,10 @@ SUITE("Time Series")
 		//ensts->GetForecasts
 
 		std::vector<double*>* values = DataTestHelper<double>::Seq(0, 1, nLead, nEns);
-		MultiTimeSeries<TimeSeries> mts(*values, nLead, ensts->TimeForIndex(offset), timeStep);
+		MultiTimeSeries<TimeSeries*> mts(*values, nLead, ensts->TimeForIndex(offset), timeStep);
 		ensts->SetForecasts(offset, &mts);
 
-		MultiTimeSeries<TimeSeries> * mtsGet = ensts->GetForecasts(offset);
-
+		MultiTimeSeries<TimeSeries*> * mtsGet = ensts->GetForecasts(offset);
 
 		DataTestHelper<double>::DeleteElements(*values);
 		delete values;

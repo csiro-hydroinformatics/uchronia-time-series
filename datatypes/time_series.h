@@ -115,6 +115,8 @@ namespace datatypes
 
 			inline bool IsMissingValue(T value) const { return this->mvp.IsMissingValue(value); }
 
+			inline T GetMissingValue() const { return this->mvp.GetMissingValue(); }
+
 			typedef typename T ElementType;
 
 			TTimeSeries()
@@ -284,7 +286,6 @@ namespace datatypes
 			{
 				return ptime(startDate);
 			}
-
 
 			ptime GetEndDate() const
 			{
@@ -508,7 +509,7 @@ namespace datatypes
 
 				for (size_t i = 0; i < src.series.size(); i++)
 				{
-					TsType* copy = new TsType(*src.series.at(i));
+					Type* copy = new Type(*src.series.at(i));
 					this->series.push_back(copy);
 				}
 			}
@@ -589,14 +590,17 @@ namespace datatypes
 		};
 
 
-		template <typename ClassStorage>
-		using PointerTypeTimeSeries = TTimeSeries < ClassStorage*, DefaultStorageFloatingPointPolicy, NullPointerIsMissingPolicy > ;
+		template <typename ItemType>
+		using PointerTypeTimeSeries = TTimeSeries < ItemType*, DefaultStorageFloatingPointPolicy, NullPointerIsMissingPolicy >;
+
+		template <typename Tts = TimeSeries>
+		using MultiTimeSeriesPtr = MultiTimeSeries < Tts* > ;
 
 		template <typename Tts = TimeSeries>
 		using ForecastTimeSeries = PointerTypeTimeSeries < Tts > ;
 
 		template <typename Tts = TimeSeries>
-		using EnsembleForecastTimeSeries = PointerTypeTimeSeries < MultiTimeSeries<Tts> > ;
+		using EnsembleForecastTimeSeries = PointerTypeTimeSeries < MultiTimeSeriesPtr<Tts> > ;
 
 		template <typename Tts = TimeSeries>
 		class TimeSeriesOperations
