@@ -117,7 +117,7 @@ namespace datatypes
 
 			inline T GetMissingValue() const { return this->mvp.GetMissingValue(); }
 
-			typedef typename T ElementType;
+			using ElementType = T;
 
 			TTimeSeries()
 			{
