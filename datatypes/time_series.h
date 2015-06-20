@@ -100,8 +100,8 @@ namespace datatypes
 
 		protected:
 
-			typedef typename StP<typename T> StoragePolicy;
-			typedef typename MvP<typename T> MissingValuePolicy;
+			using StoragePolicy = StP<T>;
+			using MissingValuePolicy = MvP<T>;
 			typedef typename StoragePolicy::StorageType StorageType;
 
 			StoragePolicy stp;
