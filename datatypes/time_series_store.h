@@ -717,7 +717,7 @@ namespace datatypes
 		class DATATYPES_DLL_LIB TimeSeriesIOHelper
 		{
 		public:
-			typedef typename TTimeSeries<T> Tts;
+			using Tts = TTimeSeries<T>;
 			static Tts* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier);
 			static MultiTimeSeries<TimeSeries*>* ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index);
 			static Tts* Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<Tts>& window);
