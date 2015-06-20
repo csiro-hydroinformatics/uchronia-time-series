@@ -632,7 +632,7 @@ namespace datatypes
 
 			static Tts* DailyToHourly(const Tts& dailyTimeSeries)
 			{
-				using T = Tts::ElementType;
+				using T = typename Tts::ElementType;
 				size_t length = dailyTimeSeries.GetLength();
 
 				T * data = new T[length * 24];
@@ -650,7 +650,7 @@ namespace datatypes
 
 			static Tts* JoinTimeSeries(const Tts& head, const Tts& tail)
 			{
-				using T = Tts::ElementType;
+				using T = typename Tts::ElementType;
 				ptime startDate = head.GetStartDate();
 
 				size_t headLength = head.GetLength();
@@ -711,7 +711,7 @@ namespace datatypes
 		class TimeWindow
 		{
 		public:
-			TimeWindow<Tts>::TimeWindow(const ptime& startDate, const ptime& endDate)
+			TimeWindow(const ptime& startDate, const ptime& endDate)
 			{
 				this->startDate = startDate;
 				this->endDate = endDate;
