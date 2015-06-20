@@ -64,7 +64,7 @@ namespace datatypes
 		private:
 			const T missingValue = (T)(-9999.0);
 		public:
-			inline bool IsMissingValue(T a) const { return (a < T()) };
+			inline bool IsMissingValue(T a) const { return (a < T()); };
 			inline T GetMissingValue() const { return missingValue; };
 		};
 
