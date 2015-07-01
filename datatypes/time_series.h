@@ -480,7 +480,7 @@ namespace datatypes
 		/**
 		 * \brief	Template for time series with multiple values at time point; e.g. to hold multiple realizations of time series in an ensemble
 		 *
-		 * \tparam	T	Elemental type, typically double or float.
+		 * \tparam	TsType	Elemental type, typically double or float.
 		 */
 		template <typename TsType = TimeSeries>
 		class MultiTimeSeries // This may become an abstract class with specializations for lazy loading time series from the data store.
@@ -504,14 +504,7 @@ namespace datatypes
 
 			MultiTimeSeries(const MultiTimeSeries<TsType>& src)
 			{
-				this->startDate = ptime(src.startDate);
-				this->timeStep = TimeStep(src.timeStep);
-
-				for (size_t i = 0; i < src.series.size(); i++)
-				{
-					Type* copy = new Type(*src.series.at(i));
-					this->series.push_back(copy);
-				}
+				DeepCopyFrom(src);
 			}
 
 			MultiTimeSeries()
@@ -523,6 +516,24 @@ namespace datatypes
 			~MultiTimeSeries()
 			{
 				Clear();
+			}
+
+			MultiTimeSeries& operator=(const MultiTimeSeries& src){
+				if (&src == this){
+					return *this;
+				}
+				DeepCopyFrom(src);
+				return *this;
+			}
+
+			MultiTimeSeries& operator=(MultiTimeSeries&& src){
+				if (&src == this){
+					return *this;
+				}
+				std::swap(timeStep, src.timeStep);
+				std::swap(startDate, src.startDate);
+				std::swap(series, src.series);
+				return *this;
 			}
 
 			void ResetSeries(const size_t& numSeries, const size_t& lengthSeries, const ptime& startDate, const TimeStep& timeStep)
@@ -587,6 +598,18 @@ namespace datatypes
 			std::vector<PtrType> series;
 			ptime startDate;
 			TimeStep timeStep;
+
+			void DeepCopyFrom(const MultiTimeSeries<TsType>& src)
+			{
+				this->startDate = ptime(src.startDate);
+				this->timeStep = TimeStep(src.timeStep);
+				Clear();
+				for (size_t i = 0; i < src.series.size(); i++)
+				{
+					Type* copy = new Type(*src.series.at(i));
+					this->series.push_back(copy);
+				}
+			}
 		};
 
 

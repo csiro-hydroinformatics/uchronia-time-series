@@ -158,6 +158,9 @@
   <ItemGroup>
     <ClCompile Include="time_series.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="create_swift_netcdf_ens_data.R" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
