@@ -314,6 +314,11 @@ namespace datatypes
 
 				void WriteForecastsVarData();
 
+				std::vector<std::string> ReadVariableNames();
+				std::vector<std::string> ReadAttributeNames(const string& varName);
+				std::string ReadStringAttribute(const string& varName, const string& attName);
+				double ReadNumericAttribute(const string& varName, const string& attName);
+
 				static string CreateTimeUnitsAttribute(const ptime& utcStart, const string& units);
 				static string CreateTimeUnitsAttribute(const ptime& utcStart, TimeStep& timeStep);
 				static ptime ParseStartDate(const string& unitsAttribute);
@@ -660,6 +665,7 @@ namespace datatypes
 			using string = std::string;
 		public:
 			TimeSeriesLibrary() {}
+			~TimeSeriesLibrary();
 			TimeSeriesLibrary(const TimeSeriesLibraryDescription& description);
 			TimeSeriesLibrary<T>& operator=(TimeSeriesLibrary<T>&& src);
 			/**

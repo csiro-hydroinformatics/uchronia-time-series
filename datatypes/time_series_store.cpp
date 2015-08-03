@@ -198,7 +198,7 @@ namespace datatypes
 				FillAttributes(timeUnits);
 
 				variableNames = vector<string>(varNames);
-				varAttributes = map<string, VariableAttributes>(varAttributes);
+				variableAttributes = map<string, VariableAttributes>(varAttributes);
 
 				ncendef(ncid);
 				SetTimeVar(timeVar);
@@ -413,6 +413,108 @@ namespace datatypes
 				}
 				delete[] tmp;
 				return result;
+			}
+
+			std::vector<std::string> SwiftNetCDFAccess::ReadVariableNames()
+			{
+				std::vector<std::string> variableNames = std::vector<std::string>();
+
+				int nVars;
+				nc_inq_nvars(ncid, &nVars);
+				
+				int* varIds = new int[nVars];
+				nc_inq_varids(ncid, &nVars, varIds);
+
+				char* varName = new char[kDefaultStrLength];
+				for (int i = 0; i < nVars; i++)
+				{
+					nc_inq_varname(ncid, varIds[i], varName);
+					variableNames.push_back(string(varName));
+				}
+				delete[] varName;
+
+				delete[] varIds;
+
+				return variableNames;
+			}
+
+			std::vector<std::string> SwiftNetCDFAccess::ReadAttributeNames(const string& varName)
+			{
+				int varId = GetVarId(varName);
+
+				int nAtts;
+				nc_inq_natts(ncid, &nAtts);
+
+				std::vector<std::string> attNames = std::vector<std::string>();
+
+				char* attName = new char[kDefaultStrLength];
+				for (int i = 0; i < nAtts; i++)
+				{
+					int code = nc_inq_attname(ncid, varId, i, attName);
+					if (code == 0)
+						attNames.push_back(string(attName));
+				}
+				delete[] attName;
+
+				return attNames;
+			}
+
+			std::string SwiftNetCDFAccess::ReadStringAttribute(const string& varName, const string& attName)
+			{
+				int varId = GetVarId(varName);
+
+				nc_type type;
+				int code = nc_inq_atttype(ncid, varId, attName.c_str(), &type);
+
+				if (type != NC_CHAR)
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Attribute attName not of type string.");
+
+				size_t size;
+				code = nc_inq_attlen(ncid, varId, attName.c_str(), &size);
+
+				char* strAtt = new char[size];
+				code = nc_get_att_text(ncid, varId, attName.c_str(), strAtt);
+				std::string result = string(strAtt);
+
+				delete[] strAtt;
+
+				return result;
+			}
+
+			double SwiftNetCDFAccess::ReadNumericAttribute(const string& varName, const string& attName)
+			{
+				int varId = GetVarId(varName);
+
+				nc_type type;
+				int code = nc_inq_atttype(ncid, varId, attName.c_str(), &type);
+
+				if (type != NC_DOUBLE || type != NC_FLOAT || type != NC_INT || type != NC_INT64)
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Attribute attName not of numeric type (double, float, int or int64).");
+
+				if (type == NC_DOUBLE)
+				{
+					double d;
+					code = nc_get_att_double(ncid, varId, attName.c_str(), &d);
+					return d;
+				}
+				if (type == NC_FLOAT)
+				{
+					float f;
+					code = nc_get_att_float(ncid, varId, attName.c_str(), &f);
+					return (double)f;
+				}
+				if (type == NC_INT)
+				{
+					int i;
+					code = nc_get_att_int(ncid, varId, attName.c_str(), &i);
+					return (double)i;
+				}
+				if (type == NC_INT64)
+				{
+					long l;
+					code = nc_get_att_long(ncid, varId, attName.c_str(), &l);
+					return (double)l;
+				}
 			}
 
 			std::string SwiftNetCDFAccess::GetStringAttribute(const string& attName)
@@ -918,6 +1020,25 @@ namespace datatypes
 			std::swap(ensTimeSeriesProviders, src.ensTimeSeriesProviders);
 			std::swap(timeSeriesProviders, src.timeSeriesProviders);
 			return *this;
+		}
+
+		template <typename T>
+		TimeSeriesLibrary<T>::~TimeSeriesLibrary()
+		{
+			// TODO : Think more about who owns what when...
+
+			//for (auto etsp : ensTimeSeriesProviders)
+			//	delete etsp.second;
+
+			//for (auto tsp : timeSeriesProviders)
+			//{
+			//	if (tsp.second->dataAccess != nullptr)
+			//	{
+			//		delete tsp.second->dataAccess;
+			//		tsp.second->dataAccess = nullptr;
+			//	}
+			//	delete tsp.second;
+			//}
 		}
 
 		template <typename T>
