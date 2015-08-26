@@ -55,13 +55,13 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="../../../Solutions/SWIFT/config/common.props" />
+    <Import Project="lib_paths.props" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IncludePath>$(VisualLeakDetectorPath)\include;$(NetcdfIncludePath);$(BoostPath);$(IncludePath)</IncludePath>
-    <ReferencePath>$(VisualLeakDetectorLibPath);$(NetcdfLibPath);$(ReferencePath)</ReferencePath>
-    <LibraryPath>$(VisualLeakDetectorLibPath);$(NetcdfLibPath);$(BoostLibPath);$(LibraryPath)</LibraryPath>
+    <ReferencePath>$(VisualLeakDetectorPath)\lib\Win32;$(NetcdfLibPath);$(ReferencePath)</ReferencePath>
+    <LibraryPath>$(VisualLeakDetectorPath)\lib\Win32;$(NetcdfLibPath);$(BoostLibPath);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -71,7 +71,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(VisualLeakDetectorLibPath);$(BoostLibPath);$(NetcdfLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VisualLeakDetectorPath)\lib\Win32;$(BoostLibPath);$(NetcdfLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <!--AdditionalDependencies>netcdf.lib;vld.lib;%(AdditionalDependencies)</AdditionalDependencies-->
       <AdditionalDependencies>netcdf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>

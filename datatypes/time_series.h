@@ -584,6 +584,11 @@ namespace datatypes
 				return ptime(startDate);
 			}
 
+			TimeStep GetTimeStep()
+			{
+				return TimeStep(timeStep);
+			}
+
 			void Clear()
 			{
 				for (auto& d : series)

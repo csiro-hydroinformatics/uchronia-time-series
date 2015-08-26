@@ -1,31 +1,61 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Label="PropertySheets" />
+<?xml version="1.0" encoding="Windows-1252"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
 	<!--Not sure whether for compilation purposes, re really need to distinguish bitness-->
-    <NetcdfInstallPath64>F:\office12\libraries\netCDF 4.3.2</NetcdfInstallPath64>
-    <NetcdfInstallPath32>F:\office12\libraries\netCDF 4.3.2</NetcdfInstallPath32>
-    <BoostLibraryPath64>F:\office12\libraries\boost_1_56_0</BoostLibraryPath64>
-    <BoostLibraryPath32>F:\office12\libraries\boost_1_56_0</BoostLibraryPath32>
+    <NetcdfIncludePath>C:\local\netCDF\64\include</NetcdfIncludePath>
+    <NetcdfInstallPath>C:\local\netCDF\</NetcdfInstallPath>
+    <BoostPath>C:\local\boost_1_56_0</BoostPath>
+    <VisualLeakDetectorPath>C:\local\VLD</VisualLeakDetectorPath>
   </PropertyGroup>
-  <PropertyGroup />
-  <ItemDefinitionGroup />
   <ItemGroup>
-    <BuildMacro Include="NetcdfInstallPath64">
-      <Value>$(NetcdfInstallPath64)</Value>
+    <BuildMacro Include="NetcdfIncludePath">
+      <Value>$(NetcdfIncludePath)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
-    <BuildMacro Include="NetcdfInstallPath32">
-      <Value>$(NetcdfInstallPath32)</Value>
+    <BuildMacro Include="NetcdfInstallPath">
+      <Value>$(NetcdfInstallPath)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
-    <BuildMacro Include="BoostLibraryPath64">
-      <Value>$(BoostLibraryPath64)</Value>
+    <BuildMacro Include="BoostPath">
+      <Value>$(BoostPath)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
-    <BuildMacro Include="BoostLibraryPath32">
-      <Value>$(BoostLibraryPath32)</Value>
+    <BuildMacro Include="VisualLeakDetectorPath">
+      <Value>$(VisualLeakDetectorPath)</Value>
       <EnvironmentVariable>true</EnvironmentVariable>
     </BuildMacro>
   </ItemGroup>
-</Project>
+  <PropertyGroup Label="UserMacros">
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir >./$(Configuration)/$(Platform)</OutDir>
+    <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)'=='Release'">false</LinkIncremental>
+    <CmakeIntDir >$(Configuration)/$(Platform)</CmakeIntDir>
+    <GenerateManifest>true</GenerateManifest>
+    <MachineArch Condition="'$(Platform)'=='Win32'">X86</MachineArch>
+    <MachineArch Condition="'$(Platform)'=='x64'">x64</MachineArch>
+	<!-- C:\local\boost_1_56_0\lib\32 -->
+    <BoostLibPath Condition="'$(Platform)'=='Win32'">$(BoostPath)/lib/32</BoostLibPath>
+    <BoostLibPath Condition="'$(Platform)'=='x64'">$(BoostPath)/lib/64</BoostLibPath>
+	<!-- $(NetcdfInstallPath64)/include -->
+    <NetcdfLibPath Condition="'$(Platform)'=='Win32'">$(NetcdfInstallPath)/32/lib</NetcdfLibPath>
+    <NetcdfLibPath Condition="'$(Platform)'=='x64'">$(NetcdfInstallPath)/64/lib</NetcdfLibPath>
+    <!-- $(VisualLeakDetectorPath)\lib\Win32; -->
+    <VisualLeakDetectorLibPath Condition="'$(Platform)'=='Win32'">$(VisualLeakDetectorPath)/lib/Win32</VisualLeakDetectorLibPath>
+    <VisualLeakDetectorLibPath Condition="'$(Platform)'=='x64'">$(VisualLeakDetectorPath)/lib/Win64</VisualLeakDetectorLibPath>
+    <InlineFuncExpansionSetting Condition="'$(Configuration)'=='Debug'">Disabled</InlineFuncExpansionSetting>
+    <InlineFuncExpansionSetting Condition="'$(Configuration)'=='Release'">AnySuitable</InlineFuncExpansionSetting>
+    <OptimizationSetting Condition="'$(Configuration)'=='Debug'">Disabled</OptimizationSetting>
+    <OptimizationSetting Condition="'$(Configuration)'=='Release'">MaxSpeed</OptimizationSetting>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="BoostLibPath">
+      <Value>$(BoostLibPath)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="NetcdfLibPath">
+      <Value>$(NetcdfLibPath)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+ </Project>
