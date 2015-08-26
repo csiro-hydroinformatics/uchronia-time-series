@@ -92,4 +92,5 @@ ADD_LIBRARY(${this_target} SHARED ${${this_target}_SOURCE_FILES} )
 TARGET_LINK_LIBRARIES( ${this_target}
         netcdf.so
         boost_system.so
+		boost_date_time.so
         )

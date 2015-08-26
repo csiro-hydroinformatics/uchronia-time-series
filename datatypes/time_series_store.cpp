@@ -25,7 +25,17 @@ namespace datatypes
 		template <typename T>
 		SwiftNetCDFTimeSeriesStore<T>::~SwiftNetCDFTimeSeriesStore()
 		{
-			delete dataAccess;
+			Close();
+		}
+
+		template <typename T>
+		void SwiftNetCDFTimeSeriesStore<T>::Close()
+		{
+			if (dataAccess != nullptr)
+			{
+				delete dataAccess;
+				dataAccess = nullptr;
+			}
 		}
 
 		template <typename T>
@@ -188,7 +198,7 @@ namespace datatypes
 				FillAttributes(timeUnits);
 
 				variableNames = vector<string>(varNames);
-				varAttributes = map<string, VariableAttributes>(varAttributes);
+				variableAttributes = map<string, VariableAttributes>(varAttributes);
 
 				ncendef(ncid);
 				SetTimeVar(timeVar);
@@ -403,6 +413,108 @@ namespace datatypes
 				}
 				delete[] tmp;
 				return result;
+			}
+
+			std::vector<std::string> SwiftNetCDFAccess::ReadVariableNames()
+			{
+				std::vector<std::string> variableNames = std::vector<std::string>();
+
+				int nVars;
+				nc_inq_nvars(ncid, &nVars);
+				
+				int* varIds = new int[nVars];
+				nc_inq_varids(ncid, &nVars, varIds);
+
+				char* varName = new char[kDefaultStrLength];
+				for (int i = 0; i < nVars; i++)
+				{
+					nc_inq_varname(ncid, varIds[i], varName);
+					variableNames.push_back(string(varName));
+				}
+				delete[] varName;
+
+				delete[] varIds;
+
+				return variableNames;
+			}
+
+			std::vector<std::string> SwiftNetCDFAccess::ReadAttributeNames(const string& varName)
+			{
+				int varId = GetVarId(varName);
+
+				int nAtts;
+				nc_inq_natts(ncid, &nAtts);
+
+				std::vector<std::string> attNames = std::vector<std::string>();
+
+				char* attName = new char[kDefaultStrLength];
+				for (int i = 0; i < nAtts; i++)
+				{
+					int code = nc_inq_attname(ncid, varId, i, attName);
+					if (code == 0)
+						attNames.push_back(string(attName));
+				}
+				delete[] attName;
+
+				return attNames;
+			}
+
+			std::string SwiftNetCDFAccess::ReadStringAttribute(const string& varName, const string& attName)
+			{
+				int varId = GetVarId(varName);
+
+				nc_type type;
+				int code = nc_inq_atttype(ncid, varId, attName.c_str(), &type);
+
+				if (type != NC_CHAR)
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Attribute attName not of type string.");
+
+				size_t size;
+				code = nc_inq_attlen(ncid, varId, attName.c_str(), &size);
+
+				char* strAtt = new char[size];
+				code = nc_get_att_text(ncid, varId, attName.c_str(), strAtt);
+				std::string result = string(strAtt);
+
+				delete[] strAtt;
+
+				return result;
+			}
+
+			double SwiftNetCDFAccess::ReadNumericAttribute(const string& varName, const string& attName)
+			{
+				int varId = GetVarId(varName);
+
+				nc_type type;
+				int code = nc_inq_atttype(ncid, varId, attName.c_str(), &type);
+
+				if (type != NC_DOUBLE || type != NC_FLOAT || type != NC_INT || type != NC_INT64)
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Attribute attName not of numeric type (double, float, int or int64).");
+
+				if (type == NC_DOUBLE)
+				{
+					double d;
+					code = nc_get_att_double(ncid, varId, attName.c_str(), &d);
+					return d;
+				}
+				if (type == NC_FLOAT)
+				{
+					float f;
+					code = nc_get_att_float(ncid, varId, attName.c_str(), &f);
+					return (double)f;
+				}
+				if (type == NC_INT)
+				{
+					int i;
+					code = nc_get_att_int(ncid, varId, attName.c_str(), &i);
+					return (double)i;
+				}
+				if (type == NC_INT64)
+				{
+					long l;
+					code = nc_get_att_long(ncid, varId, attName.c_str(), &l);
+					return (double)l;
+				}
 			}
 
 			std::string SwiftNetCDFAccess::GetStringAttribute(const string& attName)
@@ -810,10 +922,10 @@ namespace datatypes
 		}
 
 		template <typename T>
-		MultiTimeSeries<T> * SwiftNetCDFTimeSeries<T>::GetEnsembleSeries()
+		MultiTimeSeries<TimeSeries*> * SwiftNetCDFTimeSeries<T>::GetEnsembleSeries()
 		{
 			auto series = dataAccess->GetEnsemble<T>(varName, catchmentNumber);
-			auto result = new MultiTimeSeries<T>(*series, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
+			auto result = new MultiTimeSeries<TimeSeries*>(*series, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
 			for (auto& d : (*series))
 			{
 				if (d != nullptr) delete[] d;
@@ -823,7 +935,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		void SwiftNetCDFTimeSeries<T>::SetEnsemble(MultiTimeSeries<T> * ensemble)
+		void SwiftNetCDFTimeSeries<T>::SetEnsemble(MultiTimeSeries<TimeSeries*> * ensemble)
 		{
 			dataAccess->WriteEnsembleVarData();
 			vector<T*>* values = ensemble->GetValues();
@@ -834,10 +946,10 @@ namespace datatypes
 		}
 
 		template <typename T>
-		MultiTimeSeries<T> * SwiftNetCDFTimeSeries<T>::GetForecasts(int i)
+		MultiTimeSeries<TimeSeries*> * SwiftNetCDFTimeSeries<T>::GetForecasts(int i)
 		{
 			auto series = dataAccess->GetForecasts<T>(varName, catchmentNumber, i);
-			auto result = new MultiTimeSeries<T>(*series, this->GetLeadTimeCount(), this->dataAccess->TimeForIndex(i), this->GetTimeStep());
+			auto result = new MultiTimeSeries<TimeSeries*>(*series, this->GetLeadTimeCount(), this->dataAccess->TimeForIndex(i), this->GetTimeStep());
 			for (auto& d : (*series))
 			{
 				if (d != nullptr) delete[] d;
@@ -847,7 +959,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		void SwiftNetCDFTimeSeries<T>::SetForecasts(int i, MultiTimeSeries<T> * forecasts)
+		void SwiftNetCDFTimeSeries<T>::SetForecasts(int i, MultiTimeSeries<TimeSeries*> * forecasts)
 		{
 			dataAccess->WriteForecastsVarData();
 			auto values = forecasts->GetValues();
@@ -908,6 +1020,25 @@ namespace datatypes
 			std::swap(ensTimeSeriesProviders, src.ensTimeSeriesProviders);
 			std::swap(timeSeriesProviders, src.timeSeriesProviders);
 			return *this;
+		}
+
+		template <typename T>
+		TimeSeriesLibrary<T>::~TimeSeriesLibrary()
+		{
+			// TODO : Think more about who owns what when...
+
+			//for (auto etsp : ensTimeSeriesProviders)
+			//	delete etsp.second;
+
+			//for (auto tsp : timeSeriesProviders)
+			//{
+			//	if (tsp.second->dataAccess != nullptr)
+			//	{
+			//		delete tsp.second->dataAccess;
+			//		tsp.second->dataAccess = nullptr;
+			//	}
+			//	delete tsp.second;
+			//}
 		}
 
 		template <typename T>
@@ -978,7 +1109,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		MultiTimeSeries<T>* TimeSeriesLibrary<T>::GetEnsemble(const string& dataId, const string& dataItemIdentifier)
+		MultiTimeSeries<TTimeSeries<T>*>* TimeSeriesLibrary<T>::GetEnsemble(const string& dataId, const string& dataItemIdentifier)
 		{
 			EnsembleTimeSeriesStore<T>* dataSource = this->ensTimeSeriesProviders[dataId];
 			if (dataSource == nullptr)
@@ -988,14 +1119,17 @@ namespace datatypes
 		}
 
 		template <typename T>
-		MultiTimeSeries<T>* GetEnsembleTimeSeries(const string& dataId)
+		MultiTimeSeries<TTimeSeries<T>*>* TimeSeriesLibrary<T>::GetEnsembleTimeSeries(const string& dataId)
 		{
 			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
+			return nullptr;
 		}
 
 		template <typename T>
-		EnsembleForecastTimeSeries<T>* GetEnsembleForecasts(const string& dataId)
+		EnsembleForecastTimeSeries<TTimeSeries<T>>* TimeSeriesLibrary<T>::GetEnsembleForecasts(const string& dataId)
 		{
+			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
+			return nullptr;
 		}
 
 		template <typename T>
@@ -1077,7 +1211,7 @@ namespace datatypes
 		template class SwiftNetCDFTimeSeries < double > ;
 
 		template <typename T>
-		MultiTimeSeries<T>* MultiFileEnsembleTimeSeriesStore<T>::Read(const string& fileIdentifier)
+		MultiTimeSeries<TimeSeries*>* MultiFileEnsembleTimeSeriesStore<T>::Read(const string& fileIdentifier)
 		{
 			string fileName(forecastDataFiles);
 			boost::algorithm::replace_first(fileName, "{0}", fileIdentifier);
@@ -1086,11 +1220,11 @@ namespace datatypes
 
 
 		template <typename T>
-		MultiTimeSeries<T>* TimeSeriesIOHelper<T>::ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index)
+		MultiTimeSeries<TimeSeries*>* TimeSeriesIOHelper<T>::ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index)
 		{
 			SwiftNetCDFTimeSeriesStore<T> rainfallStore(netCdfFilepath);
 			SwiftNetCDFTimeSeries<T>* forecastRainEnsemble = rainfallStore.Get(varName, identifier);
-			MultiTimeSeries<T>* forecastRainMultiTimeSeries = forecastRainEnsemble->GetForecasts(index);
+			MultiTimeSeries<TimeSeries*>* forecastRainMultiTimeSeries = forecastRainEnsemble->GetForecasts(index);
 			delete forecastRainEnsemble;
 			return forecastRainMultiTimeSeries;
 		}
@@ -1107,7 +1241,7 @@ namespace datatypes
 		}
 
 		template <typename T>
-		TTimeSeries<T>* TimeSeriesIOHelper<T>::Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window)
+		TTimeSeries<T>* TimeSeriesIOHelper<T>::Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<Tts>& window)
 		{
 			auto tmp = Read(netCdfFilePath, varName, identifier);
 			auto result = window.Trim(*tmp);
@@ -1116,10 +1250,10 @@ namespace datatypes
 		}
 
 		template <typename T>
-		TTimeSeries<T>* TimeSeriesIOHelper<T>::ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<T>& window)
+		TTimeSeries<T>* TimeSeriesIOHelper<T>::ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<Tts>& window)
 		{
 			TTimeSeries<T>* fullDailyObsPetTimeSeries = Read(netCdfFilePath, varName, identifier);
-			TTimeSeries<T>* fullHourlyObsPetTimeSeries = TimeSeriesOperations<T>::DailyToHourly(*fullDailyObsPetTimeSeries);
+			TTimeSeries<T>* fullHourlyObsPetTimeSeries = TimeSeriesOperations<Tts>::DailyToHourly(*fullDailyObsPetTimeSeries);
 			auto result = window.Trim(*fullHourlyObsPetTimeSeries);
 			delete fullDailyObsPetTimeSeries;
 			delete fullHourlyObsPetTimeSeries;
