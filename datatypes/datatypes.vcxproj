@@ -58,20 +58,26 @@
     <Import Project="lib_paths.props" />
   </ImportGroup>
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IncludePath>$(VisualLeakDetectorPath)\include;$(NetcdfIncludePath);$(BoostPath);$(IncludePath)</IncludePath>
-    <ReferencePath>$(VisualLeakDetectorPath)\lib\Win32;$(NetcdfLibPath);$(ReferencePath)</ReferencePath>
-    <LibraryPath>$(VisualLeakDetectorPath)\lib\Win32;$(NetcdfLibPath);$(BoostLibPath);$(LibraryPath)</LibraryPath>
+    <ReferencePath>$(VisualLeakDetectorLibPath);$(NetcdfLibPath);$(ReferencePath)</ReferencePath>
+    <LibraryPath>$(VisualLeakDetectorLibPath);$(NetcdfLibPath);$(BoostLibPath);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>$(OptimizationSetting)</Optimization>
+      <FunctionLevelLinking Condition="'$(Configuration)'=='Debug'">false</FunctionLevelLinking>
+      <FunctionLevelLinking Condition="'$(Configuration)'=='Release'">true</FunctionLevelLinking>
+      <IntrinsicFunctions Condition="'$(Configuration)'=='Debug'">false</IntrinsicFunctions>
+      <IntrinsicFunctions Condition="'$(Configuration)'=='Release'">true</IntrinsicFunctions>
+      <OptimizeReferences Condition="'$(Configuration)'=='Debug'">false</OptimizeReferences>
+      <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(VisualLeakDetectorPath)\lib\Win32;$(BoostLibPath);$(NetcdfLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">true</GenerateDebugInformation>
+      <GenerateDebugInformation Condition="'$(Configuration)'=='Release'">false</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(VisualLeakDetectorLibPath);$(BoostLibPath);$(NetcdfLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <!--AdditionalDependencies>netcdf.lib;vld.lib;%(AdditionalDependencies)</AdditionalDependencies-->
       <AdditionalDependencies>netcdf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
