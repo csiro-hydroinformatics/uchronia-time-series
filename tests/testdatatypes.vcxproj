@@ -71,20 +71,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>../datatypes;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../xUnit/xUnit++/xUnit++/;../../libswift/;$(BoostPath);$(NetcdfIncludePath);../../Externals</IncludePath>
-    <LibraryPath>$(LibraryPath);../../xUnit/bin/xUnit++;../../../Solutions/SWIFT/$(Platform)/$(Configuration)/;$(BoostLibPath);../../jsoncpp/library/64bit</LibraryPath>
+    <LibraryPath>$(LibraryPath);../../xUnit/bin/xUnit++;$(OutDir);$(BoostLibPath);../../jsoncpp/library/64bit</LibraryPath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>../datatypes;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../xUnit/xUnit++/xUnit++/;../../libswift/;$(BoostPath);$(NetcdfIncludePath);../../Externals</IncludePath>
-    <LibraryPath>$(LibraryPath);../../xUnit/bin/xUnit++;../../../Solutions/SWIFT/$(Configuration)/;$(BoostLibPath);../../jsoncpp/library/32bit</LibraryPath>
+    <LibraryPath>$(LibraryPath);../../xUnit/bin/xUnit++;$(OutDir);$(BoostLibPath);../../jsoncpp/library/32bit</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>../datatypes;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../xUnit/xUnit++/xUnit++/;../../libswift/;$(BoostPath);$(NetcdfIncludePath);../../Externals</IncludePath>
-    <LibraryPath>$(LibraryPath);../../xUnit/bin/xUnit++;../../../Solutions/SWIFT/$(Platform)/$(Configuration)/;$(BoostLibPath);../../jsoncpp/library/64bitRelease</LibraryPath>
+    <LibraryPath>$(LibraryPath);../../xUnit/bin/xUnit++;$(OutDir);$(BoostLibPath);../../jsoncpp/library/64bitRelease</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>../datatypes;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../xUnit/xUnit++/xUnit++/;../../libswift/;$(BoostPath);$(NetcdfIncludePath);../../Externals</IncludePath>
-    <LibraryPath>$(LibraryPath);../../xUnit/bin/xUnit++;../../../Solutions/SWIFT/$(Configuration)/;$(BoostLibPath);../../jsoncpp/library/32bitRelease</LibraryPath>
+    <LibraryPath>$(LibraryPath);../../xUnit/bin/xUnit++;$(OutDir);$(BoostLibPath);../../jsoncpp/library/32bitRelease</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
