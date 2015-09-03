@@ -55,7 +55,8 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="lib_paths.props" />
+    <Import Project="$(SolutionDir)/config/swift_dependencies_paths.props" Condition="exists('$(SolutionDir)/config/swift_dependencies_paths.props')" Label="SolutionCommonProps" />
+    <Import Project="../Solutions/config/swift_dependencies_paths.props" Condition="!exists('$(SolutionDir)/config/swift_dependencies_paths.props') and  exists('../Solutions/config/swift_dependencies_paths.props')" Label="SolutionCommonProps" />
   </ImportGroup>
   <PropertyGroup>
     <IncludePath>$(VisualLeakDetectorPath)\include;$(NetcdfIncludePath);$(BoostPath);$(IncludePath)</IncludePath>
