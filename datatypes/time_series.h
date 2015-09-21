@@ -28,14 +28,14 @@ namespace datatypes
 
 		// partial specialization: true yields second argument
 		template<typename Ta, typename Tb>
-		class IfThenElse<true, Ta, Tb> {
+		class IfThenElse < true, Ta, Tb > {
 		public:
 			typedef Ta ResultT;
 		};
 
 		// partial specialization: false yields third argument
 		template<typename Ta, typename Tb>
-		class IfThenElse<false, Ta, Tb> {
+		class IfThenElse < false, Ta, Tb > {
 		public:
 			typedef Tb ResultT;
 		};
@@ -100,8 +100,8 @@ namespace datatypes
 
 		protected:
 
-			using StoragePolicy = StP<T>;
-			using MissingValuePolicy = MvP<T>;
+			using StoragePolicy = StP < T > ;
+			using MissingValuePolicy = MvP < T > ;
 			typedef typename StoragePolicy::StorageType StorageType;
 
 			StoragePolicy stp;
@@ -265,6 +265,14 @@ namespace datatypes
 			void SetValue(size_t index, T value)
 			{
 				data[index] = value;
+			}
+
+			void Reset(size_t length, const ptime& startDate, const TimeStep& timeStep)
+			{
+				this->startDate = startDate;
+				this->timeStep = timeStep;
+				this->stp.Allocate(data, length, mvp.GetMissingValue());
+				UpdateEndDate();
 			}
 
 			void Reset(size_t length, const ptime& startDate, T * values = nullptr)
@@ -619,7 +627,7 @@ namespace datatypes
 
 
 		template <typename ItemType>
-		using PointerTypeTimeSeries = TTimeSeries < ItemType*, DefaultStorageFloatingPointPolicy, NullPointerIsMissingPolicy >;
+		using PointerTypeTimeSeries = TTimeSeries < ItemType*, DefaultStorageFloatingPointPolicy, NullPointerIsMissingPolicy > ;
 
 		template <typename Tts = TimeSeries>
 		using MultiTimeSeriesPtr = MultiTimeSeries < Tts* > ;
