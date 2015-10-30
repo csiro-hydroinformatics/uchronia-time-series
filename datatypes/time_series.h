@@ -736,6 +736,32 @@ namespace datatypes
 
 				return true;
 			}
+
+			template <typename T = Tts::ElementType>
+			static Tts* MaskTimeSeries(const Tts& timeSeries, const ptime& start, const ptime& end, T maskValue)
+			{
+				if (start < timeSeries.GetStartDate())
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("start needs to be greater than time series start");
+
+				if (end > timeSeries.GetEndDate())
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("end needs to be less than time series end");
+
+				int sIndex = timeSeries.UpperIndexForTime(start);
+				int eIndex = timeSeries.LowerIndexForTime(end);
+
+				int len = timeSeries.GetLength();
+				double* d = new double[len];
+				timeSeries.CopyTo(d, 0, len - 1);
+
+				for (int i = sIndex; i <= eIndex; i++)
+					d[i] = maskValue;
+
+				Tts* result = new Tts(d, len, timeSeries.GetStartDate(), timeSeries.GetTimeStep());
+
+				delete[] d;
+
+				return result;
+			}
 		};
 
 		/**

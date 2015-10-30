@@ -7,6 +7,7 @@
 using xUnitpp::xUnitAssert;
 using namespace boost::gregorian;
 using namespace datatypes::tests;
+using namespace datatypes::timeseries;
 using namespace std;
 
 SUITE("Time Series")
@@ -766,4 +767,34 @@ SUITE("Time Series")
 		// Gets multiple series of EnsFcast
 	}
 
+	FACT("Test Time Series Masking")
+	{
+		int len = 10;
+		double* d = new double[len];
+		ptime start = from_iso_string("20000101T000000");
+		TimeStep ts = TimeStep::GetDaily();
+
+		for (int i = 0; i < len; i++)
+			d[i] = i;
+
+		TimeSeries timeSeries = TimeSeries(d, len, start, ts);
+		delete[] d;
+
+		double maskingValue = -9999.0;
+
+		ptime mStart = from_iso_string("20000103T000000");
+		ptime mEnd = from_iso_string("20000109T000000");
+
+		TimeSeries* result = TimeSeriesOperations<TimeSeries>::MaskTimeSeries(timeSeries, mStart, mEnd, maskingValue);
+
+		for (int i = 0; i < len; i++)
+		{
+			if (i >= 2 && i <= 8)
+				Assert.Equal(maskingValue, result->GetValue(i));
+			else
+				Assert.Equal(timeSeries.GetValue(i), result->GetValue(i));
+		}
+
+		delete result;
+	}
 }
