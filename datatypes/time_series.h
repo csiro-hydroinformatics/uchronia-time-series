@@ -97,9 +97,7 @@ namespace datatypes
 		>
 		class TTimeSeries
 		{
-
 		protected:
-
 			using StoragePolicy = StP < T > ;
 			using MissingValuePolicy = MvP < T > ;
 			typedef typename StoragePolicy::StorageType StorageType;
@@ -737,7 +735,7 @@ namespace datatypes
 				return true;
 			}
 
-			template <typename T = Tts::ElementType>
+			template <typename T = typename Tts::ElementType>
 			static Tts* MaskTimeSeries(const Tts& timeSeries, const ptime& start, const ptime& end, T maskValue)
 			{
 				if (start < timeSeries.GetStartDate())

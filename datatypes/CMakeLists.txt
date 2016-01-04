@@ -1,33 +1,28 @@
 cmake_minimum_required(VERSION 2.8)
 
-## section: Macro
-MACRO(ADD_MSVC_PRECOMPILED_HEADER PrecompiledHeader PrecompiledSource SourcesVar)
-  IF(MSVC)
-    GET_FILENAME_COMPONENT(PrecompiledBasename ${PrecompiledHeader} NAME_WE)
-    SET(PrecompiledBinary "${CMAKE_CURRENT_BINARY_DIR}/${PrecompiledBasename}.pch")
-    SET(Sources ${${SourcesVar}})
-
-    SET_SOURCE_FILES_PROPERTIES(${PrecompiledSource}
-                                PROPERTIES COMPILE_FLAGS "/Yc\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\""
-                                           OBJECT_OUTPUTS "${PrecompiledBinary}")
-    SET_SOURCE_FILES_PROPERTIES(${Sources}
-                                PROPERTIES COMPILE_FLAGS "/Yu\"${PrecompiledBinary}\" /FI\"${PrecompiledBinary}\" /Fp\"${PrecompiledBinary}\""
-                                           OBJECT_DEPENDS "${PrecompiledBinary}")  
-    # Add precompiled header to SourcesVar
-    LIST(APPEND ${SourcesVar} ${PrecompiledSource})
-  ENDIF(MSVC)
-ENDMACRO(ADD_MSVC_PRECOMPILED_HEADER)
+SET (VERSION 0.5.3)
 
 ## start setting
+SET (VERSION 0.5.0)
 SET (this_target datatypes)
 PROJECT(${this_target})
 
+find_package(Boost 1.48.0 COMPONENTS system date_time REQUIRED)
 
+include(./FindNetCDF.cmake)
+find_package (NetCDF REQUIRED)
 
 ## section: include directory
 INCLUDE_DIRECTORIES(
+    ${Boost_INCLUDE_DIRS}
+    ${NetCDF_INCLUDE_DIRS}
+)
+
+
+## section: library directories
+LINK_DIRECTORIES(
+)
   
-  )
 
 ## section: source files
 # Add your source files here (one file per line), please SORT in alphabetical order for future maintenance
@@ -74,23 +69,36 @@ ADD_DEFINITIONS(
     # -DCMAKE_CXX_FLAGS:STRING=' -std=c++11 '    
     )
 
+
 # JM needed to use this as of 2015-02, after an upgrade to latest Debian setup. The Add_definitions macro was not working, somehow.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 ## section: add target
-
 ADD_LIBRARY(${this_target} SHARED ${${this_target}_SOURCE_FILES} )
-
-## per202 comments out the following - no such thing for Linux.
-## section: add dependency
-# dependency determines overall build order.
-# ADD_DEPENDENCIES(${this_target} 
-#    netcdf.lib
-# 	)
 
 ## section: set link libraries
 TARGET_LINK_LIBRARIES( ${this_target}
-        netcdf.so
-        boost_system.so
-		boost_date_time.so
-        )
+    ${NetCDF_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
+
+# Files to be installed - used by packaging stuff below
+INSTALL(FILES ${${this_target}_HEADER_FILES} DESTINATION include/datatypes)
+# This needs to be packaged as it is used by the external API
+INSTALL(FILES "../tests/datatypes_test_helpers.hpp" DESTINATION include/datatypes/tests)
+INSTALL(TARGETS ${this_target} 
+  LIBRARY DESTINATION lib
+)
+
+# Packages - currently just an RPM
+set(CPACK_PACKAGE_VERSION ${VERSION})
+set(CPACK_GENERATOR "RPM;TGZ")
+set(CPACK_PACKAGE_NAME "swift-datatypes")
+set(CPACK_PACKAGE_RELEASE 1)
+set(CPACK_RPM_PACKAGE_RELEASE ${CPACK_PACKAGE_RELEASE})
+set(CPACK_PACKAGE_CONTACT "David Kent")
+set(CPACK_PACKAGE_VENDOR "BoM")
+set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_RPM_PACKAGE_REQUIRES "${NetCDF_LIBRARIES}")
+include(CPack)
