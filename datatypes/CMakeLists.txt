@@ -9,13 +9,14 @@ PROJECT(${this_target})
 
 find_package(Boost 1.48.0 COMPONENTS system date_time REQUIRED)
 
-include(./FindNetCDF.cmake)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+# include(./FindNetCDF.cmake)
 find_package (NetCDF REQUIRED)
 
 ## section: include directory
 INCLUDE_DIRECTORIES(
     ${Boost_INCLUDE_DIRS}
-    ${NetCDF_INCLUDE_DIRS}
+    ${NETCDF_INCLUDE_DIRS}
 )
 
 
@@ -78,7 +79,7 @@ ADD_LIBRARY(${this_target} SHARED ${${this_target}_SOURCE_FILES} )
 
 ## section: set link libraries
 TARGET_LINK_LIBRARIES( ${this_target}
-    ${NetCDF_LIBRARIES}
+    ${NETCDF_LIBRARIES}
     ${Boost_LIBRARIES}
 )
 
@@ -100,5 +101,5 @@ set(CPACK_PACKAGE_CONTACT "David Kent")
 set(CPACK_PACKAGE_VENDOR "BoM")
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
-set(CPACK_RPM_PACKAGE_REQUIRES "${NetCDF_LIBRARIES}")
+set(CPACK_RPM_PACKAGE_REQUIRES "${NETCDF_LIBRARIES}")
 include(CPack)

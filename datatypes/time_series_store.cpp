@@ -1011,6 +1011,9 @@ namespace datatypes
 		}
 
 		template <typename T>
+		TimeSeriesProvider<T>::~TimeSeriesProvider() {}
+
+		template <typename T>
 		TimeSeriesLibrary<T>& TimeSeriesLibrary<T>::operator=(TimeSeriesLibrary<T>&& src)
 		{
 			// Avoid self assignment
@@ -1106,6 +1109,13 @@ namespace datatypes
 			auto rawTs = snts->GetSeries();
 			delete snts;
 			return rawTs;
+		}
+
+		template <typename T>
+		vector<string> TimeSeriesLibrary<T>::GetIdentifiers() const
+		{
+			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented(string("TimeSeriesLibrary<T>::GetIdentifiers() not yet implemented"));
+			vector<string> x; return x;
 		}
 
 		template <typename T>

@@ -84,6 +84,12 @@ namespace datatypes
 				data.reserve(length);
 				data.assign(values, values + length);
 			}
+			void AllocateValues(StorageType& data, const vector<T>& values)
+			{
+				data.clear();
+				data.reserve(values.size());
+				data.assign(values.begin(), values.end());
+			}
 		};
 
 		/**
@@ -149,6 +155,15 @@ namespace datatypes
 				data = vector<T>(length, mvp.GetMissingValue());
 				instances++;
 			}
+
+			TTimeSeries(const std::vector<T>& values, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly())
+			{
+				SetDefaults();
+				this->timeStep = timeStep;
+				Reset(values, startDate);
+				instances++;
+			}
+
 
 			TTimeSeries(T * values, size_t length, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly())
 			{
@@ -279,6 +294,13 @@ namespace datatypes
 					this->stp.Allocate(data, length, mvp.GetMissingValue());
 				else
 					this->stp.AllocateValues(data, length, values);
+				this->startDate = startDate;
+				UpdateEndDate();
+			}
+
+			void Reset(const vector<T>& values, const ptime& startDate)
+			{
+				this->stp.AllocateValues(data, values);
 				this->startDate = startDate;
 				UpdateEndDate();
 			}

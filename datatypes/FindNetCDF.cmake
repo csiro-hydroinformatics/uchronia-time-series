@@ -43,6 +43,8 @@ if (NETCDF_INCLUDE_DIR AND NETCDF_LIBRARY)
   set (NETCDF_FIND_QUIETLY TRUE)
 endif ()
 
+## First, a section that tries defaults(? inherited from source), then Pearcey, then BoM machine settings.
+
 set(USE_DEFAULT_PATHS "NO_DEFAULT_PATH")
 if(NETCDF_USE_DEFAULT_PATHS)
   set(USE_DEFAULT_PATHS "")
@@ -57,18 +59,41 @@ find_library (NETCDF_LIBRARY NAMES netcdf
   HINTS "${NETCDF_DIR}/lib")
 mark_as_advanced (NETCDF_LIBRARY)
 
+
+## per202 include the Pearcey specific finders
+## after ""module load netcdf"" I observe:
+## NETCDF_HOME=/apps/netcdf/4.3.2
+
+if (NOT NETCDF_INCLUDE_DIR)
+	MESSAGE("Trying for Pearcey - NETCDF_HOME = $ENV{NETCDF_HOME}")
+	set (PEARCEY_NETCDF_INCLUDE_DIR $ENV{NETCDF_HOME}/include)
+	set (PEARCEY_NETCDF_LIBRARY_DIR $ENV{NETCDF_HOME}/lib)  
+	message ("PEARCEY_NETCDF_INCLUDE_DIR=${PEARCEY_NETCDF_INCLUDE_DIR}")
+	message ("PEARCEY_NETCDF_LIBRARY_DIR=${PEARCEY_NETCDF_LIBRARY_DIR}")  
+	find_path(NETCDF_INCLUDE_DIR netcdf.h
+			HINTS ${PEARCEY_NETCDF_INCLUDE_DIR}
+			PATHS ${PEARCEY_NETCDF_INCLUDE_DIR})
+
+	find_library (NETCDF_LIBRARY NAMES netcdf 
+				  HINTS ${PEARCEY_NETCDF_LIBRARY_DIR}
+				  PATHS ${PEARCEY_NETCDF_LIBRARY_DIR})
+	# message ("The path to the netcdf headers is ${NETCDF_INCLUDE_DIR}")
+	# message ("The path to the netcdf libraries is ${NETCDF_LIBRARY}")
+endif ()
+## per202 END include the Pearcey specific finders
+
+
 ## per202 include the BoM EHP specific finders
 if (NOT NETCDF_INCLUDE_DIR)
-find_path(NetCDF_INCLUDE_DIRS netcdf.h
-          HINTS NETCDF_DIR ENV NETCDF_DIR
-          PATHS "/opt/ehp/suite/include" )
-endif ()
-
-if (NOT NETCDF_LIBRARY)
-  find_library (NetCDF_LIBRARIES NAMES netcdf PATHS "/opt/ehp/suite/lib" )
+	find_path(NETCDF_INCLUDE_DIR netcdf.h
+		  HINTS NETCDF_DIR ENV NETCDF_DIR
+		  PATHS "/opt/ehp/suite/include" )
+	find_library (NETCDF_LIBRARY NAMES netcdf PATHS "/opt/ehp/suite/lib" )
 endif ()
 ## per202 END include the BoM EHP specific finders
 
+
+## per202 The rest looks for C++ and fortran interfaces - inherited from original, likely not used for SWIFT
 
 set (NETCDF_C_LIBRARIES ${NETCDF_LIBRARY})
 
@@ -128,6 +153,10 @@ NetCDF_check_interface (F90 netcdf.mod  netcdff)
 list (APPEND NetCDF_libs "${NETCDF_C_LIBRARIES}")
 set (NETCDF_LIBRARIES ${NetCDF_libs})
 set (NETCDF_INCLUDE_DIRS ${NetCDF_includes})
+
+message ("NETCDF_INCLUDE_DIRS=${NETCDF_INCLUDE_DIRS}")
+message ("NETCDF_LIBRARIES=${NETCDF_LIBRARIES}")
+message ("NETCDF_HAS_INTERFACES=${NETCDF_HAS_INTERFACES}")
 
 # handle the QUIETLY and REQUIRED arguments and set NETCDF_FOUND to TRUE if
 # all listed variables are TRUE

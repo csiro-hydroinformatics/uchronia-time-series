@@ -652,6 +652,28 @@ namespace datatypes
 			SourceInfo GetInfo(const string& dataId) const;
 		};
 
+		/**
+		* \brief	Library of time series, for high level access to sources of time series that nmay have varying on-disk representations
+		*
+		* \tparam	T	The element type of the time series dealt with, typically double or float.
+		*/
+		template <typename T>
+		class DATATYPES_DLL_LIB TimeSeriesProvider
+		{
+		public:
+			virtual ~TimeSeriesProvider();
+
+			/**
+			* \brief	Gets a single time series out of the library
+			*
+			* \param	dataId			   	Identifier for the time series
+			*
+			* \return	The univariate, single realization time series
+			*/
+			virtual TTimeSeries<T>* GetSingle(const string& dataId) = 0;
+
+			virtual vector<string> GetIdentifiers() const = 0;
+		};
 
 
 		/**
@@ -660,7 +682,7 @@ namespace datatypes
 		 * \tparam	T	The element type of the time series dealt with, typically double or float.
 		 */
 		template <typename T>
-		class DATATYPES_DLL_LIB TimeSeriesLibrary
+		class DATATYPES_DLL_LIB TimeSeriesLibrary : public TimeSeriesProvider<T>
 		{
 			using string = std::string;
 		public:
@@ -691,6 +713,8 @@ namespace datatypes
 			 * \return	The univariate, single realization time series 
 			 */
 			TTimeSeries<T>* GetSingle(const string& dataId, boost::function<TTimeSeries<T>*(TTimeSeries<T>*)>& tsTransform);
+
+			vector<string> GetIdentifiers() const;
 
 			/**
 			* \brief	Gets a single time series out of the library
