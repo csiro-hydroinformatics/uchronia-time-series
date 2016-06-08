@@ -1,13 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
-
-SET (VERSION 0.5.3)
+include(./version.cmake)
 
 ## start setting
-SET (VERSION 0.5.0)
 SET (this_target datatypes)
 PROJECT(${this_target})
 
-find_package(Boost 1.48.0 COMPONENTS system date_time REQUIRED)
+find_package(Boost 1.48.0 COMPONENTS system date_time regex REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 # include(./FindNetCDF.cmake)
@@ -28,8 +25,9 @@ LINK_DIRECTORIES(
 ## section: source files
 # Add your source files here (one file per line), please SORT in alphabetical order for future maintenance
 SET (${this_target}_SOURCE_FILES
-    time_series.cpp
+	time_series.cpp
 	time_series_store.cpp
+	time_series_io.cpp
 	time_step.cpp
     )
 
@@ -38,9 +36,12 @@ SET (${this_target}_SOURCE_FILES
 SET(${this_target}_HEADER_FILES
     exception_utilities.h
 	common.h
-	time_series.h
-	time_series_store.h
+	time_series.hpp
+	time_series_store.hpp
+	time_series_io.hpp
 	time_step.h
+	exception_utilities.h
+	tests/datatypes_test_helpers.hpp
     )
 
 SOURCE_GROUP("Header Files" FILES 
@@ -85,8 +86,8 @@ TARGET_LINK_LIBRARIES( ${this_target}
 
 # Files to be installed - used by packaging stuff below
 INSTALL(FILES ${${this_target}_HEADER_FILES} DESTINATION include/datatypes)
-# This needs to be packaged as it is used by the external API
-INSTALL(FILES "../tests/datatypes_test_helpers.hpp" DESTINATION include/datatypes/tests)
+INSTALL(FILES tests/datatypes_test_helpers.hpp DESTINATION include/datatypes/tests)
+	
 INSTALL(TARGETS ${this_target} 
   LIBRARY DESTINATION lib
 )

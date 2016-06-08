@@ -1,5 +1,5 @@
 #include "common.h"
-#include "time_series.h"
+#include "time_series.hpp"
 #include "exception_utilities.h"
 
 using namespace boost::gregorian;
@@ -14,7 +14,7 @@ namespace datatypes
 		template class TTimeSeries < double > ;
 		template class TTimeSeries < float >;
 
-		//template class TTimeSeries < std::vector<double> >;
+		//template class TTimeSeries < vector<double> >;
 		//template class MultiTimeSeries < double >;
 
 		template class TimeSeriesOperations < TimeSeries >;

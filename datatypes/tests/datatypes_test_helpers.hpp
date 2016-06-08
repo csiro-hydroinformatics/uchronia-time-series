@@ -1,7 +1,9 @@
 #pragma once
 
-#include "../datatypes/time_series.h"
 #include <boost/filesystem.hpp>
+#include "../common.h"
+#include "../time_series.hpp"
+#include "../time_series_io.hpp"
 
 using namespace boost::gregorian;
 using namespace datatypes::timeseries;
@@ -9,24 +11,6 @@ using namespace std;
 
 namespace datatypes {
 	namespace tests {
-
-		class FileSystemHelper{
-		public:
-			static boost::filesystem::path GetTempFile()
-			{
-				boost::filesystem::path tempFname = boost::filesystem::unique_path();
-				boost::filesystem::path tempDir = boost::filesystem::temp_directory_path();
-				boost::filesystem::path fPath = tempDir / tempFname; // operator/ is overloaded
-				return fPath;
-			}
-
-			static void Remove(const boost::filesystem::path& p)
-			{
-				if (boost::filesystem::exists(p))
-					boost::filesystem::remove(p);
-			}
-
-		};
 
 		template <typename T>
 		class  DataTestHelper
@@ -36,9 +20,9 @@ namespace datatypes {
 			static TTimeSeries<T> Ramp(int num, const ptime& start = ptime(date(2000, 1, 1)), double from = 0.0, double increment = 1.0);
 			static T* Seq(T from, T to, T by);
 			static T* Seq(T from, T by, int num);
-			static std::vector<T>  SeqVec(T from, T by, int num);
-			static std::vector<T*>* Seq(T from, T by, int num, int vecSize);
-			static void DeleteElements(std::vector<T*>& vec);
+			static vector<T>  SeqVec(T from, T by, int num);
+			static vector<T*>* Seq(T from, T by, int num, int vecSize);
+			static void DeleteElements(vector<T*>& vec);
 		};
 
 		template <typename T>
@@ -48,7 +32,7 @@ namespace datatypes {
 		}
 
 		template <typename T>
-		void DataTestHelper<T>::DeleteElements(std::vector<T*>& vec)
+		void DataTestHelper<T>::DeleteElements(vector<T*>& vec)
 		{
 			for (int i = 0; i < vec.size(); i++)
 				delete[] vec[i];
@@ -64,9 +48,9 @@ namespace datatypes {
 		}
 
 		template <typename T>
-		std::vector<T>  DataTestHelper<T>::SeqVec(T from, T by, int num)
+		vector<T>  DataTestHelper<T>::SeqVec(T from, T by, int num)
 		{
-			std::vector<T> data;
+			vector<T> data;
 			data.resize(num);
 			for (size_t i = 0; i < num; i++)
 				data[i] = from + i*by;
@@ -74,9 +58,9 @@ namespace datatypes {
 		}
 
 		template <typename T>
-		std::vector<T*> * DataTestHelper<T>::Seq(T from, T by, int num, int vecSize)
+		vector<T*> * DataTestHelper<T>::Seq(T from, T by, int num, int vecSize)
 		{
-			std::vector<T*> * result = new std::vector<T*>();
+			vector<T*> * result = new vector<T*>();
 			for (size_t i = 0; i < vecSize; i++)
 				result->push_back(Seq(from + i*(by*num), by, num));
 			return result;
@@ -91,5 +75,6 @@ namespace datatypes {
 			delete data;
 			return ts;
 		}
+
 	}
 }

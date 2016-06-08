@@ -1,1283 +1,573 @@
-#include "time_series_store.h"
+#include <string>
+#include <map>
 
-#include "boost/date_time/gregorian/gregorian.hpp"
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+
 #include "exception_utilities.h"
+#include "time_series_store.hpp"
+#include "time_series_io.hpp"
 
 namespace datatypes
 {
 	namespace timeseries
 	{
-		template <typename T>
-		SwiftNetCDFTimeSeriesStore<T>::SwiftNetCDFTimeSeriesStore(const string& filename)
+
+
+		
+		void IdentifiersProvider::CheckNotEmpty(const string& longId)
 		{
-			dataAccess = new SwiftNetCDFAccess(filename);
+			if (longId.empty())
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("A data identifier cannot be an empty string");
 		}
 
-		template <typename T>
-		SwiftNetCDFTimeSeriesStore<T>::SwiftNetCDFTimeSeriesStore(const string& filename, int nEns, int nLead, const string& timeUnits, std::vector<double>& timeVar, std::vector<string>& stationIds, std::vector<string>& varNames, std::map<string, VariableAttributes>& varAttributes)
+		vector<string> IdentifiersProvider::SplitHierarchicalIdentifier(const string& longId)
 		{
-			dataAccess = new SwiftNetCDFAccess(filename, nEns, nLead, timeUnits, timeVar, stationIds, varNames, varAttributes);
+			vector<string> tokens;
+			boost::split(tokens, longId, boost::is_any_of(string(".")));
+			return tokens;
 		}
 
-		template <typename T>
-		SwiftNetCDFTimeSeriesStore<T>::~SwiftNetCDFTimeSeriesStore()
+		string IdentifiersProvider::GetTopmostIdentifier(const string& longId)
 		{
-			Close();
+			if (longId == "") return "";
+			vector<string> tokens = SplitHierarchicalIdentifier(longId);
+			if (tokens.size() == 0) return "";
+			else return tokens[0];
 		}
 
-		template <typename T>
-		void SwiftNetCDFTimeSeriesStore<T>::Close()
+		vector<string> TimeSeriesLibraryDescription::GetDataIdSingle() const
 		{
-			if (dataAccess != nullptr)
-			{
-				delete dataAccess;
-				dataAccess = nullptr;
+			vector<string> ids;
+			for (auto& x : singleProviders) {
+				ids.push_back(string(x.first));
 			}
+			return ids;
 		}
 
-		template <typename T>
-		SwiftNetCDFTimeSeries<T> * SwiftNetCDFTimeSeriesStore<T>::Get(const string& varName, const string& identifier, const string& dimIdent /*= "station_id"*/, const ptime* startTime /*= nullptr*/, int leadTimeCount /*= -1*/)
+		vector<string> TimeSeriesLibraryDescription::GetDataIdEnsembleTs() const
 		{
-			return new SwiftNetCDFTimeSeries<T>(dataAccess, varName, identifier);
+			vector<string> ids;
+			for (auto& x : ensProviders) {
+				ids.push_back(string(x.first));
+			}
+			return ids;
 		}
 
-		template <typename T>
-		int SwiftNetCDFTimeSeriesStore<T>::GetEnsembleSize()
+		vector<string> TimeSeriesLibraryDescription::GetDataIdTsEnsembleTs() const
 		{
-			return dataAccess->GetEnsembleSize();
+			vector<string> ids;
+			for (auto& x : tsEnsProviders) {
+				ids.push_back(string(x.first));
+			}
+			return ids;
 		}
 
-		template <typename T>
-		int SwiftNetCDFTimeSeriesStore<T>::GetLeadTimeCount()
+		TimeSeriesSourceInfo TimeSeriesLibraryDescription::GetInfo(const string& dataId, bool applyRootDir) const
 		{
-			return dataAccess->GetLeadTimeCount();
-		}
-
-		template <typename T>
-		vector<ptime> * SwiftNetCDFTimeSeriesStore<T>::GetTimeDim()
-		{
-			return dataAccess->GetTimeDim();
-		}
-
-		template <typename T>
-		ptime SwiftNetCDFTimeSeriesStore<T>::GetStart()
-		{
-			return dataAccess->GetStart();
-		}
-
-		template <typename T>
-		int SwiftNetCDFTimeSeriesStore<T>::IndexForIdentifier(const string& identifier)
-		{
-			return dataAccess->IndexForIdentifier(identifier);
-		}
-		namespace io
-		{
-			SwiftNetCDFAccess::SwiftNetCDFAccess(const string& filename)
-			{
-				int code = nc_open(filename.c_str(), NC_NOWRITE, &ncid);
-				if (NC_NOERR != code)
-				{
-					ThrowOnFileOpenFail(filename, code);
-				}
-				else
-				{
-					ReadGeometry();
-				}
-			}
-
-			SwiftNetCDFAccess::SwiftNetCDFAccess(const string& filename, int nEns, int nLead, const string& timeUnits, std::vector<double>& timeVar, std::vector<string>& stationIds, std::vector<string>& varNames, std::map<string, VariableAttributes>& varAttributes)
-			{
-				auto fname = filename.c_str();
-				int code = nc_create(fname, NC_CLASSIC_MODEL | NC_CLOBBER, &ncid);
-				if (NC_NOERR != code)
-				{
-					ThrowOnFileOpenFail(filename, code);
-				}
-				else
-				{
-					WriteGeometry(nEns, nLead, timeUnits, timeVar, stationIds, varNames, varAttributes);
-				}
-			}
-
-			SwiftNetCDFAccess::~SwiftNetCDFAccess()
-			{
-				if (stationNames != nullptr) delete stationNames;
-				if (variableVarNames != nullptr) delete variableVarNames;
-				if (variableVarIds != nullptr) delete[] variableVarIds;
-				if (stationIds != nullptr) delete[] stationIds;
-				if (timeVec != nullptr) delete[] timeVec;
-				if (leadTimeVec != nullptr) delete[] leadTimeVec;
-				if (stationLat != nullptr) delete[] stationLat;
-				if (stationLon != nullptr) delete[] stationLon;
-				if (stationElevation != nullptr) delete[] stationElevation;
-				if (ncid != -1) nc_close(ncid);
-			}
-
-
-			ptime SwiftNetCDFAccess::ParseStartDate(const string& unitsAttribute)
-			{
-				using namespace boost::gregorian;
-				namespace bt = boost::posix_time;
-
-				auto t2string = unitsAttribute.substr(unitsAttribute.find("since") + 6, unitsAttribute.npos);
-
-				// http://stackoverflow.com/questions/3786201/parsing-of-date-time-from-string-boost
-				// http://www.boost.org/doc/libs/1_56_0/doc/html/date_time/date_time_io.html#date_time.io_tutorial
-				auto format = std::locale(std::locale::classic(), new bt::time_input_facet(bt::time_input_facet::iso_time_format_extended_specifier));
-				std::istringstream is(t2string);
-				is.imbue(format);
-				ptime startDate;
-				is >> startDate;
-				return startDate;
-
-			}
-
-			std::string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, TimeStep& timeStep)
-			{
-				string timeUnit;
-
-				string name = timeStep.GetName();
-
-				if (name == "daily")
-					timeUnit = "days";
-				else if (name == "hourly")
-					timeUnit = "hours";
-				else
-					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Unsupported timestep " + name);
-
-				return CreateTimeUnitsAttribute(utcStart, timeUnit);
-			}
-
-			std::string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, const string& units)
-			{
-				string timeUnit(units);
-				auto startStr = boost::posix_time::to_iso_extended_string(utcStart);
-				return timeUnit + " since " + startStr + " +0000";
-			}
-
-			void SwiftNetCDFAccess::ReadGeometry()
-			{
-				InquireDimIds();
-				InquireDimVarIds();
-				ReadTimeUnits();
-
-				numTimeSteps = InquireDimLength(timeDimId);
-				numStations = InquireDimLength(stationDimId);
-				strLen = InquireDimLength(strLenDimId);
-				leadTimeLength = InquireDimLength(leadTimeDimId);
-				ensembleSize = InquireDimLength(ensMemberDimId);
-
-				stationNames = GetStringVariable(strLen, stationNameVarId, numStations);
-
-				stationIds = GetVariable<int>(stationIdVarId, numStations);
-				stationLat = GetVariable<double>(latVarId, numStations);
-				stationLon = GetVariable<double>(lonVarId, numStations);
-				stationElevation = GetVariable<double>(elevationVarId, numStations);
-
-				catchmentName = HasAttribute(kCatchmentAttName) ? GetStringAttribute(kCatchmentAttName) : "<unspecified>";
-
-				timeVec = GetIntVariable(timeVarId, numTimeSteps);
-				leadTimeVec = GetIntVariable(leadTimeVarId, leadTimeLength);
-			}
-
-			void SwiftNetCDFAccess::SetTimeVar(std::vector<double>& timeVar)
-			{
-				double * vec = timeVar.data();
-				nc_put_var(ncid, timeVarId, vec);
-				this->timeVec = ConvertToArray<double, int>(timeVar);
-			}
-
-			void SwiftNetCDFAccess::WriteGeometry(int nEns, int nLead, const string& timeUnits, std::vector<double>& timeVar, std::vector<string>& stationIds, std::vector<string>& varNames, std::map<string, VariableAttributes>& varAttributes)
-			{
-				using namespace std;
-				DefineMandatoryDimensions(nEns, nLead, stationIds.size());
-				DefineDimVariables();
-				FillAttributes(timeUnits);
-
-				variableNames = vector<string>(varNames);
-				variableAttributes = map<string, VariableAttributes>(varAttributes);
-
-				ncendef(ncid);
-				SetTimeVar(timeVar);
-
-				numTimeSteps = timeVar.size();
-				numStations = stationIds.size();
-				// strLen; keep default value for the time being.
-
-				stationNames = new vector<string>(stationIds); // KLUDGE: needs a change to the interface.
-
-				this->stationIds = ConvertToArray<int>(stationIds);
-				// stationLat = 
-				// stationLon = 
-				// stationElevation = 
-
-				catchmentName = "<unspecified>";
-
-				leadTimeVec = new int[leadTimeLength];
-				for (int i = 0; i < leadTimeLength; i++)
-				{
-					leadTimeVec[i] = i + 1;
-				}
-				
-				this->timeUnits = ParseTimeUnits(string(timeUnits));
-
-				WriteCommonVarData();
-			}
-
-			int SwiftNetCDFAccess::AddGlobalAttribute(const string& attName, const string& attValue)
-			{
-				return AddAttribute(NC_GLOBAL, attName, attValue);
-			}
-
-			int SwiftNetCDFAccess::AddAttribute(int varId, const string& attName, const string& attValue)
-			{
-				return nc_put_att(ncid, varId, attName.c_str(), NC_CHAR, attValue.size() + 1, attValue.c_str());
-			}
-
-			int SwiftNetCDFAccess::AddGlobalAttribute(char * attName, char * attValue)
-			{
-				return AddGlobalAttribute(string(attName), string(attValue));
-			}
-
-			void SwiftNetCDFAccess::FillAttributes(const string& timeUnits)
-			{
-				using namespace boost::gregorian;
-				namespace bt = boost::posix_time;
-
-				//tempstring = variableName + " for " + mHead.mCatchmentName;
-				//int tempint = tempstring.length() + 1;
-				//int code = nc_put_att(ncid, NC_GLOBAL, "title", NC_CHAR, tempint, tempstring.c_str());
-
-				int code;
-				code = AddGlobalAttribute("institution", "CSIRO Land and Water");
-				code = AddGlobalAttribute("source", "SWIFT (devel version)");
-				code = AddGlobalAttribute(string("catchment"), this->catchmentName);
-				code = AddGlobalAttribute("STF_convention_version", "2.0");
-				code = AddGlobalAttribute("STF_nc_spec", "https://wiki.csiro.au/display/wirada/NetCDF+for+SWIFT");
-				code = AddGlobalAttribute("comment", "We do not comment on-water matters");
-
-				auto todo = string("TODO");
-
-				// Not sure whether what is wanted. 
-				// See for instance, for formats: http://www.boost.org/doc/libs/1_56_0/doc/html/date_time/date_time_io.html
-				auto timeStamp = bt::to_iso_extended_string(bt::second_clock::universal_time());
-				code = AddGlobalAttribute(string(kHistoryAttName), timeStamp + string(" UTC - New file created "));
-
-				code = AddAttribute(timeVarId, string(kStandardNameAttName), string(kTimeVarName));
-				code = AddAttribute(timeVarId, string(kLongNameAttName), string(kTimeVarName));
-
-				code = AddAttribute(timeVarId, string(kUnitsAttName), string(timeUnits));
-				code = AddAttribute(timeVarId, string("time_standard"), todo);
-				code = AddAttribute(timeVarId, string(kAxisAttName), todo);
-
-				code = AddAttribute(stationIdVarId, string(kLongNameAttName), todo);
-				code = AddAttribute(stationNameVarId, string(kLongNameAttName), todo);
-
-				code = AddAttribute(ensMemberVarId, string(kLongNameAttName), todo);
-				code = AddAttribute(ensMemberVarId, string(kStandardNameAttName), todo);
-				code = AddAttribute(ensMemberVarId, string(kUnitsAttName), string("member id"));
-				code = AddAttribute(ensMemberVarId, string(kAxisAttName), string("u"));
-
-				code = AddAttribute(leadTimeVarId, string(kLongNameAttName), string("forecast lead time"));
-				code = AddAttribute(leadTimeVarId, string(kStandardNameAttName), string("lead time"));
-				code = AddAttribute(leadTimeVarId, string(kUnitsAttName), todo);
-				code = AddAttribute(leadTimeVarId, string(kAxisAttName), string("v"));
-
-				this->startDate = ParseStartDate(string(timeUnits));
-
-			}
-
-			void SwiftNetCDFAccess::InquireDimIds()
-			{
-				int code;
-				code = nc_inq_dimid(ncid, kTimeDimName.c_str(), &timeDimId);
-				code = nc_inq_dimid(ncid, kStationDimName.c_str(), &stationDimId);
-				code = nc_inq_dimid(ncid, kStrLenDimName.c_str(), &strLenDimId);
-				code = nc_inq_dimid(ncid, kLeadTimeDimName.c_str(), &leadTimeDimId);
-				code = nc_inq_dimid(ncid, kEnsMemberDimName.c_str(), &ensMemberDimId);
-
-			}
-
-			void SwiftNetCDFAccess::InquireDimVarIds()
-			{
-				int code;
-				code = nc_inq_varid(ncid, kTimeVarName.c_str(), &timeVarId);
-				code = nc_inq_varid(ncid, kStationNameVarName.c_str(), &stationNameVarId);
-				code = nc_inq_varid(ncid, kStationIdVarName.c_str(), &stationIdVarId);
-				code = nc_inq_varid(ncid, kLeadTimeVarName.c_str(), &leadTimeVarId);
-				code = nc_inq_varid(ncid, kEnsMemberVarName.c_str(), &ensMemberVarId);
-				code = nc_inq_varid(ncid, kLatVarName.c_str(), &latVarId);
-				code = nc_inq_varid(ncid, kLonVarName.c_str(), &lonVarId);
-				code = nc_inq_varid(ncid, kElevationVarName.c_str(), &elevationVarId);
-			}
-
-			void SwiftNetCDFAccess::ReadTimeUnits()
-			{
-				size_t size;
-				// TODO: consider using udunit2, however this is not up to scratch for windows (32 bits only). See https://github.com/Unidata/UDUNITS-2/issues/16.
-
-				int code = nc_inq_attlen(ncid, timeVarId, kUnitsAttName.c_str(), &size);
-				char * tempchars;
-				tempchars = new char[size + 1];
-				code = nc_get_att_text(ncid, timeVarId, kUnitsAttName.c_str(), tempchars);
-
-				string units(tempchars);
-				delete[] tempchars;
-
-				ptime parsedDate = ParseStartDate(units);
-				startDate = parsedDate;
-
-				timeUnits = ParseTimeUnits(units);
-			}
-
-			std::string SwiftNetCDFAccess::ParseTimeUnits(const string& unitsAttribute)
-			{
-				auto t2string = unitsAttribute.substr(unitsAttribute.find("since") + 6, unitsAttribute.npos);
-
-				t2string = unitsAttribute.substr(0, 4);
-				string timeUnits;
-				// TODO: suggest to use udunits markers for time units.
-				// This looks too ad-hoc. Propose clearer scheme. Why would month be a default??
-				if (t2string == string("hour"))
-				{
-					timeUnits = string("hr");
-				}
-				else if (t2string == string("days"))
-				{
-					timeUnits = string("da");
-				}
-				else
-				{
-					timeUnits = string("mo");
-				}
-				return timeUnits;
-			}
-
-
-			int SwiftNetCDFAccess::InquireDimLength(int dimId)
-			{
-				size_t size;
-				int code = nc_inq_dimlen(ncid, dimId, &size);
-
-				return (int)size;
-			}
-
-			template<class TTo>
-			TTo* SwiftNetCDFAccess::ConvertToArray(std::vector<string>& src)
-			{
-				using boost::lexical_cast;
-				TTo* result = new TTo[src.size()];
-				for (int i = 0; i < src.size(); i++)
-				{
-					result[i] = lexical_cast<TTo>(src[i]);
-				}
-				return result;
-			}
-
-			template<class TFrom, class TTo>
-			TTo* SwiftNetCDFAccess::ConvertToArray(std::vector<TFrom>& src)
-			{
-				TTo* result = new TTo[src.size()];
-				for (int i = 0; i < src.size(); i++)
-				{
-					result[i] = (TTo)src[i];
-				}
-				return result;
-			}
-
-			template<class T>
-			T* SwiftNetCDFAccess::GetVariable(int varId, int n)
-			{
-				if (varId < 0) return nullptr;
-				T* result = new T[n];
-				int code = nc_get_var(ncid, varId, result);
-				if (code != NC_NOERR)
-				{
-					delete[] result;
-					return nullptr;
-				}
-				return result;
-			}
-
-			template<class T, class TStored>
-			T* SwiftNetCDFAccess::GetVariable(int varId, int n)
-			{
-				T* result = new T[n];
-				TStored* tmp = GetVariable<TStored>(varId, n);
-				for (int i = 0; i < n; i++)
-				{
-					result[i] = static_cast<T>(tmp[i]);
-				}
-				delete[] tmp;
-				return result;
-			}
-
-			std::vector<std::string> SwiftNetCDFAccess::ReadVariableNames()
-			{
-				std::vector<std::string> variableNames = std::vector<std::string>();
-
-				int nVars;
-				nc_inq_nvars(ncid, &nVars);
-				
-				int* varIds = new int[nVars];
-				nc_inq_varids(ncid, &nVars, varIds);
-
-				char* varName = new char[kDefaultStrLength];
-				for (int i = 0; i < nVars; i++)
-				{
-					nc_inq_varname(ncid, varIds[i], varName);
-					variableNames.push_back(string(varName));
-				}
-				delete[] varName;
-
-				delete[] varIds;
-
-				return variableNames;
-			}
-
-			std::vector<std::string> SwiftNetCDFAccess::ReadAttributeNames(const string& varName)
-			{
-				int varId = GetVarId(varName);
-
-				int nAtts;
-				nc_inq_natts(ncid, &nAtts);
-
-				std::vector<std::string> attNames = std::vector<std::string>();
-
-				char* attName = new char[kDefaultStrLength];
-				for (int i = 0; i < nAtts; i++)
-				{
-					int code = nc_inq_attname(ncid, varId, i, attName);
-					if (code == 0)
-						attNames.push_back(string(attName));
-				}
-				delete[] attName;
-
-				return attNames;
-			}
-
-			std::string SwiftNetCDFAccess::ReadStringAttribute(const string& varName, const string& attName)
-			{
-				int varId = GetVarId(varName);
-
-				nc_type type;
-				int code = nc_inq_atttype(ncid, varId, attName.c_str(), &type);
-
-				if (type != NC_CHAR)
-					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Attribute attName not of type string.");
-
-				size_t size;
-				code = nc_inq_attlen(ncid, varId, attName.c_str(), &size);
-
-				char* strAtt = new char[size];
-				code = nc_get_att_text(ncid, varId, attName.c_str(), strAtt);
-				std::string result = string(strAtt);
-
-				delete[] strAtt;
-
-				return result;
-			}
-
-			double SwiftNetCDFAccess::ReadNumericAttribute(const string& varName, const string& attName)
-			{
-				int varId = GetVarId(varName);
-
-				nc_type type;
-				int code = nc_inq_atttype(ncid, varId, attName.c_str(), &type);
-
-				if (type != NC_DOUBLE || type != NC_FLOAT || type != NC_INT || type != NC_INT64)
-					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Attribute attName not of numeric type (double, float, int or int64).");
-
-				if (type == NC_DOUBLE)
-				{
-					double d;
-					code = nc_get_att_double(ncid, varId, attName.c_str(), &d);
-					return d;
-				}
-				if (type == NC_FLOAT)
-				{
-					float f;
-					code = nc_get_att_float(ncid, varId, attName.c_str(), &f);
-					return (double)f;
-				}
-				if (type == NC_INT)
-				{
-					int i;
-					code = nc_get_att_int(ncid, varId, attName.c_str(), &i);
-					return (double)i;
-				}
-				if (type == NC_INT64)
-				{
-					long l;
-					code = nc_get_att_long(ncid, varId, attName.c_str(), &l);
-					return (double)l;
-				}
-			}
-
-			std::string SwiftNetCDFAccess::GetStringAttribute(const string& attName)
-			{
-				size_t size;
-				int code = nc_inq_attlen(ncid, NC_GLOBAL, attName.c_str(), &size);
-
-				char * tempchars = new char[size + 1];
-				code = nc_get_att(ncid, NC_GLOBAL, attName.c_str(), tempchars);
-
-				auto result = string(tempchars, size);
-				delete[] tempchars;
-				return result;
-			}
-
-			bool SwiftNetCDFAccess::HasAttribute(const string& attName)
-			{
-				size_t size;
-				int code = nc_inq_attlen(ncid, NC_GLOBAL, attName.c_str(), &size);
-				return (code == NC_NOERR);
-			}
-
-			nc_type SwiftNetCDFAccess::GetDataType(int variableId)
-			{
-				nc_type datatype;
-				int code = nc_inq_vartype(ncid, variableId, &datatype);
-				return datatype;
-			}
-
-			std::vector<std::string> * SwiftNetCDFAccess::GetStringVariable(int strLen, int varId, int n)
-			{
-				char * bfr = new char[strLen];
-				auto strVec = new std::vector<string>();
-				size_t starts[2] = { 0, 0 };
-				const size_t counts[2] = { 1, strLen };
-				for (int i = 0; i < n; i++)
-				{
-					starts[0] = i;
-					int code = nc_get_vara(ncid, varId, starts, counts, bfr);
-					strVec->push_back(string(bfr));
-				}
-				delete bfr;
-				return strVec;
-			}
-
-			int * SwiftNetCDFAccess::GetIntVariable(int varId, int size)
-			{
-				nc_type datatype = GetDataType(varId);
-				if (datatype == NC_DOUBLE)
-				{
-					return GetVariable<int, double>(varId, size);
-				}
-				else if (datatype == NC_INT)
-				{
-					return GetVariable<int>(varId, size);
-				}
-				else
-					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation(string("The netCDF data type code ") + to_string(datatype) + " of the variable " + to_string(varId) + " is not supported ");
-			}
-
-			void SwiftNetCDFAccess::WriteSingleSeriesVarData()
-			{
-				const int varNumDims = 2;
-				int vardimids[varNumDims];
-				vardimids[0] = timeDimId;
-				vardimids[1] = stationDimId;
-
-				DefineVariables(varNumDims, vardimids);
-			}
-
-			void SwiftNetCDFAccess::WriteEnsembleVarData()
-			{
-				const int varNumDims = 3;
-				int vardimids[varNumDims];
-				vardimids[0] = timeDimId;
-				vardimids[1] = ensMemberDimId;
-				vardimids[2] = stationDimId;
-
-				DefineVariables(varNumDims, vardimids);
-			}
-
-			void SwiftNetCDFAccess::WriteForecastsVarData()
-			{
-				const int varNumDims = 4;
-				int vardimids[varNumDims];
-				vardimids[0] = timeDimId;
-				vardimids[1] = ensMemberDimId;
-				vardimids[2] = stationDimId;
-				vardimids[3] = leadTimeDimId;
-
-				DefineVariables(varNumDims, vardimids);
-			}
-
-			void SwiftNetCDFAccess::DefineVariables(const int varNumDims, int* varDimIDs)
-			{
-				ncredef(ncid);
-
-				int code;
-				variableVarIds = new int[variableNames.size()];
-				variableVarNames = new std::vector<string>(variableNames);
-
-				for (int i = 0; i < variableNames.size(); i++)
-				{
-					string varName = variableNames[i];
-					code = nc_def_var(ncid, varName.c_str(), NC_DOUBLE, varNumDims, varDimIDs, variableVarIds + i);
-					int varId = variableVarIds[i];
-					AddAttributes(varId, varName, variableAttributes);
-				}
-
-				ncendef(ncid);
-			}
-
-			void SwiftNetCDFAccess::AddVariableAttributes(int varId, const string& longName, const string& units, const string& type, double fillValue)
-			{
-				int code = nc_put_att_double(ncid, varId, kFillValueAttName.c_str(), NC_DOUBLE, (size_t)1, &fillValue);
-				code = AddAttribute(varId, string(kLongNameAttName), longName);
-				code = AddAttribute(varId, string(kUnitsAttName), units);
-				code = AddAttribute(varId, string(kTypeAttName), type);
-			}
-
-			void SwiftNetCDFAccess::AddAttributes(int varId, string& varName, std::map<string, VariableAttributes>& varAttributes)
-			{
-				int code;
-				if (varAttributes.find(varName) == varAttributes.end())
-				{
-					AddVariableAttributes(varId, varName, string("unknown"), string("unknown"), VariableAttributes::DefaultFillValue());
-				}
-				else
-				{
-					auto att = varAttributes.at(varName);
-					AddVariableAttributes(varId, att.LongName, att.Units, att.Type, att.FillValue);
-				}
-			}
-
-			void SwiftNetCDFAccess::DefineMandatoryDimensions(int nEns, int nLead, int nStations)
-			{
-				int code = nc_def_dim(ncid, kTimeDimName.c_str(), NC_UNLIMITED, &timeDimId);
-				code = nc_def_dim(ncid, kStationDimName.c_str(), nStations, &stationDimId);
-				code = nc_def_dim(ncid, kStrLenDimName.c_str(), kDefaultStrLength, &strLenDimId);
-				code = nc_def_dim(ncid, kLeadTimeDimName.c_str(), nLead, &leadTimeDimId);
-				code = nc_def_dim(ncid, kEnsMemberDimName.c_str(), nEns, &ensMemberDimId);
-
-				ensembleSize = nEns;
-				leadTimeLength = nLead;
-				numStations = nStations;
-			}
-
-			void SwiftNetCDFAccess::DefineDimVariables()
-			{
-				int timedimids[1] = { timeDimId };
-				int stationnamedimids[2] = { stationDimId, strLenDimId };
-				int stationiddimids[1] = { stationDimId };
-				int leadtimedimids[1] = { leadTimeDimId };
-				int ensmemberdimids[1] = { ensMemberDimId };
-
-				int code = nc_def_var(ncid, kTimeVarName.c_str(), NC_INT, 1, timedimids, &timeVarId);
-				code = nc_def_var(ncid, kStationNameVarName.c_str(), NC_CHAR, 2, stationnamedimids, &stationNameVarId);
-				code = nc_def_var(ncid, kStationIdVarName.c_str(), NC_INT, 1, stationiddimids, &stationIdVarId);
-				code = nc_def_var(ncid, kLeadTimeVarName.c_str(), NC_INT, 1, leadtimedimids, &leadTimeVarId);
-				code = nc_def_var(ncid, kEnsMemberVarName.c_str(), NC_INT, 1, ensmemberdimids, &ensMemberVarId);
-				code = nc_def_var(ncid, kLatVarName.c_str(), NC_FLOAT, 1, stationiddimids, &latVarId);
-				code = nc_def_var(ncid, kLonVarName.c_str(), NC_FLOAT, 1, stationiddimids, &lonVarId);
-				code = nc_def_var(ncid, kElevationVarName.c_str(), NC_FLOAT, 1, stationiddimids, &elevationVarId);
-			}
-
-			void SwiftNetCDFAccess::WriteCommonVarData()
-			{
-				int code;
-				size_t* startp;
-				size_t* countp;
-
-				startp = new size_t[1];
-				countp = new size_t[1];
-
-				// Set Station ID's
-
-				startp[0] = 0;
-				countp[0] = numStations;
-
-				code = nc_put_vara_int(ncid, stationIdVarId, startp, countp, stationIds);
-
-				// Set Ensemble No's
-
-				int eLen = GetEnsembleSize();
-
-				startp[0] = 0;
-				countp[0] = eLen;
-
-				int* ensArr = new int[eLen];
-				for (int i = 0; i < eLen; i++)
-					ensArr[i] = i;
-
-				code = nc_put_vara_int(ncid, ensMemberVarId, startp, countp, ensArr);
-
-				delete[] ensArr;
-
-				// Set Lead Time No's
-				
-				int fLen = GetLeadTimeCount();
-
-				startp[0] = 0;
-				countp[0] = fLen;
-
-				int* ldtArr = new int[fLen];
-				for (int i = 0; i < fLen; i++)
-					ldtArr[i] = i + 1;
-
-				code = nc_put_vara_int(ncid, leadTimeVarId, startp, countp, ldtArr);
-
-				delete[] ldtArr;
-
-
-				delete[] startp;
-				delete[] countp;
-			}
-
-			int SwiftNetCDFAccess::GetEnsembleSize()
-			{
-				return this->ensembleSize;
-			}
-
-			int SwiftNetCDFAccess::GetEnsembleSize(const string& ncVarName)
-			{
-				if (GetNumDims(ncVarName)> 2)  
-					// double var2_fcast_ens[lead_time,station,ens_member,time]
-					//   double var1_ens[station,ens_member,time]  
-					return this->ensembleSize;  
-				else
-					// double var2_obs[station,time]
-					return 0;
-			}
-
-			int SwiftNetCDFAccess::GetNumDims(const string& ncVarName)
-			{
-				int ndimsp;
-				int code = nc_inq_varndims(ncid, this->GetVarId(ncVarName), &ndimsp);
-				if (NC_NOERR != code)
-				{
-					ThrowOnVarInquiryFail(ncVarName, code);
-				}
-				return ndimsp;
-			}
-
-			int SwiftNetCDFAccess::GetLeadTimeCount(const string& ncVarName)
-			{
-				if (GetNumDims(ncVarName)> 3) 
-					// double var2_fcast_ens[lead_time,station,ens_member,time]
-					return leadTimeLength;
-				else
-					//   double var1_ens[station,ens_member,time]  
-					// double var2_obs[station,time]
-					return 0; 
-			}
-
-			int SwiftNetCDFAccess::GetLeadTimeCount()
-			{
-				return leadTimeLength;
-			}
-
-			vector<ptime> * SwiftNetCDFAccess::GetTimeDim()
-			{
-				int timeLen = this->GetTimeLength();
-				auto tstep = GetTimeStep();
-				vector<ptime> * result = new vector<ptime>(timeLen);
-				for (size_t i = 0; i < timeLen; i++)
-				{
-					(*result)[i] = tstep.AddSteps(startDate, timeVec[i]);
-				}
-				return result;
-			}
-
-			int SwiftNetCDFAccess::GetTimeLength()
-			{
-				return this->numTimeSteps;
-			}
-
-			ptime SwiftNetCDFAccess::GetStart()
-			{
-				return ptime(startDate);
-			}
-
-			int SwiftNetCDFAccess::IndexForIdentifier(const string& identifier)
-			{
-				using boost::lexical_cast;
-
-				int intIdentifier = lexical_cast<int>(identifier);
-
-				std::vector<int> testVector(stationIds, stationIds + numStations);
-
-				auto index = std::find(testVector.begin(), testVector.end(), intIdentifier);
-				return (index == testVector.end() ? -1 : index - testVector.begin());
-			}
-
-			ptime SwiftNetCDFAccess::TimeForIndex(int timeIndex)
-			{
-				int delta = timeVec[timeIndex];
-				auto timeStart = GetStart();
-				return GetTimeStep().AddSteps(timeStart, timeIndex);
-			}
-
-			TimeStep SwiftNetCDFAccess::GetTimeStep()
-			{
-				// TODO: revise this. See also ParseTimeUnits
-				if (timeUnits == string("hr")) return TimeStep::GetHourly();
-				else if (timeUnits == string("da")) return TimeStep::GetDaily();
-				else if (timeUnits == string("mo"))
-					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Monthly time step is not supported");
-				else
-					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Unknown time unit identifier " + timeUnits);
-			}
-
-			double * SwiftNetCDFAccess::GetForecastDataBuffer(int numStations, int numTimeSteps)
-			{
-				// double rain_fcast_ens[lead_time,station,ens_member,time] in R; rev conventions for C, but order does not matter here
-				return new double[leadTimeLength * numStations * ensembleSize * numTimeSteps];
-			}
-
-			double * SwiftNetCDFAccess::GetEnsembleDataBuffer(int numStations, int numTimeSteps)
-			{
-				// double rain_ens[station,ens_member,time] in R; rev conventions for C, but order does not matter here
-				return new double[numStations * ensembleSize * numTimeSteps];
-			}
-
-			double * SwiftNetCDFAccess::GetSingleSeriesDataBuffer(int numStations, int numTimeSteps)
-			{
-				// double q_der[station, time]  in R; rev conventions for C
-				// but order does not matter here
-				return new double[numStations * numTimeSteps];
-			}
-
-			int SwiftNetCDFAccess::GetVarId(const string& varName)
-			{
-				int dataVarId;
-				int code = nc_inq_varid(ncid, varName.c_str(), &dataVarId);
-				if (NC_NOERR != code)
-				{
-					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("variable name not found " + varName);
-				}
-				return dataVarId;
-			}
-
-			void SwiftNetCDFAccess::GetEnsFcastNetcdfWindow(int catchmentNumber, int timeIndex, size_t *startp, size_t *countp)
-			{
-				// size_t startp[4]; // double rain_fcast_ens[lead_time,station,ens_member,time] in R; rev conventions for C
-				startp[0] = timeIndex;
-				startp[1] = 0;
-				startp[2] = catchmentNumber;
-				startp[3] = 0;
-
-				// size_t countp[4]; // double rain_fcast_ens[lead_time,station,ens_member,time] in R; rev conventions for C
-				countp[0] = 1;
-				countp[1] = ensembleSize;
-				countp[2] = 1;
-				countp[3] = leadTimeLength;
-			}
-
-			void SwiftNetCDFAccess::GetEnsNetcdfWindow(int catchmentNumber, size_t *startp, size_t *countp)
-			{
-				// double q_ens[station, ens_member, time]  in R; rev conventions for C
-				startp[0] = 0;
-				startp[1] = 0;
-				startp[2] = catchmentNumber;
-
-				countp[0] = this->GetTimeLength();
-				countp[1] = ensembleSize;
-				countp[2] = 1;
-			}
-
-			void SwiftNetCDFAccess::GetNetcdfWindow(int catchmentNumber, size_t *startp, size_t *countp)
-			{
-				// double q_der[station, time]  in R; rev conventions for C
-				startp[0] = 0;
-				startp[1] = catchmentNumber;
-
-				countp[0] = this->GetTimeLength();
-				countp[1] = 1;
-			}
-		}
-		template <typename T>
-		SwiftNetCDFTimeSeries<T>::SwiftNetCDFTimeSeries(SwiftNetCDFAccess * dataAccess, const string& varName, const string& identifier)
-		{
-			this->dataAccess = dataAccess;
-			this->varName = varName;
-			this->identifier = identifier;
-			this->catchmentNumber = dataAccess->IndexForIdentifier(identifier);
-		}
-
-
-		template <typename T>
-		TTimeSeries<T> * SwiftNetCDFTimeSeries<T>::GetSeries()
-		{
-			auto values = dataAccess->GetValues<T>(varName, catchmentNumber);
-			auto result = new TTimeSeries<T>(values, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
-			delete values;
+			string id = IdentifiersProvider::GetTopmostIdentifier(dataId);
+			TimeSeriesSourceInfo result;
+			if (singleProviders.find(id) != singleProviders.end())
+				result = singleProviders.at(string(id));
+			else if (ensProviders.find(id) != ensProviders.end())
+				result = ensProviders.at(string(id));
+			else if (tsEnsProviders.find(id) != tsEnsProviders.end())
+				result = tsEnsProviders.at(string(id));
+			else
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("Data Id not found: " + id));
+			if (applyRootDir)
+				result.ApplyRootDir(this->GetRootDirPath().generic_string());
 			return result;
 		}
 
-		template <typename T>
-		void SwiftNetCDFTimeSeries<T>::SetSeries(TTimeSeries<T> * timeSeries)
+		void TimeSeriesLibraryDescription::SetLoadedFileName(const string& fileName)
 		{
-			dataAccess->WriteSingleSeriesVarData();
-			T* values = timeSeries->GetValues();
-			dataAccess->SetValues(varName, catchmentNumber, values);
-			delete[] values;
+			filenameLoadedFrom = fileName;
 		}
 
-		template <typename T>
-		MultiTimeSeries<TimeSeries*> * SwiftNetCDFTimeSeries<T>::GetEnsembleSeries()
+		std::map<string, string> TimeSeriesLibraryDescription::GetSerializableConfiguration(const string& dataId) const
 		{
-			auto series = dataAccess->GetEnsemble<T>(varName, catchmentNumber);
-			auto result = new MultiTimeSeries<TimeSeries*>(*series, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
-			for (auto& d : (*series))
+			return this->GetInfo(dataId).GetSerializableConfiguration();
+		}
+
+		boost::filesystem::path TimeSeriesLibraryDescription::GetRootDirPath() const
+		{
+			boost::filesystem::path p(filenameLoadedFrom);
+			return p.parent_path();
+		}
+
+		SingleTimeSeriesStore<double>* TimeSeriesLibraryDescription::CreateSingleTimeSeriesStore(const string& dataId) const
+		{
+			if (singleProviders.find(dataId) == singleProviders.end())
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("Data Id not found for single time series store: " + dataId));
+			auto tsi = GetInfo(dataId, true);
+			return tsi.CreateSingleTimeSeriesStore();
+		}
+
+		EnsembleTimeSeriesStore<double>* TimeSeriesLibraryDescription::CreateEnsembleTimeSeriesStore(const string& dataId) const
+		{
+			if (ensProviders.find(dataId) == ensProviders.end())
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("Data Id not found for ensemble store: " + dataId));
+			auto tsi = GetInfo(dataId, true);
+			return tsi.CreateEnsembleTimeSeriesStore();
+		}
+
+		TimeSeriesEnsembleTimeSeriesStore<double>* TimeSeriesLibraryDescription::CreateTimeSeriesEnsembleTimeSeriesStore(const string& dataId) const
+		{
+			if (tsEnsProviders.find(dataId) == tsEnsProviders.end())
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("Data Id not found for time series of ensembles store: " + dataId));
+			auto tsi = GetInfo(dataId, true);
+			return tsi.CreateTimeSeriesEnsembleTimeSeriesStore();
+		}
+
+		SingleTimeSeriesStore<double>* TimeSeriesSourceInfo::CreateSingleTimeSeriesStore() const
+		{
+			return impl->CreateSingleTimeSeriesStore();
+		}
+
+		EnsembleTimeSeriesStore<double>* TimeSeriesSourceInfo::CreateEnsembleTimeSeriesStore() const
+		{
+			return impl->CreateEnsembleTimeSeriesStore();
+		}
+
+		TimeSeriesEnsembleTimeSeriesStore<double>* TimeSeriesSourceInfo::CreateTimeSeriesEnsembleTimeSeriesStore() const
+		{
+			return impl->CreateTimeSeriesEnsembleTimeSeriesStore();
+		}
+
+		std::map<string, string> TimeSeriesSourceInfo::GetSerializableConfiguration() const
+		{
+			return impl->GetSerializableConfiguration();
+		}
+
+
+		SingleTimeSeriesStore<double>* TimeSeriesSourceInfoImpl::CreateSingleTimeSeriesStore() const
+		{
+			ExceptionUtilities::ThrowNotSupported(typeid(this).name(), "CreateSingleTimeSeriesStore");
+			return nullptr;
+		}
+
+		EnsembleTimeSeriesStore<double>* TimeSeriesSourceInfoImpl::CreateEnsembleTimeSeriesStore() const
+		{
+			ExceptionUtilities::ThrowNotSupported(typeid(this).name(), "CreateEnsembleTimeSeriesStore");
+			return nullptr;
+		}
+
+		TimeSeriesEnsembleTimeSeriesStore<double>* TimeSeriesSourceInfoImpl::CreateTimeSeriesEnsembleTimeSeriesStore() const
+		{
+			ExceptionUtilities::ThrowNotSupported(typeid(this).name(), "CreateTimeSeriesEnsembleTimeSeriesStore");
+			return nullptr;
+		}
+
+		std::map<string, string> TimeSeriesSourceInfoImpl::GetSerializableConfiguration() const
+		{
+			ExceptionUtilities::ThrowNotSupported(typeid(this).name(), "GetSerializableConfiguration");
+			return std::map<string,string>();
+		}
+
+		SingleTimeSeriesStore<double>* NetCdfSourceInfo::CreateSingleTimeSeriesStore() const
+		{
+			return TimeSeriesLibraryFactory::CreateTsSource(this->fileName, ncVarName, identifier);
+		}
+
+		EnsembleTimeSeriesStore<double>* NetCdfSourceInfo::CreateEnsembleTimeSeriesStore() const
+		{
+			return TimeSeriesLibraryFactory::CreateEnsTsSource(this->fileName, ncVarName, identifier);
+		}
+
+		TimeSeriesEnsembleTimeSeriesStore<double>* NetCdfSourceInfo::CreateTimeSeriesEnsembleTimeSeriesStore() const
+		{
+			if (storageType == TimeSeriesLibrary::StorageTypeSingleNetcdfFile)
+				return TimeSeriesLibraryFactory::CreateTsEnsTsSource(this->fileName, ncVarName, identifier);
+			else if (storageType == TimeSeriesLibrary::StorageTypeMultipleNetcdfFiles)
+				return new MultiFileTimeSeriesEnsembleTimeSeriesStore<double>(fileName, ncVarName, identifier, index);
+			else
 			{
-				if (d != nullptr) delete[] d;
+				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Unknown storage type: " + storageType);
+				return nullptr;
 			}
-			delete series;
-			return result;
 		}
 
-		template <typename T>
-		void SwiftNetCDFTimeSeries<T>::SetEnsemble(MultiTimeSeries<TimeSeries*> * ensemble)
+		std::map<string, string> NetCdfSourceInfo::GetSerializableConfiguration() const
 		{
-			dataAccess->WriteEnsembleVarData();
-			vector<T*>* values = ensemble->GetValues();
-			dataAccess->SetEnsembles(varName, catchmentNumber, *values);
-			for (T* data : *values)
-				if (data != nullptr) delete[] data;
-			delete values;
 		}
+		
 
-		template <typename T>
-		MultiTimeSeries<TimeSeries*> * SwiftNetCDFTimeSeries<T>::GetForecasts(int i)
-		{
-			auto series = dataAccess->GetForecasts<T>(varName, catchmentNumber, i);
-			auto result = new MultiTimeSeries<TimeSeries*>(*series, this->GetLeadTimeCount(), this->dataAccess->TimeForIndex(i), this->GetTimeStep());
-			for (auto& d : (*series))
-			{
-				if (d != nullptr) delete[] d;
-			}
-			delete series;
-			return result;
-		}
+		//string TimeSeriesLibraryDescription::GetFilename(const string& dataId) const
+		//{
+		//	using boost::filesystem::path;
+		//	string fName = GetInfo(dataId, false).FileName();
+		//	path p(fName);
+		//	if (p.is_absolute())
+		//		return fName;
+		//	else
+		//	{
+		//		path fullPath = GetRootDirPath() / p;
+		//		return fullPath.generic_string();
+		//	}
+		//}
 
-		template <typename T>
-		void SwiftNetCDFTimeSeries<T>::SetForecasts(int i, MultiTimeSeries<TimeSeries*> * forecasts)
-		{
-			dataAccess->WriteForecastsVarData();
-			auto values = forecasts->GetValues();
-			dataAccess->SetForecasts(varName, catchmentNumber, i, (*values));
-			for (auto& d : (*values))
-			{
-				if (d != nullptr) delete[] d;
-			}
-			delete values;
-		}
+		//string TimeSeriesLibraryDescription::GetFileVariableName(const string& dataId) const
+		//{
+		//	return GetInfo(dataId).NcVarName();
+		//}
 
-		template <typename T>
-		int SwiftNetCDFTimeSeries<T>::GetTimeLength()
-		{
-			return dataAccess->GetTimeLength();
-		}
+		//string TimeSeriesLibraryDescription::GetIdentifier(const string& dataId) const
+		//{
+		//	return GetInfo(dataId).Identifier();
+		//}
 
-		template <typename T>
-		int SwiftNetCDFTimeSeries<T>::GetEnsembleSize()
-		{
-			return dataAccess->GetEnsembleSize(varName);
-		}
+		//int TimeSeriesLibraryDescription::GetIndex(const string& dataId) const
+		//{
+		//	return GetInfo(dataId).Index();
+		//}
 
-		template <typename T>
-		int SwiftNetCDFTimeSeries<T>::GetLeadTimeCount()
+		NetCdfSourceInfo::NetCdfSourceInfo(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier,
+			int index, const string& storageType, const string& timeStep, const string& start, int length,
+			int ensembleSize, int ensembleLength, const string& ensembleTimeStep/*, const string& collectionDimensionId*/)
 		{
-			return dataAccess->GetLeadTimeCount(varName);
-		}
-
-		template <typename T>
-		ptime SwiftNetCDFTimeSeries<T>::TimeForIndex(int timeIndex)
-		{
-			return dataAccess->TimeForIndex(timeIndex);
-		}
-
-		template <typename T>
-		TimeStep SwiftNetCDFTimeSeries<T>::GetTimeStep()
-		{
-			return dataAccess->GetTimeStep();
-		}
-
-		template <typename T>
-		MultiFileEnsembleTimeSeriesStore<T>::MultiFileEnsembleTimeSeriesStore(const string& forecastDataFiles, const string& varName, const string& varIdentifier, int index)
-		{
-			this->forecastDataFiles = forecastDataFiles;
-			this->varName = varName;
-			this->varIdentifier = varIdentifier;
+			this->dataId = dataId;
+			this->fileName = fileName;
+			this->ncVarName = ncVarName;
 			this->index = index;
+			this->storageType = storageType;
+			this->identifier = identifier;
+			//this->collectionDimensionId = collectionDimensionId;
 		}
 
-		template <typename T>
-		TimeSeriesProvider<T>::~TimeSeriesProvider() {}
 
-		template <typename T>
-		TimeSeriesLibrary<T>& TimeSeriesLibrary<T>::operator=(TimeSeriesLibrary<T>&& src)
+		void TimeSeriesLibraryDescription::AddSingle(const string& dataId, const TimeSeriesSourceInfo& t)
+		{
+			singleProviders[dataId] = t;
+		}
+
+		void TimeSeriesLibraryDescription::AddEnsembleTs(const string& dataId, const TimeSeriesSourceInfo& t)
+		{
+			ensProviders[dataId] = t;
+		}
+
+		void TimeSeriesLibraryDescription::AddTsEnsembleTs(const string& dataId, const TimeSeriesSourceInfo& t)
+		{
+			tsEnsProviders[dataId] = t;
+		}
+
+		TimeSeriesLibrary::TimeSeriesLibrary() {}
+
+		TimeSeriesLibrary::TimeSeriesLibrary(const TimeSeriesLibraryDescription& description)
+		{
+			auto singleTs = description.GetDataIdSingle();
+			auto ensTs = description.GetDataIdEnsembleTs();
+			auto tsEnsTs = description.GetDataIdTsEnsembleTs();
+			for (auto& id : singleTs)
+				AddSource(id, (description.GetInfo(id, true).CreateSingleTimeSeriesStore()));
+			for (auto& id : ensTs)
+				AddSource(id, (description.GetInfo(id, true).CreateEnsembleTimeSeriesStore()));
+			for (auto& id : tsEnsTs)
+				AddSource(id, (description.GetInfo(id, true).CreateTimeSeriesEnsembleTimeSeriesStore()));
+		}
+
+		TimeSeriesLibrary::~TimeSeriesLibrary()
+		{
+			for (auto& store : tsEnsTimeSeriesProviders)
+				delete store.second;
+			for (auto& store : ensTimeSeriesProviders)
+				delete store.second;
+			for (auto& store : timeSeriesProviders)
+				delete store.second;
+
+			tsEnsTimeSeriesProviders.clear();
+			ensTimeSeriesProviders.clear();
+			timeSeriesProviders.clear();
+		}
+
+		TimeSeriesLibrary& TimeSeriesLibrary::operator=(TimeSeriesLibrary&& src)
 		{
 			// Avoid self assignment
-			if (&src == this){
+			if (&src == this) {
 				return *this;
 			}
+			std::swap(tsEnsTimeSeriesProviders, src.tsEnsTimeSeriesProviders);
 			std::swap(ensTimeSeriesProviders, src.ensTimeSeriesProviders);
 			std::swap(timeSeriesProviders, src.timeSeriesProviders);
 			return *this;
 		}
 
-		template <typename T>
-		TimeSeriesLibrary<T>::~TimeSeriesLibrary()
-		{
-			// TODO : Think more about who owns what when...
-
-			//for (auto etsp : ensTimeSeriesProviders)
-			//	delete etsp.second;
-
-			//for (auto tsp : timeSeriesProviders)
-			//{
-			//	if (tsp.second->dataAccess != nullptr)
-			//	{
-			//		delete tsp.second->dataAccess;
-			//		tsp.second->dataAccess = nullptr;
-			//	}
-			//	delete tsp.second;
-			//}
-		}
-
-		template <typename T>
-		TimeSeriesLibrary<T>::TimeSeriesLibrary(TimeSeriesLibrary<T>&& src)
+		TimeSeriesLibrary::TimeSeriesLibrary(TimeSeriesLibrary&& src)
 		{
 			*this = std::move(src);
 		}
 
-		template <typename T>
-		TimeSeriesLibrary<T>::TimeSeriesLibrary(const TimeSeriesLibraryDescription& description)
-		{
-			auto singleIds = description.GetDataIdSingle();
-			for (auto& id : singleIds)
-			{
-				AddSwiftNetCDFSource(id, description.GetFilename(id), description.GetFileVariableName(id), description.GetIdentifier(id));
-			}
-			auto ensIds = description.GetDataIdEnsemble();
-			for (auto& id : ensIds)
-			{
-				EnsembleTimeSeriesStore<double> * etss = new MultiFileEnsembleTimeSeriesStore<double>(
-					description.GetFilename(id),
-					description.GetFileVariableName(id),
-					description.GetIdentifier(id),
-					description.GetIndex(id));
-				AddSource(id, etss);
-			}
-		}
+		const string TimeSeriesLibrary::StorageTypeSingleNetcdfFile = "single_nc_file";
+		const string TimeSeriesLibrary::StorageTypeMultipleNetcdfFiles = "multiple_nc_files_filename_date_pattern";
 
-		template <typename T>
-		void TimeSeriesLibrary<T>::AddSwiftNetCDFSource(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier)
-		{
-			auto dataAccess = new SwiftNetCDFTimeSeriesStore<T>(fileName);
-			AddSource(dataId, dataAccess, ncVarName, identifier);
-		}
-
-		template <typename T>
-		void TimeSeriesLibrary<T>::AddSource(const string& dataId, SwiftNetCDFTimeSeriesStore<T> * dataAccess, const string& ncVarName, const string& identifier)
-		{
-			timeSeriesProviders[dataId] = new SingleSeriesInformation<T>(dataAccess, ncVarName, identifier);
-		}
-
-		template <typename T>
-		void TimeSeriesLibrary<T>::AddSource(const string& dataId, EnsembleTimeSeriesStore<T> * dataAccess)
-		{
-			ensTimeSeriesProviders[dataId] = dataAccess;
-		}
-
-		template <typename T>
-		void TimeSeriesLibrary<T>::AddSource(const string& dataId, SwiftNetCDFTimeSeries<T> * timeSeries)
-		{
-			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
-		}
-
-		template <typename T>
-		TTimeSeries<T>* TimeSeriesLibrary<T>::GetSingle(const string& dataId, boost::function<TTimeSeries<T>*(TTimeSeries<T>*)>& tsTransform)
+		TTimeSeries<double>* TimeSeriesLibrary::GetSingle(const string& dataId, boost::function<TTimeSeries<double>*(TTimeSeries<double>*)>& tsTransform)
 		{
 			auto rawTs = GetSingle(dataId);
 			return tsTransform(rawTs);
 		}
 
-		template <typename T>
-		TTimeSeries<T>* TimeSeriesLibrary<T>::GetSingle(const string& dataId)
+		vector<string> TimeSeriesLibrary::GetIdentifiers() const
 		{
-			auto snts = GetSwiftNetCDFTimeSeries(dataId);
-			auto rawTs = snts->GetSeries();
-			delete snts;
-			return rawTs;
+			vector<string> result;
+			for (auto& x : timeSeriesProviders)
+				result.push_back(x.first);
+			for (auto& x : ensTimeSeriesProviders)
+				result.push_back(x.first);
+			for (auto& x : tsEnsTimeSeriesProviders)
+				result.push_back(x.first);
+			return result;
 		}
 
-		template <typename T>
-		vector<string> TimeSeriesLibrary<T>::GetIdentifiers() const
+		vector<string> TimeSeriesLibrary::GetIdentifiers(const string& dataId) const
 		{
-			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented(string("TimeSeriesLibrary<T>::GetIdentifiers() not yet implemented"));
-			vector<string> x; return x;
+			auto p = const_cast<TimeSeriesLibrary*>(this);
+			if (hasKey(timeSeriesProviders, dataId))
+				return p->GetSeriesInformation(dataId)->GetIdentifiers();
+			if (hasKey(ensTimeSeriesProviders, dataId))
+				return p->GetEnsembleSeriesInformation(dataId)->GetIdentifiers();
+			else if (hasKey(tsEnsTimeSeriesProviders, dataId))
+				return p->GetTimeSeriesEnsembleSeriesInformation(dataId)->GetIdentifiers();
+			else
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data identifier ") + dataId + "not found");
 		}
 
-		template <typename T>
-		MultiTimeSeries<TTimeSeries<T>*>* TimeSeriesLibrary<T>::GetEnsemble(const string& dataId, const string& dataItemIdentifier)
+		string TimeSeriesLibrary::GetDataSummary(const string& dataId)
 		{
-			EnsembleTimeSeriesStore<T>* dataSource = this->ensTimeSeriesProviders[dataId];
+			if (hasKey(timeSeriesProviders, dataId))
+				return GetSeriesInformation(dataId)->GetDataSummary();
+			if (hasKey(ensTimeSeriesProviders, dataId))
+				return GetEnsembleSeriesInformation(dataId)->GetDataSummary();
+			else if (hasKey(tsEnsTimeSeriesProviders, dataId))
+				return GetTimeSeriesEnsembleSeriesInformation(dataId)->GetDataSummary();
+			else
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data identifier ") + dataId + "not found");
+		}
+
+		TTimeSeries<double>* TimeSeriesLibrary::GetSingle(const string& dataId)
+		{
+			IdentifiersProvider::CheckNotEmpty(dataId);
+			vector<string> ids = IdentifiersProvider::SplitHierarchicalIdentifier(dataId);
+			if (ids.size() == 1)
+				return GetSeriesInformation(dataId)->Read();
+			else
+				return GetSingle(ids[0], ids[1]);
+		}
+
+		//TimeSeriesProvider<double>* TimeSeriesLibrary::GetProvider(const string& dataId)
+		//{
+		//	this->GetSeriesInformation(dataId)->
+		//	ExceptionUtilities::ThrowNotImplemented();
+		//	return nullptr;
+		//}
+
+		TTimeSeries<double>* TimeSeriesLibrary::GetSingle(const string& dataId, const string& collectionIdentifier)
+		{
+			return GetSeriesInformation(dataId)->Read(collectionIdentifier);
+		}
+
+		MultiTimeSeries<TTimeSeries<double>*>* TimeSeriesLibrary::GetEnsemble(const string& dataId, const string& dataItemIdentifier)
+		{
+			TimeSeriesEnsembleTimeSeriesStore<double>* dataSource = this->tsEnsTimeSeriesProviders[dataId];
 			if (dataSource == nullptr)
 				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data source for data identifier ") + dataId + "not found");
 			auto rawTs = dataSource->Read(dataItemIdentifier);
 			return rawTs;
 		}
 
-		template <typename T>
-		MultiTimeSeries<TTimeSeries<T>*>* TimeSeriesLibrary<T>::GetEnsembleTimeSeries(const string& dataId)
+		MultiTimeSeries<TTimeSeries<double>*>* TimeSeriesLibrary::GetEnsembleTimeSeries(const string& dataId)
 		{
-			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
-			return nullptr;
+			EnsembleTimeSeriesStore<double>* dataSource = GetEnsembleSeriesInformation(dataId);
+			return dataSource->Read();
 		}
 
-		template <typename T>
-		EnsembleForecastTimeSeries<TTimeSeries<T>>* TimeSeriesLibrary<T>::GetEnsembleForecasts(const string& dataId)
+		EnsembleForecastTimeSeries<TTimeSeries<double>>* TimeSeriesLibrary::GetTimeSeriesEnsembleTimeSeries(const string& dataId)
 		{
-			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
-			return nullptr;
+			TimeSeriesEnsembleTimeSeriesStore<double>* dataSource = this->GetTimeSeriesEnsembleSeriesInformation(dataId);
+
+			size_t dataLength = dataSource->GetLength();
+			ptime start = dataSource->GetStart();
+			TimeStep step = dataSource->GetTimeStep();
+			EnsembleForecastTimeSeries<TimeSeries>* result = new EnsembleForecastTimeSeries<TimeSeries>(dataLength, start, step);
+
+			vector<string> dataItemIdentifiers = dataSource->GetItemIdentifiers();
+			int i = 0;
+			for (auto& dataItemIdentifier : dataItemIdentifiers)
+			{
+				auto rawTs = dataSource->Read(dataItemIdentifier);
+				result->SetValue(i, rawTs);
+				i++;
+			}
+
+			return result;
 		}
 
-		template <typename T>
-		SwiftNetCDFTimeSeries<T> * TimeSeriesLibrary<T>::GetSwiftNetCDFTimeSeries(const string& dataId)
+		void TimeSeriesLibrary::AddSource(const string& dataId, SingleTimeSeriesStore<double>* store)
 		{
-			return GetSeriesInformation(dataId)->GetSwiftNetCDFTimeSeries();
+			timeSeriesProviders[dataId] = store;
 		}
 
-		template <typename T>
-		SingleSeriesInformation<T> * TimeSeriesLibrary<T>::GetSeriesInformation(const string& dataId)
+		void TimeSeriesLibrary::AddSource(const string& dataId, EnsembleTimeSeriesStore<double>* store)
 		{
-			SingleSeriesInformation<T> * dataAccess = timeSeriesProviders[dataId];
-			if (dataAccess == nullptr)
-				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + dataId);
+			ensTimeSeriesProviders[dataId] = store;
+		}
+
+		void TimeSeriesLibrary::AddSource(const string& dataId, TimeSeriesEnsembleTimeSeriesStore<double>* dataAccess)
+		{
+			tsEnsTimeSeriesProviders[dataId] = dataAccess;
+		}
+
+		SingleTimeSeriesStore<double> * TimeSeriesLibrary::GetSeriesInformation(const string& dataId)
+		{
+			string id = IdentifiersProvider::GetTopmostIdentifier(dataId);
+			if (!hasKey(timeSeriesProviders, id))
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + id);
+			SingleTimeSeriesStore<double> * dataAccess = timeSeriesProviders[id];
 			return dataAccess;
 		}
 
-		
-		void TimeSeriesLibraryDescription::AddSingle(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier)
+		EnsembleTimeSeriesStore<double> * TimeSeriesLibrary::GetEnsembleSeriesInformation(const string& dataId)
 		{
-			singleProviders[dataId] = SourceInfo(dataId, fileName, ncVarName, identifier);
-		}
-		void TimeSeriesLibraryDescription::AddEnsembleForecast(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier, int index)
-		{
-			ensProviders[dataId] = SourceInfo(dataId, fileName, ncVarName, identifier, index);
+			string id = IdentifiersProvider::GetTopmostIdentifier(dataId);
+			if (!hasKey(ensTimeSeriesProviders, id))
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + id);
+			EnsembleTimeSeriesStore<double> * dataAccess = ensTimeSeriesProviders[id];
+			return dataAccess;
 		}
 
-		std::vector<string> TimeSeriesLibraryDescription::GetDataIdSingle() const
+		TimeSeriesEnsembleTimeSeriesStore<double> * TimeSeriesLibrary::GetTimeSeriesEnsembleSeriesInformation(const string& dataId)
 		{
-			std::vector<string> ids;
-			for (auto& x : singleProviders) {
-				ids.push_back(std::string(x.first));
+			string id = IdentifiersProvider::GetTopmostIdentifier(dataId);
+			if (!hasKey(tsEnsTimeSeriesProviders, id))
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + id);
+			TimeSeriesEnsembleTimeSeriesStore<double> * dataAccess = tsEnsTimeSeriesProviders[id];
+			return dataAccess;
+		}
+
+		SingleTimeSeriesStore<double>* TimeSeriesLibrary::CreateTsSource(const TimeSeriesSourceInfo& desc)
+		{
+			return desc.CreateSingleTimeSeriesStore();
+			//SwiftNetCDFTimeSeriesStore<>* access = new SwiftNetCDFTimeSeriesStore<>(desc.fileName);
+			//// TODO: check the consistency of access and desc
+			//return new NetCdfSingleSeriesStore<double>(access, desc.ncVarName, desc.identifier);
+		}
+
+		EnsembleTimeSeriesStore<double>* TimeSeriesLibrary::CreateEnsTsSource(const TimeSeriesSourceInfo& desc)
+		{
+			return desc.CreateEnsembleTimeSeriesStore();
+			//SwiftNetCDFTimeSeriesStore<>* access = new SwiftNetCDFTimeSeriesStore<>(desc.fileName);
+			//// TODO: check the consistency of access and desc
+			//return new NetCdfEnsembleTimeSeriesStore<double>(access, desc.ncVarName, desc.identifier);
+		}
+
+		TimeSeriesEnsembleTimeSeriesStore<double>* TimeSeriesLibrary::CreateTsEnsTsSource(const TimeSeriesSourceInfo& desc)
+		{
+			return desc.CreateTimeSeriesEnsembleTimeSeriesStore();
+			//if (desc.storageType == StorageTypeSingleNetcdfFile)
+			//{
+			//	SwiftNetCDFTimeSeriesStore<>* access = new SwiftNetCDFTimeSeriesStore<>(desc.fileName);
+			//	// TODO: check the consistency of access and desc
+			//	return new NetCdfTimeSeriesEnsembleTimeSeriesStore<double>(access, desc.ncVarName, desc.identifier);
+			//}
+			//else if (desc.storageType == StorageTypeMultipleNetcdfFiles)
+			//{
+			//	TimeSeriesEnsembleTimeSeriesStore<double> * etss = new MultiFileTimeSeriesEnsembleTimeSeriesStore<double>(
+			//		desc.fileName,
+			//		desc.ncVarName,
+			//		desc.identifier,
+			//		desc.index);
+			//	return etss;
+			//}
+			//else
+			//	datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("unknown storage type: " + desc.storageType);
+		}
+
+
+		TimeSeriesSourceInfoImpl::TimeSeriesSourceInfoImpl() {}
+		TimeSeriesSourceInfoImpl::TimeSeriesSourceInfoImpl(const TimeSeriesSourceInfoImpl& src) {}
+		TimeSeriesSourceInfoImpl::~TimeSeriesSourceInfoImpl() {}
+
+		using ExceptionUtilities = datatypes::exceptions::ExceptionUtilities;
+		TimeSeriesSourceInfo::TimeSeriesSourceInfo(const TimeSeriesSourceInfoImpl& t)
+		{
+			impl = t.Clone();
+		}
+		TimeSeriesSourceInfo::TimeSeriesSourceInfo(const TimeSeriesSourceInfo& src) {
+			impl = src.impl->Clone();
+		}
+		TimeSeriesSourceInfo::TimeSeriesSourceInfo() {}
+		TimeSeriesSourceInfo::~TimeSeriesSourceInfo()
+		{
+			if (impl != nullptr)
+				delete impl;
+		}
+
+		TimeSeriesSourceInfo::TimeSeriesSourceInfo(TimeSeriesSourceInfo&& src)
+		{
+			if (impl != nullptr)
+				delete impl;
+			impl = src.impl;
+			src.impl = nullptr;
+		}
+
+		TimeSeriesSourceInfo& TimeSeriesSourceInfo::operator= (const TimeSeriesSourceInfo& src)
+		{
+			if (&src == this) {
+				return *this;
 			}
-			return ids;
+			impl = src.impl->Clone();
+			return *this;
 		}
 
-		std::vector<string> TimeSeriesLibraryDescription::GetDataIdEnsemble() const
+		TimeSeriesSourceInfo& TimeSeriesSourceInfo::operator= (TimeSeriesSourceInfo&& src)
 		{
-			std::vector<string> ids;
-			for (auto& x : ensProviders) {
-				ids.push_back(std::string(x.first));
+			if (&src == this) {
+				return *this;
 			}
-			return ids;
+			if (impl != nullptr)
+				delete impl;
+			impl = src.impl;
+			src.impl = nullptr;
+			return *this;
 		}
 
-		TimeSeriesLibraryDescription::SourceInfo TimeSeriesLibraryDescription::GetInfo(const string& dataId) const
+		//void TimeSeriesSourceInfo::ApplyRootDir(const string& rootDir);
+		//string TimeSeriesSourceInfo::DataId() { ExceptionUtilities::ThrowNotImplemented(); return ""; }
+		//string TimeSeriesSourceInfo::Identifier() { ExceptionUtilities::ThrowNotImplemented(); return ""; }
+		//string TimeSeriesSourceInfo::StorageType() { ExceptionUtilities::ThrowNotImplemented(); return ""; }
+		//int TimeSeriesSourceInfo::Index() { ExceptionUtilities::ThrowNotImplemented(); return -1; }
+
+		//string TimeSeriesSourceInfo::TimeStep() { ExceptionUtilities::ThrowNotImplemented(); return ""; }
+		//string TimeSeriesSourceInfo::Start() { ExceptionUtilities::ThrowNotImplemented(); return ""; }
+		//int TimeSeriesSourceInfo::Length() { ExceptionUtilities::ThrowNotImplemented(); return -1; }
+		//int TimeSeriesSourceInfo::EnsembleSize() { ExceptionUtilities::ThrowNotImplemented(); return -1; }
+		//int TimeSeriesSourceInfo::EnsembleLength() { ExceptionUtilities::ThrowNotImplemented(); return -1; }
+		//string TimeSeriesSourceInfo::EnsembleTimeStep() { ExceptionUtilities::ThrowNotImplemented(); return ""; }
+		//string TimeSeriesSourceInfo::FileName() { ExceptionUtilities::ThrowNotImplemented(); return ""; }
+		//string TimeSeriesSourceInfo::NcVarName() { ExceptionUtilities::ThrowNotImplemented(); return ""; }
+
+		TimeSeriesSourceInfoImpl * NetCdfSourceInfo::Clone() const
 		{
-			if (singleProviders.find(dataId) != singleProviders.end())
-				return singleProviders.at(string(dataId));
-			if (ensProviders.find(dataId) != ensProviders.end())
-				return ensProviders.at(string(dataId));
-			datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("Data Id not found: " + dataId));
+			return new NetCdfSourceInfo(*this);
 		}
 
-		string TimeSeriesLibraryDescription::GetFilename(const string& dataId) const
+		void TimeSeriesSourceInfo::ApplyRootDir(const string& rootDir)
 		{
-			return GetInfo(dataId).fileName;
+			impl->ApplyRootDir(rootDir);
 		}
-		string TimeSeriesLibraryDescription::GetFileVariableName(const string& dataId) const
+
+		void TimeSeriesSourceInfoImpl::ApplyRootDir(const string& rootDir)
 		{
-			return GetInfo(dataId).ncVarName;
+			ExceptionUtilities::ThrowNotImplemented();
 		}
 
-		string TimeSeriesLibraryDescription::GetIdentifier(const string& dataId) const
+		void NetCdfSourceInfo::ApplyRootDir(const string& rootDir)
 		{
-			return GetInfo(dataId).identifier;
+			boost::filesystem::path r(rootDir);
+			boost::filesystem::path f(fileName);
+			fileName = (r / f).generic_string();
 		}
 
-		int TimeSeriesLibraryDescription::GetIndex(const string& dataId) const
-		{
-			return GetInfo(dataId).index;
-		}
-
-		// explicit instantiations. Without these, code using this DL library would fail at link time.
-		// see http://stackoverflow.com/a/495056/2752565
-		template class SwiftNetCDFTimeSeriesStore < double > ;
-		
-		// template class SwiftTimeSeriesStore < double > ;
-		template class SwiftNetCDFTimeSeries < double > ;
-
-		template <typename T>
-		MultiTimeSeries<TimeSeries*>* MultiFileEnsembleTimeSeriesStore<T>::Read(const string& fileIdentifier)
-		{
-			string fileName(forecastDataFiles);
-			boost::algorithm::replace_first(fileName, "{0}", fileIdentifier);
-			return TimeSeriesIOHelper<T>::ReadForecastRainfallTimeSeries(fileName, varName, varIdentifier, index);
-		}
-
-
-		template <typename T>
-		MultiTimeSeries<TimeSeries*>* TimeSeriesIOHelper<T>::ReadForecastRainfallTimeSeries(const std::string& netCdfFilepath, const std::string& varName, const std::string& identifier, int index)
-		{
-			SwiftNetCDFTimeSeriesStore<T> rainfallStore(netCdfFilepath);
-			SwiftNetCDFTimeSeries<T>* forecastRainEnsemble = rainfallStore.Get(varName, identifier);
-			MultiTimeSeries<TimeSeries*>* forecastRainMultiTimeSeries = forecastRainEnsemble->GetForecasts(index);
-			delete forecastRainEnsemble;
-			return forecastRainMultiTimeSeries;
-		}
-
-		template <typename T>
-		TTimeSeries<T>* TimeSeriesIOHelper<T>::Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier)
-		{
-			SwiftNetCDFTimeSeriesStore<T> store(netCdfFilePath);
-
-			SwiftNetCDFTimeSeries<T>* netCdfTimeSeries = store.Get(varName, identifier);
-			auto result = netCdfTimeSeries->GetSeries();
-			delete netCdfTimeSeries;
-			return result;
-		}
-
-		template <typename T>
-		TTimeSeries<T>* TimeSeriesIOHelper<T>::Read(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<Tts>& window)
-		{
-			auto tmp = Read(netCdfFilePath, varName, identifier);
-			auto result = window.Trim(*tmp);
-			delete tmp;
-			return result;
-		}
-
-		template <typename T>
-		TTimeSeries<T>* TimeSeriesIOHelper<T>::ReadDailyToHourly(const std::string& netCdfFilePath, const std::string& varName, const std::string& identifier, const TimeWindow<Tts>& window)
-		{
-			TTimeSeries<T>* fullDailyObsPetTimeSeries = Read(netCdfFilePath, varName, identifier);
-			TTimeSeries<T>* fullHourlyObsPetTimeSeries = TimeSeriesOperations<Tts>::DailyToHourly(*fullDailyObsPetTimeSeries);
-			auto result = window.Trim(*fullHourlyObsPetTimeSeries);
-			delete fullDailyObsPetTimeSeries;
-			delete fullHourlyObsPetTimeSeries;
-			return result;
-		}
-
-		template <typename T>
-		static TimeSeriesLibrary<T>* CreateTimeSeriesLibrary(const TimeSeriesLibraryDescription& description)
-		{
-			return new TimeSeriesLibrary<T>(description);
-		}
-
-		template class MultiFileEnsembleTimeSeriesStore < double >;
-		template class TimeSeriesLibrary < double >;
-		template class TimeSeriesIOHelper < double >;
 	}
 }

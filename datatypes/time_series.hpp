@@ -9,7 +9,6 @@
 
 #include <iterator>
 
-using namespace datatypes::sys;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
@@ -44,7 +43,7 @@ namespace datatypes
 		template <typename T = double>
 		class DefaultMissingFloatingPointPolicy{
 		private:
-			const T missingValue = (T)(-9999.0);
+			const T missingValue = (T)(DEFAULT_MISSING_DATA_VALUE);
 		public:
 			inline bool IsMissingValue(T a) const { return (a == missingValue); };
 			inline T GetMissingValue() const { return missingValue; };
@@ -62,7 +61,7 @@ namespace datatypes
 		template <typename T = double>
 		class NegativeIsMissingFloadingPointPolicy{
 		private:
-			const T missingValue = (T)(-9999.0);
+			const T missingValue = (T)(DEFAULT_MISSING_DATA_VALUE);
 		public:
 			inline bool IsMissingValue(T a) const { return (a < T()); };
 			inline T GetMissingValue() const { return missingValue; };
@@ -71,7 +70,7 @@ namespace datatypes
 		template <typename T = double>
 		class DefaultStorageFloatingPointPolicy{
 		public:
-			typedef typename std::vector<T> StorageType;
+			typedef typename vector<T> StorageType;
 			void Allocate(StorageType& data, size_t length, T value)
 			{
 				data.clear();
@@ -96,6 +95,8 @@ namespace datatypes
 		 * \brief	A template for univariate, single realisasion time series
 		 *
 		 * \tparam	T	Element type, typically double or float, but possibly a more complicated type such as another TTimeSeries.
+		 * \tparam	StP	Template name, the policy (a.k.a. strategy) for the data storage (e.g. in memory versus caching on disk)
+		 * \tparam	MvP	Template name, the policy (a.k.a. strategy) for interpreting data items as missing values
 		 */
 		template <typename T = double,
 			template <typename> class StP = DefaultStorageFloatingPointPolicy,
@@ -156,7 +157,7 @@ namespace datatypes
 				instances++;
 			}
 
-			TTimeSeries(const std::vector<T>& values, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly())
+			TTimeSeries(const vector<T>& values, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly())
 			{
 				SetDefaults();
 				this->timeStep = timeStep;
@@ -237,14 +238,14 @@ namespace datatypes
 				UncheckedCopyTo(dest, from, to);
 			}
 
-			void CopyTo(std::vector<T>& dest, size_t from = 0, size_t to = -1) const
+			void CopyTo(vector<T>& dest, size_t from = 0, size_t to = -1) const
 			{
 				CheckIntervalBounds(from, to);
 				size_t len = (to - from) + 1;
 				if (dest.size() != len)
 				{
 					dest.clear();
-					dest.reserve(len);
+					dest.resize(len);
 				};
 				std::copy(data.begin() + from, data.begin() + to + 1, dest.begin());
 			}
@@ -258,10 +259,10 @@ namespace datatypes
 				return values;
 			}
 
-			std::vector<T> GetValuesVector(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const
+			vector<T> GetValuesVector(size_t from = 0, size_t to = std::numeric_limits<size_t>::max()) const
 			{
 				CheckIntervalBounds(from, to);
-				std::vector<T> values;
+				vector<T> values;
 				this->CopyTo(values, from, to);
 				return values;
 			}
@@ -275,6 +276,7 @@ namespace datatypes
 				delete[] values;
 				return res;
 			}
+
 			void SetValue(size_t index, T value)
 			{
 				data[index] = value;
@@ -357,8 +359,8 @@ namespace datatypes
 
 			string GetSummary() const
 			{
-				string result = "[" + to_iso_extended_string(GetStartDate()) + "-" + to_iso_extended_string(GetEndDate()) + "];" +
-					std::to_string(GetLength()) + ";" + timeStep.GetName();
+				string result = "[" + to_iso_extended_string(GetStartDate()) + "/" + to_iso_extended_string(GetEndDate()) + "];length=" +
+					std::to_string(GetLength()) + ";time step=" + timeStep.GetName();
 				return result;
 			}
 
@@ -403,6 +405,23 @@ namespace datatypes
 				return ts;
 			}
 
+			TTimeSeries<T, StP, MvP> operator+(T value) const
+			{
+				T a;
+				T na = this->mvp.GetMissingValue();
+				size_t length = this->GetLength();
+				TTimeSeries<T, StP, MvP> ts(na, length, startDate, timeStep);
+				for (size_t i = 0; i < length; i++)
+				{
+					a = this->data[i];
+					if (IsMissingValue(a))
+						ts.data[i] = ts.GetNACode();
+					else
+						ts.data[i] = a + value;
+				}
+				return ts;
+			}
+
 			template<typename M>
 			TTimeSeries<T, StP, MvP> operator*(M multiplicator) const
 			{
@@ -440,7 +459,7 @@ namespace datatypes
 			{
 				size_t tsLen = this->GetLength();
 				if (to == std::numeric_limits<size_t>::max())
-					to = min(to, (tsLen - 1));
+					to = std::min(to, (tsLen - 1));
 				datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(from, 0, tsLen - 1, "from");
 				datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(to, 0, tsLen - 1, "to");
 			}
@@ -488,28 +507,13 @@ namespace datatypes
 		template <typename T, template <typename> class StP, template <typename> class MvP>
 		std::atomic<int> TTimeSeries<T, StP, MvP>::instances(0);
 
-
-		//class DATATYPES_DLL_LIB TimeSeries
-		//	: public TTimeSeries < double >
-		//{
-		//public:
-		//	TimeSeries() : TTimeSeries() {}
-		//	TimeSeries(double default_value, size_t length, const ptime& startDate) : TTimeSeries(default_value, length, startDate) {}
-		//	TimeSeries(double * values, size_t length, const ptime& startDate) : TTimeSeries(values, length, startDate) {}
-
-		//	// TODO: generalize. Expediency, fbut a refactor to generic types is cascading to a lot more. Basically, no TimeSeries anymore. 
-		//	TimeSeries(const TTimeSeries<double>& src) : TTimeSeries(src) {}
-		//	TimeSeries operator*(double multiplicator) const;
-
-		//};
-
 		typedef TTimeSeries < double > TimeSeries;
 
 		/**
-		 * \brief	Template for time series with multiple values at time point; e.g. to hold multiple realizations of time series in an ensemble
-		 *
-		 * \tparam	TsType	Elemental type, typically double or float.
-		 */
+		* \brief	Template for time series with multiple values at time point; e.g. to hold multiple realizations of time series in an ensemble
+		*
+		* \tparam	TsType  type of time series, typically a time series of double or float.
+		*/
 		template <typename TsType = TimeSeries>
 		class MultiTimeSeries // This may become an abstract class with specializations for lazy loading time series from the data store.
 		{
@@ -519,7 +523,7 @@ namespace datatypes
 			typedef typename std::add_pointer<Type>::type PtrType;
 			typedef typename Type::ElementType ElementType;
 
-			MultiTimeSeries(const std::vector<ElementType*>& values, size_t length, const ptime& startDate, const TimeStep& timeStep)
+			MultiTimeSeries(const vector<ElementType*>& values, size_t length, const ptime& startDate, const TimeStep& timeStep)
 			{
 				Clear();
 				this->startDate = startDate;
@@ -527,6 +531,37 @@ namespace datatypes
 				for (auto& d : values)
 				{
 					series.push_back(new Type(d, length, startDate, timeStep));
+				}
+			}
+
+			MultiTimeSeries(const vector<vector<ElementType>>& values, const ptime& startDate, const TimeStep& timeStep)
+			{
+				Clear();
+				this->startDate = startDate;
+				this->timeStep = timeStep;
+				for (auto& d : values)
+				{
+					series.push_back(new Type(d, startDate, timeStep));
+				}
+			}
+
+			MultiTimeSeries(ElementType** const values, size_t ensSize, size_t length, const ptime& startDate, const TimeStep& timeStep)
+			{
+				Clear(); 
+				this->startDate = startDate;
+				this->timeStep = timeStep;
+				for (int i = 0; i < ensSize; i++)
+					series.push_back(new Type(values[i], length, startDate, timeStep));
+			}
+
+			MultiTimeSeries(const vector<PtrType>& values, const ptime& startDate, const TimeStep& timeStep)
+			{
+				Clear();
+				this->startDate = startDate;
+				this->timeStep = timeStep;
+				for (const PtrType d : values)
+				{
+					series.push_back(new Type(*d));
 				}
 			}
 
@@ -541,21 +576,31 @@ namespace datatypes
 				this->timeStep = TimeStep::GetHourly();
 			}
 
+			MultiTimeSeries<PtrType>* AsPointerSeries()
+			{
+				return new MultiTimeSeries<PtrType>(series, startDate, timeStep);
+			}
+
+			MultiTimeSeries<Type> AsValueSeries()
+			{
+				return MultiTimeSeries<Type>(series, startDate, timeStep);
+			}
+
 			~MultiTimeSeries()
 			{
 				Clear();
 			}
 
-			MultiTimeSeries& operator=(const MultiTimeSeries& src){
-				if (&src == this){
+			MultiTimeSeries& operator=(const MultiTimeSeries& src) {
+				if (&src == this) {
 					return *this;
 				}
 				DeepCopyFrom(src);
 				return *this;
 			}
 
-			MultiTimeSeries& operator=(MultiTimeSeries&& src){
-				if (&src == this){
+			MultiTimeSeries& operator=(MultiTimeSeries&& src) {
+				if (&src == this) {
 					return *this;
 				}
 				std::swap(timeStep, src.timeStep);
@@ -582,7 +627,7 @@ namespace datatypes
 
 			ElementType Get(size_t i, size_t tsIndex)
 			{
-				return series[i][tsIndex];
+				return (*series[i])[tsIndex];
 			}
 
 			void Set(size_t i, size_t tsIndex, ElementType val)
@@ -591,9 +636,15 @@ namespace datatypes
 				(*a)[tsIndex] = val;
 			}
 
-			std::vector<ElementType*>* GetValues()
+			void Set(size_t i, const Type& val)
 			{
-				std::vector<ElementType*>* result = new std::vector<ElementType*>();
+				PtrType ts = series[i];
+				*ts = val; // overloaded operator= should do this as expected - tbc
+			}
+
+			vector<ElementType*>* GetValues() const
+			{
+				vector<ElementType*>* result = new vector<ElementType*>();
 				for (auto& d : series)
 				{
 					result->push_back(d->GetValues());
@@ -601,18 +652,22 @@ namespace datatypes
 				return result;
 			}
 
-			size_t Size()
+			size_t Size() const
 			{
 				return this->series.size();
 			}
 
-			ptime GetStartDate()
+			size_t GetLength(size_t i) const
+			{
+				return this->series[i]->GetLength();
+			}
 
+			ptime GetStartDate() const
 			{
 				return ptime(startDate);
 			}
 
-			TimeStep GetTimeStep()
+			TimeStep GetTimeStep() const
 			{
 				return TimeStep(timeStep);
 			}
@@ -628,7 +683,7 @@ namespace datatypes
 
 		private:
 
-			std::vector<PtrType> series;
+			vector<PtrType> series;
 			ptime startDate;
 			TimeStep timeStep;
 
@@ -646,6 +701,8 @@ namespace datatypes
 		};
 
 
+		//};
+
 		template <typename ItemType>
 		using PointerTypeTimeSeries = TTimeSeries < ItemType*, DefaultStorageFloatingPointPolicy, NullPointerIsMissingPolicy > ;
 
@@ -653,7 +710,10 @@ namespace datatypes
 		using MultiTimeSeriesPtr = MultiTimeSeries < Tts* > ;
 
 		template <typename Tts = TimeSeries>
-		using ForecastTimeSeries = PointerTypeTimeSeries < Tts > ;
+		using ForecastTimeSeries = PointerTypeTimeSeries < Tts >;
+
+		template <typename Tts = TimeSeries>
+		using TimeSeriesEnsemble = MultiTimeSeriesPtr < Tts >;
 
 		template <typename Tts = TimeSeries>
 		using EnsembleForecastTimeSeries = PointerTypeTimeSeries < MultiTimeSeriesPtr<Tts> > ;
@@ -757,6 +817,63 @@ namespace datatypes
 				return true;
 			}
 
+			static bool AreEnsembleTimeSeriesEqual(MultiTimeSeriesPtr<Tts>& a, MultiTimeSeriesPtr<Tts>& b)
+			{
+				size_t lengthA = a.Size();
+				size_t lengthB = b.Size();
+
+				if (lengthA != lengthB)
+					return false;
+
+				for (size_t i = 0; i < lengthA; i++)
+				{
+					auto valA = a.Get(i);
+					auto valB = b.Get(i);
+
+					if (!AreTimeSeriesEqual(*valA, *valB))
+						return false;
+				}
+				return true;
+			}
+
+			static bool AreEnsembleTimeSeriesEqual(MultiTimeSeries<Tts>& a, MultiTimeSeries<Tts>& b)
+			{
+				size_t lengthA = a.Size();
+				size_t lengthB = b.Size();
+
+				if (lengthA != lengthB)
+					return false;
+
+				for (size_t i = 0; i < lengthA; i++)
+				{
+					auto valA = a.Get(i);
+					auto valB = b.Get(i);
+
+					if (!AreTimeSeriesEqual(valA, valB))
+						return false;
+				}
+				return true;
+			}
+
+			static bool AreTimeSeriesEnsembleTimeSeriesEqual(EnsembleForecastTimeSeries<Tts>& a, EnsembleForecastTimeSeries<Tts>& b)
+			{
+				size_t lengthA = a.GetLength();
+				size_t lengthB = b.GetLength();
+
+				if (lengthA != lengthB)
+					return false;
+
+				for (size_t i = 0; i < lengthA; i++)
+				{
+					auto valA = a.GetValue(i);
+					auto valB = b.GetValue(i);
+
+					if (!AreEnsembleTimeSeriesEqual(*valA, *valB))
+						return false;
+				}
+				return true;
+			}
+
 			template <typename T = typename Tts::ElementType>
 			static Tts* MaskTimeSeries(const Tts& timeSeries, const ptime& start, const ptime& end, T maskValue)
 			{
@@ -826,7 +943,7 @@ namespace datatypes
 			static void CheckOutOfRange(const string& msg, const datatypes::timeseries::TimeSeries& ts, const ptime& d)
 			{
 				if (d < ts.GetStartDate() || d > ts.GetEndDate())
-					throw out_of_range(msg + ": " + to_iso_extended_string(d) + " out of range for " + ts.GetSummary());
+					throw std::out_of_range(msg + ": " + to_iso_extended_string(d) + " out of range for " + ts.GetSummary());
 			}
 		};
 	}

@@ -74,6 +74,7 @@
       <OptimizeReferences Condition="'$(Configuration)'=='Debug'">false</OptimizeReferences>
       <OptimizeReferences Condition="'$(Configuration)'=='Release'">true</OptimizeReferences>
       <SDLCheck>true</SDLCheck>
+      <AdditionalOptions>"-D_SCL_SECURE_NO_WARNINGS" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">true</GenerateDebugInformation>
@@ -130,12 +131,17 @@
   <ItemGroup>
     <ClInclude Include="exception_utilities.h" />
     <ClInclude Include="common.h" />
-    <ClInclude Include="time_series.h" />
-    <ClInclude Include="time_series_store.h" />
+    <ClInclude Include="tests/datatypes_test_helpers.h" />
+    <ClInclude Include="tests/datatypes_test_helpers.hpp" />
+    <ClInclude Include="time_series.hpp" />
+    <ClInclude Include="time_series_io.hpp" />
+    <ClInclude Include="time_series_store.hpp" />
     <ClInclude Include="time_step.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="tests/datatypes_test_helpers.cpp" />
     <ClCompile Include="time_series.cpp" />
+    <ClCompile Include="time_series_io.cpp" />
     <ClCompile Include="time_series_store.cpp" />
     <ClCompile Include="time_step.cpp" />
   </ItemGroup>

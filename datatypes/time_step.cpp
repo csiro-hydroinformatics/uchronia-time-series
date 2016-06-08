@@ -45,6 +45,11 @@ namespace datatypes
 			return *this;
 		}
 
+		TimeStep TimeStep::FromSeconds(unsigned int seconds)
+		{
+			return TimeStep(time_duration(0, 0, seconds, 0));
+		}
+		
 		TimeStep TimeStep::GetDaily() { return TimeStep(dailyTd); };
 
 		TimeStep TimeStep::GetHourly() { return TimeStep(hourlyTd); };
@@ -54,14 +59,14 @@ namespace datatypes
 			return time_duration(*regularStep);
 		}
 
-		std::string TimeStep::GetName() const
+		string TimeStep::GetName() const
 		{
 			if (!IsRegular())
 				ExceptionUtilities::ThrowNotImplemented("non-regular time steps not implemented");
 			if (*(regularStep) == dailyTd)
-				return std::string("daily");
+				return string("daily");
 			else if (*(regularStep) == hourlyTd)
-				return std::string("hourly");
+				return string("hourly");
 			else
 				return to_iso_string(*regularStep);
 				//ExceptionUtilities::ThrowInvalidArgument("time step is neither daily nor hourly; formatting of an ID is not yet implemented");
@@ -72,7 +77,7 @@ namespace datatypes
 			return startTimeStep + (*regularStep) * n;
 		}
 
-		TimeStep TimeStep::Parse(const std::string& name)
+		TimeStep TimeStep::Parse(const string& name)
 		{
 			if (name == "daily")
 				return GetDaily();
@@ -128,5 +133,33 @@ namespace datatypes
 		{
 			return (ptrdiff_t)(floor(GetLinearIndexing(referenceTime, testTime)));
 		}
+
+		TimeStep TimeStep::operator*(int mult) const
+		{
+			return TimeStep(this->GetRegularStepDuration() * mult);
+		}
+
+		bool TimeStep::IsRegular() const
+		{
+			return (regularStep != nullptr);
+		}
+
+		time_duration TimeStep::GetRegularStepDuration() const
+		{
+			if (!IsRegular())
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("This is not a regular time step");
+			return *regularStep;
+		}
+
+		bool TimeStep::operator==(const TimeStep &rhs) const
+		{
+			return (*regularStep) == *(rhs.regularStep);
+		}
+
+		bool TimeStep::operator!=(const TimeStep &rhs) const
+		{
+			return (*regularStep) != *(rhs.regularStep);
+		}
+
 	}
 }

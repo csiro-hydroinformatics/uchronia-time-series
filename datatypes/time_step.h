@@ -19,27 +19,14 @@ namespace datatypes
 			~TimeStep();
 
 			TimeStep& operator=(const TimeStep &rhs);
-			bool operator==(const TimeStep &rhs) const
-			{
-				return (*regularStep) == *(rhs.regularStep);
-			}
+			bool operator==(const TimeStep &rhs) const;
 
-			bool operator!=(const TimeStep &rhs) const
-			{
-				return (*regularStep) != *(rhs.regularStep);
-			}
+			bool operator!=(const TimeStep &rhs) const;
 
-			bool IsRegular() const
-			{
-				return (regularStep != nullptr);
-			}
+			TimeStep operator*(int mult) const;
+			bool IsRegular() const;
 
-			time_duration GetRegularStepDuration() const
-			{
-				if (!IsRegular())
-					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("This is not a regular time step");
-				return *regularStep;
-			}
+			time_duration GetRegularStepDuration() const;
 
 			const ptime AddSteps(const ptime& startTimeStep, ptrdiff_t n) const;
 
@@ -48,12 +35,13 @@ namespace datatypes
 			const ptrdiff_t GetNumSteps(const ptime& start, const ptime& end) const;
 			const ptrdiff_t GetOffset(const ptime& start, const ptime& end) const;
 			const void Increment(ptime* t) const;
-			static TimeStep Parse(const std::string& name);
+			static TimeStep Parse(const string& name);
+			static TimeStep FromSeconds(unsigned int seconds);
 
 			static TimeStep GetDaily();
 			static TimeStep GetHourly();
 
-			std::string GetName() const;
+			string GetName() const;
 
 		private:
 			// May not need to have thiis comcept of instant.
