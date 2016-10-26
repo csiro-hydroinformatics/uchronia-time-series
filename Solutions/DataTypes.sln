@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "datatypes", "..\datatypes\datatypes.vcxproj", "{D0FF7544-4149-4A72-8843-EAB66C94D1D1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdatatypes", "..\tests\testdatatypes.vcxproj", "{A2B27D42-7718-481F-A6A0-BEA4EA117658}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{D0FF7544-4149-4A72-8843-EAB66C94D1D1}.Release|Win32.Build.0 = Release|Win32
 		{D0FF7544-4149-4A72-8843-EAB66C94D1D1}.Release|x64.ActiveCfg = Release|x64
 		{D0FF7544-4149-4A72-8843-EAB66C94D1D1}.Release|x64.Build.0 = Release|x64
+		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Debug|Win32.Build.0 = Debug|Win32
+		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Debug|x64.ActiveCfg = Debug|x64
+		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Debug|x64.Build.0 = Debug|x64
+		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Release|Win32.ActiveCfg = Release|Win32
+		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Release|Win32.Build.0 = Release|Win32
+		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Release|x64.ActiveCfg = Release|x64
+		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

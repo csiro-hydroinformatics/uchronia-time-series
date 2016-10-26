@@ -22,4 +22,14 @@ namespace datatypes
 		template class TimeWindow < TimeSeries >;
 
 	}
+
+	namespace exceptions
+	{
+		void TimeSeriesChecks::CheckOutOfRange(const string& msg, const datatypes::timeseries::TimeSeries& ts, const ptime& d)
+		{
+			if (d < ts.GetStartDate() || d > ts.GetEndDate())
+				throw std::out_of_range(msg + ": " + to_iso_extended_string(d) + " out of range for " + ts.GetSummary());
+		}
+	}
+
 }

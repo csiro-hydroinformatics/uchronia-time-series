@@ -1,13 +1,12 @@
-include(./version.cmake)
+cmake_minimum_required(VERSION 2.8)
 
 ## start setting
 SET (this_target datatypes)
 PROJECT(${this_target})
 
-find_package(Boost 1.48.0 COMPONENTS system date_time regex REQUIRED)
+find_package(Boost 1.48.0 COMPONENTS system date_time regex filesystem REQUIRED)
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
-# include(./FindNetCDF.cmake)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../../../cmake_modules")
 find_package (NetCDF REQUIRED)
 
 ## section: include directory
@@ -20,15 +19,19 @@ INCLUDE_DIRECTORIES(
 ## section: library directories
 LINK_DIRECTORIES(
 )
-  
+
 
 ## section: source files
 # Add your source files here (one file per line), please SORT in alphabetical order for future maintenance
 SET (${this_target}_SOURCE_FILES
+	common.cpp
+	io_helper.cpp
 	time_series.cpp
 	time_series_store.cpp
 	time_series_io.cpp
 	time_step.cpp
+	time_step_implementation.cpp
+	tests/datatypes_test_helpers.cpp
     )
 
 ## section: header files
@@ -36,26 +39,22 @@ SET (${this_target}_SOURCE_FILES
 SET(${this_target}_HEADER_FILES
     exception_utilities.h
 	common.h
+	io_helper.h
 	time_series.hpp
 	time_series_store.hpp
 	time_series_io.hpp
 	time_step.h
+	time_step_implementation.h
 	exception_utilities.h
+	tests/datatypes_test_helpers.h
 	tests/datatypes_test_helpers.hpp
     )
 
-SOURCE_GROUP("Header Files" FILES 
-	
-	)
-SOURCE_GROUP("Source Files" FILES 
-	
-	)
-SOURCE_GROUP("Resource Files" FILES 
-	
-	)
+IF (ENABLE_CODECOVERAGE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
+ENDIF()
 
-
-## section: precompiled header	
+## section: precompiled header
 #ADD_MSVC_PRECOMPILED_HEADER("precompiled.h" "precompiled.cpp" MySources)
 #ADD_LIBRARY(MyLibrary ${MySources})
 
@@ -71,8 +70,7 @@ ADD_DEFINITIONS(
     # -DCMAKE_CXX_FLAGS:STRING=' -std=c++11 '    
     )
 
-
-# JM needed to use this as of 2015-02, after an upgrade to latest Debian setup. The Add_definitions macro was not working, somehow.
+# JM needed to use this as of 2016-07, after an upgrade to latest Debian setup. The Add_definitions macro was not working, somehow.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 ## section: add target
@@ -87,10 +85,16 @@ TARGET_LINK_LIBRARIES( ${this_target}
 # Files to be installed - used by packaging stuff below
 INSTALL(FILES ${${this_target}_HEADER_FILES} DESTINATION include/datatypes)
 INSTALL(FILES tests/datatypes_test_helpers.hpp DESTINATION include/datatypes/tests)
-	
-INSTALL(TARGETS ${this_target} 
-  LIBRARY DESTINATION lib
-)
+
+if(WIN32)
+  INSTALL(TARGETS ${this_target}
+    RUNTIME DESTINATION bin
+  )
+else()
+  INSTALL(TARGETS ${this_target}
+    LIBRARY DESTINATION lib
+  )
+endif()
 
 # Packages - currently just an RPM
 set(CPACK_PACKAGE_VERSION ${VERSION})

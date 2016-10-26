@@ -18,9 +18,6 @@
     <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="exception_utilities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="time_step.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -33,10 +30,19 @@
     <ClInclude Include="time_series_io.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tests\datatypes_test_helpers.hpp">
+    <ClInclude Include="tests/datatypes_test_helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tests\datatypes_test_helpers.h">
+    <ClInclude Include="tests/datatypes_test_helpers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="time_series_strategies.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="io_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="time_step_implementation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,8 +59,23 @@
     <ClCompile Include="time_series_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tests\datatypes_test_helpers.cpp">
+    <ClCompile Include="tests/datatypes_test_helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="io_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="exception_utilities.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="time_step_implementation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="datatypes.natvis" />
   </ItemGroup>
 </Project>

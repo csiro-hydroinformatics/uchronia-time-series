@@ -9,6 +9,7 @@
 #include "exception_utilities.h"
 #include "time_series_store.hpp"
 #include "time_series_io.hpp"
+#include "io_helper.h"
 
 namespace datatypes
 {
@@ -77,8 +78,13 @@ namespace datatypes
 				result = tsEnsProviders.at(string(id));
 			else
 				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("Data Id not found: " + id));
+			bool successRootDir = true;
 			if (applyRootDir)
-				result.ApplyRootDir(this->GetRootDirPath().generic_string());
+			{
+				successRootDir = result.ApplyRootDir(this->GetRootDirPath().generic_string());
+				if (!successRootDir)
+					successRootDir = result.ApplyRootDir(this->dataPath);
+			}
 			return result;
 		}
 
@@ -87,15 +93,40 @@ namespace datatypes
 			filenameLoadedFrom = fileName;
 		}
 
-		std::map<string, string> TimeSeriesLibraryDescription::GetSerializableConfiguration(const string& dataId) const
+		void TimeSeriesLibraryDescription::SetDataPath(const string& dataPath)
 		{
-			return this->GetInfo(dataId).GetSerializableConfiguration();
+			this->dataPath = dataPath;
+		}
+
+		string TimeSeriesLibraryDescription::GetDataPath() const
+		{
+			return this->dataPath;
+		}
+
+		std::map<string, string> TimeSeriesLibraryDescription::GetSerializableConfiguration(const string& dataId, const vector<string>& mandatoryKeys) const
+		{
+			auto serConf = this->GetInfo(dataId).GetSerializableConfiguration();
+			for (auto& s : mandatoryKeys)
+				if (serConf.find(s) == serConf.end())
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("A mandatory key is not found in the data provider configuration: ") + s);
+			return serConf;
 		}
 
 		boost::filesystem::path TimeSeriesLibraryDescription::GetRootDirPath() const
 		{
 			boost::filesystem::path p(filenameLoadedFrom);
 			return p.parent_path();
+		}
+
+		string TimeSeriesLibraryDescription::GetRootDirectory() const
+		{
+			return GetRootDirPath().generic_string();
+		}
+
+		boost::filesystem::path TimeSeriesLibraryDescription::GetFullPath(const string& relativePath) const
+		{
+			boost::filesystem::path p(relativePath);
+			return GetRootDirPath() / p;
 		}
 
 		SingleTimeSeriesStore<double>* TimeSeriesLibraryDescription::CreateSingleTimeSeriesStore(const string& dataId) const
@@ -179,10 +210,11 @@ namespace datatypes
 
 		TimeSeriesEnsembleTimeSeriesStore<double>* NetCdfSourceInfo::CreateTimeSeriesEnsembleTimeSeriesStore() const
 		{
-			if (storageType == TimeSeriesLibrary::StorageTypeSingleNetcdfFile)
+			if (storageType == StorageTypeSingleNetcdfFile)
 				return TimeSeriesLibraryFactory::CreateTsEnsTsSource(this->fileName, ncVarName, identifier);
-			else if (storageType == TimeSeriesLibrary::StorageTypeMultipleNetcdfFiles)
-				return new MultiFileTimeSeriesEnsembleTimeSeriesStore<double>(fileName, ncVarName, identifier, index);
+			else if (storageType == StorageTypeMultipleNetcdfFiles)
+				return new MultiFileTimeSeriesEnsembleTimeSeriesStore<double>(fileName, ncVarName, identifier, index,
+					 timeStep, start, length, ensembleSize, ensembleLength, ensembleTimeStep);
 			else
 			{
 				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Unknown storage type: " + storageType);
@@ -190,8 +222,51 @@ namespace datatypes
 			}
 		}
 
+		const string TimeSeriesSourceInfo::SingleSeriesCollectionTypeId = "single_collection";
+		const string TimeSeriesSourceInfo::SingleSeriesTypeId = "single";
+		const string TimeSeriesSourceInfo::EnsembleSeriesTypeId = "ensemble_ts";
+		const string TimeSeriesSourceInfo::TimeSeriesEnsemblesTypeId = "ts_ensemble_ts";
+		const string TimeSeriesSourceInfo::IdDataKey = "Id";
+
+		const string NetCdfSourceInfo::FileKey = "File";
+		const string NetCdfSourceInfo::VarKey = "Var";
+		const string NetCdfSourceInfo::IdentifierKey = "Identifier";
+		const string NetCdfSourceInfo::IndexKey = "Index";
+		const string NetCdfSourceInfo::TypeKey = "Type";
+		//const string NetCdfSourceInfo::TimeStepKey = "TimeStep";
+		//const string NetCdfSourceInfo::StartKey = "Start";
+		//const string NetCdfSourceInfo::LengthKey = "Length";
+
+		//const string NetCdfSourceInfo::EnsembleSizeKey = "EnsembleSize";
+		//const string NetCdfSourceInfo::EnsembleLengthKey = "EnsembleLength";
+		//const string NetCdfSourceInfo::EnsembleTimeStepKey = "EnsembleTimeStep";
+		//const string NetCdfSourceInfo::FilePatternKey = "FilePattern";
+		//const string NetCdfSourceInfo::MappingKey = "Mapping";
+
+		//const string NetCdfSourceInfo::StorageKey = "Storage";
+
+		const string NetCdfSourceInfo::StorageTypeSingleNetcdfFile = "single_nc_file";
+		const string NetCdfSourceInfo::StorageTypeMultipleNetcdfFiles = "multiple_nc_files_filename_date_pattern";
+
+
 		std::map<string, string> NetCdfSourceInfo::GetSerializableConfiguration() const
 		{
+
+			std::map<string, string> m;
+			m[TypeKey] = storageType;
+			m[FileKey] = fileName;
+			m[VarKey] = ncVarName;
+			m[IdentifierKey] = identifier;
+			m[IndexKey] = std::to_string(index);
+
+			//dataId;
+			//timeStep;
+			//start;
+			//int length = -1;
+			//int ensembleSize = -1;
+			//int ensembleLength = -1;
+			//ensembleTimeStep;
+			return m;
 		}
 		
 
@@ -226,7 +301,45 @@ namespace datatypes
 
 		NetCdfSourceInfo::NetCdfSourceInfo(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier,
 			int index, const string& storageType, const string& timeStep, const string& start, int length,
-			int ensembleSize, int ensembleLength, const string& ensembleTimeStep/*, const string& collectionDimensionId*/)
+			int ensembleSize, int ensembleLength, const string& ensembleTimeStep, const string& containingDirectory)
+		{
+			using namespace boost::filesystem;
+			this->dataId = dataId;
+			this->fileName = fileName;
+			this->ncVarName = ncVarName;
+			this->index = index;
+			this->storageType = storageType;
+			this->identifier = identifier;
+			if (!timeStep.empty())
+			{
+				// TODO: think of checkong for consistency, however 
+				// if filename is actually a file pattern, this is tricky
+				this->timeStep = TimeStep::Parse(timeStep);
+				this->start = TimeStep::PtimeFromIsoString(start);
+				this->length = length;
+				this->ensembleSize = ensembleSize;
+				this->ensembleLength = ensembleLength;
+				this->ensembleTimeStep = TimeStep::Parse(ensembleTimeStep);
+			}
+			else
+			{
+				string ffname = TimeSeriesSourceInfoImpl::OptionalApplyRootDir(containingDirectory, fileName, true);
+				SwiftNetCDFAccess nca(ffname, true);
+				this->timeStep = nca.GetTimeStep();
+				// TODO: should we allow ctor arguments to override the file information?
+				this->start = nca.GetStart();
+				this->length = nca.GetTimeLength();
+				this->ensembleSize = nca.GetEnsembleSize();
+				this->ensembleLength = nca.GetLeadTimeCount();
+				// for SWIFT netCDF v1.x, same time step as the main one.
+				// TODO for SWIFT netCDF v2, not valid assumption
+				this->ensembleTimeStep = this->timeStep;
+			}
+		}
+
+		NetCdfSourceInfo::NetCdfSourceInfo(const string& dataId, const string& fileName, const string& ncVarName, const string& identifier,
+			int index, const string& storageType, const TimeStep& timeStep, const ptime& start, int length,
+			int ensembleSize, int ensembleLength, const TimeStep& ensembleTimeStep/*, const string& collectionDimensionId*/)
 		{
 			this->dataId = dataId;
 			this->fileName = fileName;
@@ -234,9 +347,13 @@ namespace datatypes
 			this->index = index;
 			this->storageType = storageType;
 			this->identifier = identifier;
-			//this->collectionDimensionId = collectionDimensionId;
+			this->timeStep = timeStep;
+			this->start = start;
+			this->length = length;
+			this->ensembleSize = ensembleSize;
+			this->ensembleLength = ensembleLength;
+			this->ensembleTimeStep = ensembleTimeStep;
 		}
-
 
 		void TimeSeriesLibraryDescription::AddSingle(const string& dataId, const TimeSeriesSourceInfo& t)
 		{
@@ -253,7 +370,10 @@ namespace datatypes
 			tsEnsProviders[dataId] = t;
 		}
 
-		TimeSeriesLibrary::TimeSeriesLibrary() {}
+		TimeSeriesLibrary::TimeSeriesLibrary(TimeSeriesStoreFactory* storeCreator) 
+		{
+			this->storeCreator = storeCreator;
+		}
 
 		TimeSeriesLibrary::TimeSeriesLibrary(const TimeSeriesLibraryDescription& description)
 		{
@@ -270,6 +390,11 @@ namespace datatypes
 
 		TimeSeriesLibrary::~TimeSeriesLibrary()
 		{
+			Close();
+		}
+
+		void TimeSeriesLibrary::Close()
+		{
 			for (auto& store : tsEnsTimeSeriesProviders)
 				delete store.second;
 			for (auto& store : ensTimeSeriesProviders)
@@ -277,6 +402,11 @@ namespace datatypes
 			for (auto& store : timeSeriesProviders)
 				delete store.second;
 
+			if (storeCreator != nullptr)
+			{
+				delete storeCreator;
+				storeCreator = nullptr;
+			}
 			tsEnsTimeSeriesProviders.clear();
 			ensTimeSeriesProviders.clear();
 			timeSeriesProviders.clear();
@@ -291,6 +421,7 @@ namespace datatypes
 			std::swap(tsEnsTimeSeriesProviders, src.tsEnsTimeSeriesProviders);
 			std::swap(ensTimeSeriesProviders, src.ensTimeSeriesProviders);
 			std::swap(timeSeriesProviders, src.timeSeriesProviders);
+			std::swap(storeCreator, src.storeCreator);
 			return *this;
 		}
 
@@ -298,9 +429,6 @@ namespace datatypes
 		{
 			*this = std::move(src);
 		}
-
-		const string TimeSeriesLibrary::StorageTypeSingleNetcdfFile = "single_nc_file";
-		const string TimeSeriesLibrary::StorageTypeMultipleNetcdfFiles = "multiple_nc_files_filename_date_pattern";
 
 		TTimeSeries<double>* TimeSeriesLibrary::GetSingle(const string& dataId, boost::function<TTimeSeries<double>*(TTimeSeries<double>*)>& tsTransform)
 		{
@@ -386,19 +514,19 @@ namespace datatypes
 		{
 			TimeSeriesEnsembleTimeSeriesStore<double>* dataSource = this->GetTimeSeriesEnsembleSeriesInformation(dataId);
 
-			size_t dataLength = dataSource->GetLength();
-			ptime start = dataSource->GetStart();
-			TimeStep step = dataSource->GetTimeStep();
-			EnsembleForecastTimeSeries<TimeSeries>* result = new EnsembleForecastTimeSeries<TimeSeries>(dataLength, start, step);
+			//size_t dataLength = dataSource->GetLength();
+			//ptime start = dataSource->GetStart();
+			//TimeStep step = dataSource->GetTimeStep();
+			EnsembleForecastTimeSeries<TimeSeries>* result = dataSource->GetSeries(dataId);
 
-			vector<string> dataItemIdentifiers = dataSource->GetItemIdentifiers();
-			int i = 0;
-			for (auto& dataItemIdentifier : dataItemIdentifiers)
-			{
-				auto rawTs = dataSource->Read(dataItemIdentifier);
-				result->SetValue(i, rawTs);
-				i++;
-			}
+			//vector<string> dataItemIdentifiers = dataSource->GetItemIdentifiers();
+			//int i = 0;
+			//for (auto& dataItemIdentifier : dataItemIdentifiers)
+			//{
+			//	auto rawTs = dataSource->Read(dataItemIdentifier);
+			//	result->SetValue(i, rawTs);
+			//	i++;
+			//}
 
 			return result;
 		}
@@ -436,11 +564,28 @@ namespace datatypes
 			return dataAccess;
 		}
 
+		bool TimeSeriesLibrary::CanCreateTimeSeriesEnsembleSeriesStore(const string& dataId)
+		{
+			return (storeCreator != nullptr && storeCreator->CanCreateTimeSeriesEnsembleTimeSeriesStore(dataId) == true);
+		}
+		
+		void TimeSeriesLibrary::CreateTimeSeriesEnsembleSeriesStore(const string& dataId)
+		{
+			if(!CanCreateTimeSeriesEnsembleSeriesStore(dataId))
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation(string("This library cannot create a new store for ") + dataId);
+			AddSource(dataId, storeCreator->CreateTimeSeriesEnsembleTimeSeriesStore(dataId));
+		}
+
 		TimeSeriesEnsembleTimeSeriesStore<double> * TimeSeriesLibrary::GetTimeSeriesEnsembleSeriesInformation(const string& dataId)
 		{
 			string id = IdentifiersProvider::GetTopmostIdentifier(dataId);
 			if (!hasKey(tsEnsTimeSeriesProviders, id))
-				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + id);
+			{
+				if (CanCreateTimeSeriesEnsembleSeriesStore(dataId))
+					CreateTimeSeriesEnsembleSeriesStore(dataId);
+				else
+					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + id);
+			}
 			TimeSeriesEnsembleTimeSeriesStore<double> * dataAccess = tsEnsTimeSeriesProviders[id];
 			return dataAccess;
 		}
@@ -552,22 +697,70 @@ namespace datatypes
 			return new NetCdfSourceInfo(*this);
 		}
 
-		void TimeSeriesSourceInfo::ApplyRootDir(const string& rootDir)
+		bool TimeSeriesSourceInfo::ApplyRootDir(const string& rootDir)
 		{
-			impl->ApplyRootDir(rootDir);
+			return impl->ApplyRootDir(rootDir);
 		}
 
-		void TimeSeriesSourceInfoImpl::ApplyRootDir(const string& rootDir)
+		bool TimeSeriesSourceInfoImpl::ApplyRootDir(const string& rootDir)
 		{
 			ExceptionUtilities::ThrowNotImplemented();
+			return false;
 		}
 
-		void NetCdfSourceInfo::ApplyRootDir(const string& rootDir)
+		string TimeSeriesSourceInfoImpl::OptionalApplyRootDir(const std::string& rootDir, const std::string& filename, bool checkDirExists)
 		{
-			boost::filesystem::path r(rootDir);
-			boost::filesystem::path f(fileName);
-			fileName = (r / f).generic_string();
+			using namespace boost::filesystem;
+			path f(filename);
+			if (f.is_absolute())
+				return filename;
+			else if (!rootDir.empty())
+			{
+				boost::filesystem::path r(rootDir);
+				if (checkDirExists)
+				{
+					if (!exists(r))
+						datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("path does not exist: " + rootDir);
+					if (!is_directory(r))
+						datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("path exists but is not a directory: " + rootDir);
+				}
+				return (r / f).generic_string();
+			}
+			else
+				return filename;
+
 		}
+
+		bool NetCdfSourceInfo::IsFileNamePattern(const string& s) const
+		{
+			return datatypes::io::IoHelper::IsFileNamePattern(s);
+		}
+
+		bool NetCdfSourceInfo::ApplyRootDir(const string& rootDir)
+		{
+			using namespace boost::filesystem;
+			using datatypes::io::IoHelper;
+			auto candidate = TimeSeriesSourceInfoImpl::OptionalApplyRootDir(rootDir, fileName);
+			if (IsFileNamePattern(fileName))
+			{
+				// if the file name is a pattern, this may be used for multi netcdf files
+				// We do not want to prevent the application of the root directory then, 
+				// even if FileExists would return false; check containing dir then.
+				auto containingDir = path(candidate).parent_path();
+				if (IoHelper::DirExists(containingDir))
+				{
+					fileName = candidate;
+					return true;
+				}
+			}
+			else if (!IoHelper::FileExists(candidate))
+				return false;
+			fileName = candidate;
+			return true;
+		}
+
+		TimeSeriesStoreFactory::TimeSeriesStoreFactory() {}
+		TimeSeriesStoreFactory::~TimeSeriesStoreFactory() {}
 
 	}
 }

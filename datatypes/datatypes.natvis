@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8'?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="datatypes::timeseries::StlVectorStorage&lt;double&gt;">
+    <DisplayString>vec_double</DisplayString>
+    <Expand>
+      <Item Name="storage">data</Item>
+      <!--<ArrayItems>
+            <Rank>1</Rank>
+            <Size>this->storage->Size()</Size>
+            <ValuePointer>this->storage->data</ValuePointer>
+        </ArrayItems>-->
+    </Expand>
+  </Type>
+
+  <Type Name="datatypes::timeseries::TimeStep">
+    <DisplayString>{*regularStep}</DisplayString>
+  </Type>
+
+  <Type Name="datatypes::timeseries::TTimeSeries&lt;*&gt;">
+    <!--<DisplayString>Start={startDate}, ts={timeStep}, End={this->GetEndDate()}</DisplayString>-->
+    <DisplayString>
+      start={startDate}, ts={timeStep}</DisplayString>
+    <Expand>
+      <Item Name="start">startDate</Item>
+      <Item Name="storage">*storage</Item>
+      <!--<ArrayItems>
+            <Rank>1</Rank>
+            <Size>this->storage->Size()</Size>
+            <ValuePointer>this->storage->data</ValuePointer>
+        </ArrayItems>-->
+    </Expand>
+  </Type>
+
+  <!--   <Type Name="std::vector&lt;*&gt;">
+      <DisplayString>{{ size={_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst} }}</DisplayString>
+      <Expand>
+          <Item Name="[capacity]" ExcludeView="simple">_Mypair._Myval2._Myend - _Mypair._Myval2._Myfirst</Item>
+          <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
+          <ArrayItems>
+              <Size>_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst</Size>
+              <ValuePointer>_Mypair._Myval2._Myfirst</ValuePointer>
+          </ArrayItems>
+      </Expand>
+  </Type>
+
+    <Type Name="std::tuple&lt;*,*&gt;">
+      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}</DisplayString>
+      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
+      <Expand>
+          <Item Name="[0]">_Myfirst._Val</Item>
+          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
+      </Expand>
+  </Type>
+
+ -->
+</AutoVisualizer>
