@@ -1,0 +1,24 @@
+Package: datadev
+Type: Package
+Title: Some R facilities for testing the library datatypes
+Version: 0.1
+Date: 2016-10-28
+Authors@R: c( person("Jean-Michel", "Perraud", email =
+    "jean-michel.perraud@csiro.au", role = c("aut", "cre")))
+Author: Jean-Michel Perraud [aut, cre]
+Maintainer: J-M <jean-michel.perraud@csiro.au>
+Description: datadev is a package to collect testing scripts for datatypes.
+License: GPL-3
+LazyLoad: yes
+URL: https://bitbucket.csiro.au/projects/SF/repos/datatypes/browse/tests
+Depends:
+    R (>= 3.0.2)
+Imports:
+    knitr,
+    devtools,
+    roxygen2,
+    ncSwift,
+    lubridate,
+    stringr
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1
