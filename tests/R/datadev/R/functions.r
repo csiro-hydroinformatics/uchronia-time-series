@@ -26,7 +26,7 @@ createTestSwiftNcFile <- function(fname, timeDimInfo, varDef, stationIds=default
   if(!file.exists(fname)) {
     varNames <- varDef$name
     nTimeSteps <- length(timeDimInfo$values)
-    snc <- ncSwift::sncCreate(fname, timeDimInfo, varDef, stationIds=defaultStationIds(),ncAttributes=ncAttributes, leadLength=nLead, ensLength=nEns)
+    snc <- ncSwift::sncCreate(fname, timeDimInfo, varDef, stationIds=stationIds,ncAttributes=ncAttributes, leadLength=nLead, ensLength=nEns)
     td <- snc$getTimeDim()
     
     m <- matrix(ncol=nEns, nrow=nLead)
