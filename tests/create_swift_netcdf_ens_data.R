@@ -87,3 +87,41 @@ mkMultiNcFileEnsembleTs(varNames='pet_fcast', fileStampDates=fileStampDates, off
 # We deliberately generate dates in the file names that are different from the real time stamp, 
 # to test that time series retrieval schemes are doing the right thing in SWIFT.
 mkMultiNcFileEnsembleTs(varNames='rainfall_fcast', fileStampDates=fileStampDates, offsetFromFileStamp=hours(9), nLead=nLead, nEns=nEns, outputDataDir=outputDataDir, rootFileName="testrainfall")
+
+
+#################################################
+# Create a test data files for https://jira.csiro.au/browse/WIRADA-417
+
+library(datadev)
+library(ncSwift)
+options(error=recover)
+outputDataDir <- 'c:/STSF/tmp'
+
+nTimeSteps <- 48
+timeAxisStart <- ISOdate(year=2010, month=08, day=01, hour = 14, min = 0, sec = 0, tz = "UTC")
+timeDimInfo <- createTimeInfo(from=timeAxisStart, n=nTimeSteps, tStep='hours since', tStepDelta=1L)
+
+fname <- file.path(outputDataDir, 'testswift_w417_1.nc')
+file.remove(fname)
+
+stationIds <- 1
+nEns <- 1
+nLead <- 1
+varNames <- c('var_single')
+varDef <- createVariableDefDataframe(varNames=varNames, longNames = paste(varNames, 'synthetic data'))
+varDef$dimensions <- c('2')
+snc <- createTestSwiftNcFile(fname, timeDimInfo, varDef, stationIds, nLead, nEns)
+snc$close()
+rm(snc)
+
+fname <- file.path(outputDataDir, 'testswift_w417_2.nc')
+file.remove(fname)
+stationIds <- c(123,456)
+nEns <- 1
+nLead <- 1
+varNames <- c('var_multi_stations')
+varDef <- createVariableDefDataframe(varNames=varNames, longNames = paste(varNames, 'synthetic data'))
+varDef$dimensions <- c('2')
+snc <- createTestSwiftNcFile(fname, timeDimInfo, varDef, stationIds, nLead, nEns)
+snc$close()
+rm(snc)

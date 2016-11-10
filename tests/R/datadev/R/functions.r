@@ -44,48 +44,46 @@ createTestSwiftNcFile <- function(fname, timeDimInfo, varDef, stationIds=default
 
     v4 <- varNames[which(varDef$dimensions=='4')]
     if(length(v4)>0) {
-    for (i in 1:length(td)) {
-      for (j in 1:length(stationIds)) {
-        station <- stationIds[j]
-        var1Values <- i + 0.1*j + m
-        dtime = td[i]
-        for (k in 1:length(v4)) {
-          snc$putEnsFcast(k*var1Values, varName = v4[k], identifier = station, startTime = dtime)
+      for (i in 1:length(td)) {
+        for (j in 1:length(stationIds)) {
+          station <- stationIds[j]
+          var1Values <- i + 0.1*j + m
+          dtime = td[i]
+          for (k in 1:length(v4)) {
+            snc$putEnsFcast(k*var1Values, varName = v4[k], identifier = station, startTime = dtime)
+          }
         }
       }
-    }
     }
 
     v2 <- varNames[which(varDef$dimensions=='2')]
     timeSteps <- 1:length(td)
     if(length(v2)>0) {
-    for (k in 1:length(v2)) {
-      for (j in 1:length(stationIds)) {
-        dummy <- k %% 2 # KLUDGE just for backward compat reasons - existing unit tests.
-        varValues <- (timeSteps + 0.1*j)
-        varValues <- varValues + (1-dummy) * (0.01*timeSteps + 0.001*j)
-
-        station <- stationIds[j]
-        snc$putSingleSeries(varValues, varName = v2[k], identifier = station)
+      for (k in 1:length(v2)) {
+        # dummy <- k %% 2 # KLUDGE just for backward compat reasons - existing unit tests.
+        for (j in 1:length(stationIds)) {
+          varValues <- k + 0.1*j + 0.01 * timeSteps
+          station <- stationIds[j]
+          snc$putSingleSeries(varValues, varName = v2[k], identifier = station)
+        }
       }
-    }
     }
 
     v3 <- varNames[which(varDef$dimensions=='3')]
     if(length(v3)>0) {
-    for (k in 1:length(v3)) {
-      for (j in 1:length(stationIds)) {
-        dummy <- k %% 2 # KLUDGE just for backward compat reasons - existing unit tests.
-        var5Xts <- matrix(rep(1:nEns, each=nTimeSteps) + timeSteps + 0.1*j, ncol=nEns)
+      for (k in 1:length(v3)) {
+        for (j in 1:length(stationIds)) {
+          dummy <- k %% 2 # KLUDGE just for backward compat reasons - existing unit tests.
+          var5Xts <- matrix(rep(1:nEns, each=nTimeSteps) + timeSteps + 0.1*j, ncol=nEns)
 
-        varValues <- t(var5Xts) # [time,ens_member] to [ens_member,time], as expected by putEnsSeries
-        if(dummy==0) {
-          varValues <- 0.25 * varValues
+          varValues <- t(var5Xts) # [time,ens_member] to [ens_member,time], as expected by putEnsSeries
+          if(dummy==0) {
+            varValues <- 0.25 * varValues
+          }
+          station <- stationIds[j]
+          snc$putEnsSeries(varValues, varName = v3[k], identifier = station)
         }
-        station <- stationIds[j]
-        snc$putEnsSeries(varValues, varName = v3[k], identifier = station)
       }
-    }
     }
   } else { # if(!file.exists(fname)) {
     snc <- ncSwift::sncOpen(fname)
