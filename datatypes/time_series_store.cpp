@@ -483,6 +483,16 @@ namespace datatypes
 				return GetSingle(ids[0], ids[1]);
 		}
 
+		MultiTimeSeries<TTimeSeries<double>*>* TimeSeriesLibrary::GetCollection(const string& dataId)
+		{
+			IdentifiersProvider::CheckNotEmpty(dataId);
+			vector<string> ids = IdentifiersProvider::SplitHierarchicalIdentifier(dataId);
+			if (ids.size() > 1)
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data id should not be hierarchical to get a collection: ") + dataId);
+			auto info = GetSeriesInformation(dataId);
+			return info->ReadAllCollection();
+		}
+
 		//TimeSeriesProvider<double>* TimeSeriesLibrary::GetProvider(const string& dataId)
 		//{
 		//	this->GetSeriesInformation(dataId)->
@@ -508,6 +518,12 @@ namespace datatypes
 		{
 			EnsembleTimeSeriesStore<double>* dataSource = GetEnsembleSeriesInformation(dataId);
 			return dataSource->Read();
+		}
+
+		MultiTimeSeries<TTimeSeries<double>*>* TimeSeriesLibrary::GetAllTimeSeries(const string& dataId)
+		{
+			auto provider = GetSeriesInformation(dataId);
+			return provider->ReadAllCollection();
 		}
 
 		EnsembleForecastTimeSeries<TTimeSeries<double>>* TimeSeriesLibrary::GetTimeSeriesEnsembleTimeSeries(const string& dataId)

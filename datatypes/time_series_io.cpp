@@ -458,7 +458,7 @@ namespace datatypes
 				SetVariableDimOne<float>(leadTimeVarId, leadTimeVec);
 			}
 
-			void SwiftNetCDFAccess::WriteGeometry(int nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const std::map<string, VariableDefinition>& varDefinitions)
+			void SwiftNetCDFAccess::WriteGeometry(size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const std::map<string, VariableDefinition>& varDefinitions)
 			{
 				using namespace std;
 				DefineMandatoryDimensions(nEns, leadTimeVar.size(), stationIds.size());
@@ -781,7 +781,7 @@ namespace datatypes
 				return datatype;
 			}
 
-			vector<string> * SwiftNetCDFAccess::GetStringVariable(int strLen, int varId, int n)
+			vector<string> * SwiftNetCDFAccess::GetStringVariable(size_t strLen, int varId, size_t n)
 			{
 				char * bfr = new char[strLen];
 				auto strVec = new vector<string>();
@@ -802,7 +802,7 @@ namespace datatypes
 				ExceptionUtilities::ThrowNotSupported("Read operation '" + std::to_string(varId) + "' with loss of precision not allowed");
 			}
 
-			vector<int> SwiftNetCDFAccess::ReadAsInt(int varId, int size)
+			vector<int> SwiftNetCDFAccess::ReadAsInt(int varId, size_t size)
 			{
 				nc_type datatype = GetDataType(varId);
 				if (datatype == NC_DOUBLE)
@@ -823,7 +823,7 @@ namespace datatypes
 					ExceptionUtilities::ThrowInvalidOperation(string("The netCDF data type code ") + std::to_string(datatype) + " of the variable " + std::to_string(varId) + " is not supported ");
 			}
 
-			vector<float> SwiftNetCDFAccess::ReadAsFloat(int varId, int size, bool strict)
+			vector<float> SwiftNetCDFAccess::ReadAsFloat(int varId, size_t size, bool strict)
 			{
 				nc_type datatype = GetDataType(varId);
 				if (datatype == NC_DOUBLE)
@@ -845,7 +845,7 @@ namespace datatypes
 					ExceptionUtilities::ThrowInvalidOperation(string("The netCDF data type code ") + std::to_string(datatype) + " of the variable " + std::to_string(varId) + " is not supported ");
 			}
 
-			vector<double> SwiftNetCDFAccess::ReadAsDouble(int varId, int size)
+			vector<double> SwiftNetCDFAccess::ReadAsDouble(int varId, size_t size)
 			{
 				nc_type datatype = GetDataType(varId);
 				if (datatype == NC_DOUBLE)
@@ -937,7 +937,6 @@ namespace datatypes
 
 			void SwiftNetCDFAccess::AddAttributes(int varId, const string& varName, std::map<string, VariableAttributes>& varAttributes)
 			{
-				int code;
 				if (varAttributes.find(varName) == varAttributes.end())
 				{
 					AddVariableAttributes(varId, varName, string("unknown"), string("unknown"), VariableAttributes::DefaultFillValue());
@@ -1095,7 +1094,7 @@ namespace datatypes
 				}
 			}
 
-			void SwiftNetCDFAccess::DefineMandatoryDimensions(int nEns, int nLead, int nStations)
+			void SwiftNetCDFAccess::DefineMandatoryDimensions(size_t nEns, size_t nLead, size_t nStations)
 			{
 				int code = nc_def_dim(ncid, kTimeDimName.c_str(), NC_UNLIMITED, &timeDimId);
 				code = nc_def_dim(ncid, kStationDimName.c_str(), nStations, &stationDimId);
@@ -1147,11 +1146,10 @@ namespace datatypes
 
 			void SwiftNetCDFAccess::WriteCommonVarData()
 			{
-				int code;
 				// Set Station ID's
 				SetVariableDimOne<int>(stationIdVarId, stationIds);
 				// Set Ensemble No's
-				int eLen = GetEnsembleSize();
+				size_t eLen = GetEnsembleSize();
 				vector<int> ensembleIds = datatypes::utils::SeqVec<int>(0, 1, eLen);
 				SetVariableDimOne<int>(ensMemberVarId, ensembleIds);
 			}
@@ -1205,7 +1203,7 @@ namespace datatypes
 
 			vector<ptime> SwiftNetCDFAccess::GetTimeDim()
 			{
-				int timeLen = this->GetTimeLength();
+				size_t timeLen = this->GetTimeLength();
 				auto tstep = GetTimeStep();
 				vector<ptime> result(timeLen);
 				for (size_t i = 0; i < timeLen; i++)
@@ -1230,7 +1228,7 @@ namespace datatypes
 				return GetTimeStep().AddSteps(GetStart(), GetTimeLength()-1);
 			}
 
-			int SwiftNetCDFAccess::IndexForIdentifier(const string& identifier) const
+			size_t SwiftNetCDFAccess::IndexForIdentifier(const string& identifier) const
 			{
 				using boost::lexical_cast;
 
@@ -1243,11 +1241,11 @@ namespace datatypes
 
 				auto index = std::find(testVector.begin(), testVector.end(), intIdentifier);
 
-				return (index == testVector.end() ? -1 : index - testVector.begin());
-				// see issue 408 for consideration of the following, alternate behavior:
-				//if (index == testVector.end())
-				//	ExceptionUtilities::ThrowNotSupported("Index not found for series identifier " + identifier);
-				//return(index - testVector.begin());
+				//return (index == testVector.end() ? -1 : index - testVector.begin());
+				// see issue 409 for consideration of the following, alternate behavior:
+				if (index == testVector.end())
+					ExceptionUtilities::ThrowNotSupported("Index not found for series identifier " + identifier);
+				return(index - testVector.begin());
 			}
 
 			size_t SwiftNetCDFAccess::GetNumIdentifiers() const
@@ -1262,7 +1260,7 @@ namespace datatypes
 				return SwiftNetCDFAccess::Convert<int, string>(testVector, f);
 			}
 
-			ptime SwiftNetCDFAccess::TimeForIndex(int timeIndex)
+			ptime SwiftNetCDFAccess::TimeForIndex(size_t timeIndex)
 			{
 				ExceptionUtilities::CheckInRange<size_t>(timeIndex, 0, numTimeSteps, "timeIndex");
 				if (cachedTimeVector)
@@ -1332,19 +1330,19 @@ namespace datatypes
 				return Convert<float, double>(leadTimeVec);
 			}
 
-			double * SwiftNetCDFAccess::GetForecastDataBuffer(int numStations, int numTimeSteps)
+			double * SwiftNetCDFAccess::GetForecastDataBuffer(size_t numStations, size_t numTimeSteps)
 			{
 				// double rain_fcast_ens[lead_time,station,ens_member,time] in R; rev conventions for C, but order does not matter here
 				return new double[leadTimeLength * numStations * ensembleSize * numTimeSteps];
 			}
 
-			double * SwiftNetCDFAccess::GetEnsembleDataBuffer(int numStations, int numTimeSteps)
+			double * SwiftNetCDFAccess::GetEnsembleDataBuffer(size_t numStations, size_t numTimeSteps)
 			{
 				// double rain_ens[station,ens_member,time] in R; rev conventions for C, but order does not matter here
 				return new double[numStations * ensembleSize * numTimeSteps];
 			}
 
-			double * SwiftNetCDFAccess::GetSingleSeriesDataBuffer(int numStations, int numTimeSteps)
+			double * SwiftNetCDFAccess::GetSingleSeriesDataBuffer(size_t numStations, size_t numTimeSteps)
 			{
 				// double q_der[station, time]  in R; rev conventions for C
 				// but order does not matter here
@@ -1362,9 +1360,9 @@ namespace datatypes
 				return dataVarId;
 			}
 
-			void SwiftNetCDFAccess::GetEnsFcastNetcdfWindow(const string& varName, int catchmentNumber, int timeIndex, vector<size_t>& startp, vector<size_t>& countp)
+			void SwiftNetCDFAccess::GetEnsFcastNetcdfWindow(const string& varName, size_t stationIndex, size_t timeIndex, vector<size_t>& startp, vector<size_t>& countp)
 			{
-				GetNetcdfWindow(varName, catchmentNumber, startp, countp);
+				GetNetcdfWindow(varName, stationIndex, startp, countp);
 				// size_t startp[4]; // double rain_fcast_ens[lead_time,station,ens_member,time] in R; rev conventions for C
 				vector<int> varDims = GetVarDims(varName);
 				size_t n = varDims.size();
@@ -1379,7 +1377,7 @@ namespace datatypes
 				}
 			}
 
-			//void SwiftNetCDFAccess::GetEnsNetcdfWindow(int catchmentNumber, size_t *startp, size_t *countp)
+			//void SwiftNetCDFAccess::GetEnsNetcdfWindow(size_t stationIndex, size_t *startp, size_t *countp)
 			//{
 			//	// double q_ens[station, ens_member, time]  in R; rev conventions for C
 			//	startp[0] = 0;
@@ -1428,11 +1426,11 @@ namespace datatypes
 				}
 			}
 
-			void SwiftNetCDFAccess::GetNetcdfWindow(const string& varName, int catchmentNumber, vector<size_t>& startp, vector<size_t>& countp)
+			void SwiftNetCDFAccess::GetNetcdfWindow(const string& varName, size_t stationIndex, vector<size_t>& startp, vector<size_t>& countp)
 			{
-				// TODO: see issue 408:
-				if (catchmentNumber < 0)
-					catchmentNumber = 0;
+				// TODO: see issue 409:
+				if (stationIndex < 0)
+					stationIndex = 0;
 
 				GetNetcdfWindow(varName, startp, countp);
 				vector<int> varDims = GetVarDims(varName);
@@ -1442,7 +1440,7 @@ namespace datatypes
 					int dimId = varDims[i];
 					if (dimId == this->stationDimId)
 					{
-						startp[i] = catchmentNumber;
+						startp[i] = stationIndex;
 						countp[i] = 1;
 					}
 				}

@@ -88,6 +88,7 @@ namespace datatypes
 			virtual ~SingleTimeSeriesStore() {};
 			virtual TTimeSeries<T>* Read() = 0;
 			virtual TTimeSeries<T>* Read(const string& collectionIdentifier) = 0;
+			virtual MultiTimeSeries<TTimeSeries<T>*>* ReadAllCollection() = 0;
 			virtual string GetDataSummary() const = 0;
 		};
 
@@ -370,6 +371,7 @@ namespace datatypes
 		{
 		public:
 			typedef TTimeSeries<T> TS;
+			typedef MultiTimeSeries<TS*> MTS;
 			virtual ~TTimeSeriesLibrary() {}
 
 			virtual TS* GetSingle(const string& dataId)
@@ -384,6 +386,12 @@ namespace datatypes
 				return nullptr;
 			}
 
+			virtual MTS* GetCollection(const string& dataId)
+			{
+				ExceptionUtilities::ThrowNotImplemented();
+				return nullptr;
+			}
+
 			virtual TimeSeriesProvider<T>* GetProvider(const string& dataId)
 			{
 				ExceptionUtilities::ThrowNotImplemented();
@@ -391,6 +399,12 @@ namespace datatypes
 			}
 
 			virtual MultiTimeSeries<TS*>* GetEnsembleTimeSeries(const string& dataId)
+			{
+				ExceptionUtilities::ThrowNotImplemented();
+				return nullptr;
+			}
+
+			virtual MultiTimeSeries<TS*>* GetAllTimeSeries(const string& dataId)
 			{
 				ExceptionUtilities::ThrowNotImplemented();
 				return nullptr;
@@ -643,6 +657,15 @@ namespace datatypes
 			*/
 			TTimeSeries<double>* GetSingle(const string& dataId);
 
+			/**
+			* \brief	Gets a collection of time series out of the library, where each item is for a given station ID.
+			*
+			* \param	dataId			   	Identifier for the time series
+			*
+			* \return	The collection of univariate, single realization time series
+			*/
+			MultiTimeSeries<TTimeSeries<double>*>* GetCollection(const string& dataId);
+
 			///**
 			// * \brief	Gets a provider, a facade to a collection of time series.
 			// *
@@ -665,6 +688,8 @@ namespace datatypes
 			MultiTimeSeries<TTimeSeries<double>*>* GetEnsemble(const string& dataId, const string& dataItemIdentifier);
 
 			MultiTimeSeries<TTimeSeries<double>*>* GetEnsembleTimeSeries(const string& dataId);
+
+			MultiTimeSeries<TTimeSeries<double>*>* GetAllTimeSeries(const string& dataId);
 
 			EnsembleForecastTimeSeries<TTimeSeries<double>>* GetTimeSeriesEnsembleTimeSeries(const string& dataId);
 

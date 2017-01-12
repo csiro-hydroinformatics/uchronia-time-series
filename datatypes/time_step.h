@@ -112,6 +112,10 @@ namespace datatypes
 
 			time_duration GetRegularStepDuration() const;
 
+			const ptime AddSteps(const ptime& startTimeStep, size_t n) const;
+
+			const ptime AddSteps(const ptime& startTimeStep, int n) const;
+
 			/**
 			 * \fn	const ptime TimeStep::AddSteps(const ptime& startTimeStep, double mult) const;
 			 *
@@ -228,16 +232,12 @@ namespace datatypes
 
 		private:
 			TimeStepImplementation* tsImpl = nullptr;
-//			time_duration multiply(double mult) const;
-			const ptime AddIntSteps(const ptime& startTimeStep, int n) const;
 
 			void CopyTimeStepImplementation(const TimeStep& src);
 			void CheckIsRegular(const string& op) const;
 
 			static const time_duration hourlyTd;
 			static const time_duration dailyTd;
-
-			const double GetLinearIndexing(const ptime& start, const ptime& end) const;
 
 		};
 

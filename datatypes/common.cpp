@@ -140,5 +140,25 @@ namespace datatypes
 		bool StringProcessing::funStartsWith(const string& toTest, const string& toMatch) { return boost::algorithm::starts_with(toTest, toMatch); }
 		bool StringProcessing::funEquals(const string& toTest, const string& toMatch) { return boost::algorithm::equals(toTest, toMatch); }
 
+		string StringProcessing::BuildIdentifier(vector<string> &tokens, int fromIndex, int toIndex, const string& sep)
+		{
+			if (toIndex < 0)
+				toIndex = tokens.size();
+			vector<string>::const_iterator first = tokens.begin() + fromIndex;
+			vector<string>::const_iterator last = tokens.begin() + toIndex;
+			vector<string> newVec(first, last);
+			string result = boost::join(newVec, sep);
+			return result;
+		}
+
+		string StringProcessing::BuildIdentifier(const string &a, const string &b, const string& sep)
+		{
+			return a + sep + b;
+		}
+
+		const string StringProcessing::kElementSeparatorToken = ".";
+
+
+
 	}
 }

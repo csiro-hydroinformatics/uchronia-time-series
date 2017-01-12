@@ -1,5 +1,6 @@
 #include "../common.h"
 #include "datatypes_test_helpers.h"
+#include "datatypes_test_helpers.hpp"
 #include "../time_series_io.hpp"
 
 
@@ -223,6 +224,39 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 			return dataLibrary;
 		}
 
+		TimeSeriesLibrary TestDataLocationHelper::GetTestTimeSeriesLibrary()
+		{
+			string testDir = TestDataLocationHelper::ReadEnvironmentVariable("SWIFT_TEST_DIR");
+			string d = TestDataLocationHelper::BuildPath({ testDir, "netcdf"});
+			TimeSeriesLibrary dataLibrary;
+			string singleStationId("1");
+			vector<string> multiStationIds = TestStationIds();
+			string singleStationFile = TestDataLocationHelper::BuildPath({ d, TestDataLocationHelper::kFileSingleStation });
+			string multiStationFile = TestDataLocationHelper::BuildPath({ d,  TestDataLocationHelper::kFileMultiStations });
+
+			dataLibrary.AddSource(TestDataLocationHelper::kVarSingleStation,
+				TimeSeriesLibraryFactory::CreateTsSource(singleStationFile, TestDataLocationHelper::kVarSingleStation, singleStationId));
+			dataLibrary.AddSource(TestDataLocationHelper::kVarMultiStations,
+				TimeSeriesLibraryFactory::CreateTsSource(multiStationFile, TestDataLocationHelper::kVarMultiStations, multiStationIds[0]));
+
+			return dataLibrary;
+
+		}
+
+		const string TestDataLocationHelper::kVarSingleStation("var_single");
+		const string TestDataLocationHelper::kVarMultiStations("var_multi_stations");
+		const string TestDataLocationHelper::kFileSingleStation("testswift_w417_1.nc");
+		const string TestDataLocationHelper::kFileMultiStations("testswift_w417_2.nc");
+
+		const string TestDataLocationHelper::kSingleStationId("1");
+		const string TestDataLocationHelper::kStationIdOne("123");
+		const string TestDataLocationHelper::kStationIdTwo("456");
+		const size_t TestDataLocationHelper::kTimeSeriesLength = DTH::kTimeSeriesLength;
+
+		vector<string> TestDataLocationHelper::TestStationIds()
+		{
+			return vector<string>({ kStationIdOne, kStationIdTwo });
+		}
 
 		TestSingleTimeSeriesStore::TestSingleTimeSeriesStore(const vector<double>& values,
 			const ptime& startDate, const TimeStep& timeStep)
@@ -257,6 +291,10 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 		}
 		std::vector<std::string> TestSingleTimeSeriesStore::GetIdentifiers() const { datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();  std::vector<std::string> x; return x; }
 
+		MultiTimeSeries<TTimeSeries<double>*>* TestSingleTimeSeriesStore::ReadAllCollection()
+		{
+			return new MultiTimeSeries<TTimeSeries<double>*>(vector<TimeSeries>({ innerTs }), innerTs.GetStartDate(), innerTs.GetTimeStep());
+		}
 
 		TestTimeSeriesEnsembleTimeSeriesStore::~TestTimeSeriesEnsembleTimeSeriesStore() { delete ensFts; }
 		TestTimeSeriesEnsembleTimeSeriesStore::TestTimeSeriesEnsembleTimeSeriesStore(const TSeriesEnsemblePtrType& ensFts, const string& id) {

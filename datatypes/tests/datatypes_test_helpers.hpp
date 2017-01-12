@@ -5,6 +5,8 @@
 #include "../time_series.hpp"
 #include "../time_series_io.hpp"
 
+#define TEST_START_TIME ptime(date(2010, 8, 1)) + hours(14)
+
 using namespace boost::gregorian;
 using namespace datatypes::timeseries;
 using namespace std;
@@ -49,10 +51,23 @@ namespace datatypes {
 			static TTimeSeries<T> Create(T * data, int num, const ptime& start = ptime(date(2000, 1, 1)), const TimeStep& timeStep = TimeStep::GetHourly());
 			static TTimeSeries<T> Ramp(int num, const ptime& start = ptime(date(2000, 1, 1)), double from = 0.0, double increment = 1.0);
 			static TTimeSeries<T> Pulse(int length, T value = 1, int firstPulse = 0, int period = 2, const ptime& start = ptime(date(2000, 1, 1)), const TimeStep& timeStep = TimeStep::GetHourly());
-			//static T* Seq(T from, T to, T by);
-			static T* Seq(T from, T by, int num);
-			static vector<T>  SeqVec(T from, T by, int num);
-			static vector<T*>* Seq(T from, T by, int num, int vecSize);
+
+			const static size_t kTimeSeriesLength = 48;
+
+			static TTimeSeries<T> GetExpectedTestSingleTimeSeries(size_t indexInEnsemble, size_t length = kTimeSeriesLength, double constOffset = 1, const ptime& startDate = TEST_START_TIME, const TimeStep& timeStep = TimeStep::GetHourly());
+
+			static T* Seq(T from, T by, size_t num);
+			static vector<T>  SeqVec(T from, T by, size_t num);
+			static vector<T> Rep(T value, size_t num);
+			static vector<T> Add(const vector<T>& a, const vector<T>& b);
+			static vector<T> Add(const vector<T>& a, const T& b);
+			static vector<T> Add(const T& a, const vector<T>& b);
+			static vector<T> Mult(const vector<T>& a, const vector<T>& b);
+			static vector<T> Mult(const vector<T>& a, const T& b);
+			static vector<T> Mult(const T& a, const vector<T>& b);
+			static vector<T> Neg(const vector<T>& a);
+			static vector<T*>* Seq(T from, T by, size_t num, size_t vecSize);
+
 			static void DeleteElements(vector<T*>& vec);
 
 			static bool AreEqual(PtrSeriesType expected, PtrSeriesType actual);
@@ -85,10 +100,10 @@ namespace datatypes {
 
 			static EnsembleValueFunc CreateTsGen(
 				const ptime& start, size_t tsLength,
-				size_t fcastIndex, 
+				size_t fcastIndex,
 				const TimeStep& timeStep = TimeStep::GetHourly(),
 				FullElementValueFunc ffun = &DecimalRamp
-				)
+			)
 			{
 				return [=](size_t ensIndex)
 				{
@@ -99,13 +114,13 @@ namespace datatypes {
 
 
 			static TsEnsembleValueFunc CreateMtsGen(
-				size_t ensSize, int tsLength,
+				size_t ensSize, size_t tsLength,
 				const ptime& start = ptime(date(2000, 1, 1)),
 				const TimeStep& timeStep = TimeStep::GetDaily(),
 				const TimeStep& timeStepFcasts = TimeStep::GetHourly(),
 				FullElementValueFunc ffun = &DecimalRamp,
 				int forecastStartOffset = 1
-				)
+			)
 			{
 				auto result = [=](size_t fcastIndex)
 				{
@@ -120,13 +135,13 @@ namespace datatypes {
 
 			static EnsembleValueFunc DefaultTsGen()
 			{
-				return CreateTsGen(ptime(date(2000, 1, 1)) , 5 /*tsLength*/, 0 /*fcastIndex*/ );
+				return CreateTsGen(ptime(date(2000, 1, 1)), 5 /*tsLength*/, 0 /*fcastIndex*/);
 			}
 
 			static EnsemblePtrType CreateEnsembleTs(
 				size_t ensSize, size_t length, const ptime& start, const TimeStep& timeStep,
 				size_t fcastIndex = 0,
-				FullElementValueFunc ffun = &DecimalRamp			
+				FullElementValueFunc ffun = &DecimalRamp
 			)
 			{
 				EnsembleValueFunc tsGen = CreateTsGen(start, length /*tsLength*/, fcastIndex /*fcastIndex*/, timeStep, ffun);
@@ -159,7 +174,7 @@ namespace datatypes {
 				size_t length,
 				const ptime& start = ptime(date(2000, 1, 1)), const TimeStep& timeStep = TimeStep::GetDaily(),
 				TsEnsembleValueFunc mtsGen = DefaultMtsGen()
-				)
+			)
 			{
 				TSeriesEnsemblePtrType e(length, start, timeStep);
 				for (size_t i = 0; i < length; i++)
@@ -172,13 +187,13 @@ namespace datatypes {
 
 			static TSeriesEnsemblePtrType CreateTsEnsembleTs(
 				size_t length,
-				size_t ensSize, 
+				size_t ensSize,
 				size_t tsLength,
 				const ptime& start = ptime(date(2000, 1, 1)), const TimeStep& timeStep = TimeStep::GetDaily(),
 				const TimeStep& timeStepFcasts = TimeStep::GetHourly(),
 				FullElementValueFunc ffun = &DecimalRamp,
-				int forecastStartOffset=1
-				)
+				int forecastStartOffset = 1
+			)
 			{
 				TsEnsembleValueFunc mtsGen = CreateMtsGen(ensSize, tsLength, start, timeStep, timeStepFcasts, ffun, forecastStartOffset);
 				return CreateTsEnsembleTs(length, start, timeStep, mtsGen);
@@ -201,6 +216,113 @@ namespace datatypes {
 		}
 
 		template <typename T>
+		vector<T> DataTestHelper<T>::Add(const vector<T>& a, const vector<T>& b)
+		{
+			if (a.size() != b.size())
+				ExceptionUtilities::ThrowInvalidOperation("vector addition: vectors must be of the same size");
+			auto c = a;
+			for (size_t i = 0; i < a.size(); i++)
+			{
+				c[i] += b[i];
+			}
+			return c;
+		}
+		template <typename T>
+		vector<T> DataTestHelper<T>::Add(const vector<T>& a, const T& b)
+		{
+			auto c = a;
+			for (size_t i = 0; i < a.size(); i++)
+			{
+				c[i] += b;
+			}
+			return c;
+		}
+
+		template <typename T>
+		vector<T> DataTestHelper<T>::Add(const T& a, const vector<T>& b)
+		{
+			return Add(b, a);
+		}
+
+		template <typename T>
+		vector<T> DataTestHelper<T>::Rep(T value, size_t num)
+		{
+			vector<T> x;
+			x.assign(num, value);
+			return x;
+		}
+		template <typename T>
+		vector<T> DataTestHelper<T>::Mult(const vector<T>& a, const vector<T>& b)
+		{
+			if (a.size() != b.size())
+				ExceptionUtilities::ThrowInvalidOperation("vector addition: vectors must be of the same size");
+			auto c = a;
+			for (size_t i = 0; i < a.size(); i++)
+			{
+				c[i] *= b[i];
+			}
+			return c;
+		}
+		template <typename T>
+		vector<T> DataTestHelper<T>::Mult(const vector<T>& a, const T& b)
+		{
+			auto c = a;
+			for (size_t i = 0; i < a.size(); i++)
+			{
+				c[i] *= b;
+			}
+			return c;
+		}
+		template <typename T>
+		vector<T> DataTestHelper<T>::Mult(const T& a, const vector<T>& b)
+		{
+			return Mult(b, a);
+		}
+		template <typename T>
+		vector<T> DataTestHelper<T>::Neg(const vector<T>& a)
+		{
+			auto c = a;
+			for (size_t i = 0; i < a.size(); i++)
+			{
+				c[i] = -c[i];
+			}
+			return c;
+		}
+
+
+	}
+}
+using DTH = datatypes::tests::DataTestHelper<double>;
+
+namespace datatypes {
+	namespace tests {
+
+
+		template <typename T>
+		TTimeSeries<T> DataTestHelper<T>::GetExpectedTestSingleTimeSeries(size_t indexInEnsemble, size_t length, double constOffset, const ptime& startDate, const TimeStep& timeStep)
+		{
+
+
+	//if(length(v2)>0) {
+ //     for (k in 1:length(v2)) {
+ //       # dummy <- k %% 2 # KLUDGE just for backward compat reasons - existing unit tests.
+ //       for (j in 1:length(stationIds)) {
+ //         varValues <- k + 0.1*j + 0.01 * timeSteps
+ //         station <- stationIds[j]
+ //         snc$putSingleSeries(varValues, varName = v2[k], identifier = station)
+ //       }
+ //     }
+ //   }
+			T k = constOffset;
+			int j = indexInEnsemble + 1;
+			auto varValues = DTH::Rep(k, length);
+			varValues = DTH::Add(varValues, DTH::Rep(j * 0.1, length));
+			auto timeSteps = DTH::SeqVec(1.0, 1.0, length);
+			varValues = DTH::Add(varValues, DTH::Mult(timeSteps, 0.01));
+			return TTimeSeries<T>(varValues, startDate, timeStep);
+		}
+
+		template <typename T>
 		void DataTestHelper<T>::DeleteElements(vector<T*>& vec)
 		{
 			for (int i = 0; i < vec.size(); i++)
@@ -208,7 +330,7 @@ namespace datatypes {
 		}
 
 		template <typename T>
-		T*  DataTestHelper<T>::Seq(T from, T by, int num)
+		T*  DataTestHelper<T>::Seq(T from, T by, size_t num)
 		{
 			T * data = new T[num];
 			for (size_t i = 0; i < num; i++)
@@ -217,13 +339,13 @@ namespace datatypes {
 		}
 
 		template <typename T>
-		vector<T>  DataTestHelper<T>::SeqVec(T from, T by, int num)
+		vector<T>  DataTestHelper<T>::SeqVec(T from, T by, size_t num)
 		{
 			return datatypes::utils::SeqVec<T>(from, by, num);
 		}
 
 		template <typename T>
-		vector<T*> * DataTestHelper<T>::Seq(T from, T by, int num, int vecSize)
+		vector<T*> * DataTestHelper<T>::Seq(T from, T by, size_t num, size_t vecSize)
 		{
 			vector<T*> * result = new vector<T*>();
 			for (size_t i = 0; i < vecSize; i++)

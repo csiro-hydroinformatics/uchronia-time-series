@@ -14,6 +14,11 @@
   #else
     #define DATATYPES_DLL_LIB __declspec(dllexport)
 	#define TEMPLATE_SPECIALIZATION_EXTERN
+
+// TO prevent warnings such as:
+// Warning	C4251	'datatypes::io::IoHelper::DefaultFilePattern' : class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll - interface to be used by clients of class 'datatypes::io::IoHelper'
+	#pragma warning (disable : 4251)
+
   #endif
 #else
   #define DATATYPES_DLL_LIB // nothing
@@ -204,12 +209,12 @@ namespace datatypes
 		};
 
 		template<typename T = double>
-		vector<T>  SeqVec(T from, T by, int num)
+		vector<T>  SeqVec(T from, T by, size_t num)
 		{
 			vector<T> data;
 			data.resize(num);
 			for (size_t i = 0; i < num; i++)
-				data[i] = from + i*by;
+				data[i] = from + ((T)i)*by;
 			return data;
 		}
 
@@ -306,6 +311,11 @@ namespace datatypes
 			{
 				return boost::lexical_cast<string>(value);
 			}
+
+			static const string kElementSeparatorToken;
+			static string BuildIdentifier(vector<string> &tokens, int fromIndex, int toIndex = -1, const string& sep=StringProcessing::kElementSeparatorToken);
+			static string BuildIdentifier(const string &a, const string &b, const string& sep = StringProcessing::kElementSeparatorToken);
+
 
 		private:
 			static bool funContains(const string& toTest, const string& toMatch);

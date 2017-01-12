@@ -83,7 +83,16 @@ namespace datatypes
 			return tsImpl->GetName();
 		}
 
-		const ptime TimeStep::AddIntSteps(const ptime& startTimeStep, int n) const
+		const ptime TimeStep::AddSteps(const ptime& startTimeStep, size_t n) const
+		{
+			size_t max = 1000000000000 /*1e12*/ ;
+			if (n > max)
+				ExceptionUtilities::ThrowNotSupported("Time step arithmetic is limited to 1e12 steps");
+			double x = (double)n;
+			return AddSteps(startTimeStep, x);
+		}
+
+		const ptime TimeStep::AddSteps(const ptime& startTimeStep, int n) const
 		{
 			return tsImpl->AddSteps(startTimeStep, n);
 		}
@@ -172,7 +181,10 @@ namespace datatypes
 			else if (name == "monthly_qpp")
 				return GetMonthlyQpp();
 			else
+			{ 
 				ExceptionUtilities::ThrowInvalidArgument("time step " + name + " could not be parsed and recognized");
+				return GetUnknown(); // avoid compiler warning;
+			}
 		}
 
 		const void TimeStep::Increment(ptime* t) const
@@ -240,7 +252,7 @@ namespace datatypes
 
 			tick_type remainder = v % otherv;
 
-			int s = remainder / time_duration::ticks_per_second();
+			long s = (long)(remainder / time_duration::ticks_per_second());
 			return seconds(s);
 		}
 

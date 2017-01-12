@@ -125,7 +125,7 @@ namespace datatypes
 			const size_t ensembleSize = ens->Size();
 			TimeStep fcastTimeStep = ens->GetTimeStep();
 			const size_t leadTimeSize = s->GetLength();
-			const int fcastOffset = fcastTimeStep.GetNumSteps(tsEnsStart, s->GetStartDate()) - 1;
+			const ptrdiff_t fcastOffset = fcastTimeStep.GetNumSteps(tsEnsStart, s->GetStartDate()) - 1;
 			return DimensionsDefinitions(tsEnsStart, tsEns.GetTimeStep(), tsEns.GetLength(), ensembleSize, ens->GetTimeStep(), leadTimeSize, fcastOffset, stationIds);
 		}
 
@@ -355,7 +355,7 @@ namespace datatypes
 				 *
 				 * \return	An int.
 				 */
-				int IndexForIdentifier(const string& identifier) const;
+				size_t IndexForIdentifier(const string& identifier) const;
 
 				size_t GetNumIdentifiers() const;
 
@@ -370,7 +370,7 @@ namespace datatypes
 				 *
 				 * \return	A ptime.
 				 */
-				ptime TimeForIndex(int timeIndex);
+				ptime TimeForIndex(size_t timeIndex);
 
 			private:
 				template<typename ElementType>
@@ -387,6 +387,11 @@ namespace datatypes
 					return SwiftNetCDFVariablePersister<ElementType>::NcPutVara(ncid, varid, startp, countp, op);
 				}
 
+				bool isTimeFastestVarying(const vector<int>& varDimIds)
+				{
+					return(varDimIds[varDimIds.size() - 1] == this->timeDimId);
+				}
+
 			public:
 
 				/**
@@ -394,18 +399,18 @@ namespace datatypes
 				*
 				* \tparam	ElementType	type of element expected for this variable.
 				* \param	varName		   	Name of the variable.
-				* \param	catchmentNumber	The catchment number.
+				* \param	stationIndex	The catchment number.
 				* \param	timeIndex	   	Zero-based index of the time dimension.
 				*
 				* \return	null if it fails, else the forecasts.
 				*/
 				template<typename ElementType>
-				vector<ElementType*> * GetForecasts(const string& varName, int catchmentNumber, int timeIndex)
+				vector<ElementType*> * GetForecasts(const string& varName, size_t stationIndex, size_t timeIndex)
 				{
 					int dataVarId = GetVarId(varName);
 					vector<size_t> startp;
 					vector<size_t> countp;
-					GetEnsFcastNetcdfWindow(varName, catchmentNumber, timeIndex, startp, countp);
+					GetEnsFcastNetcdfWindow(varName, stationIndex, timeIndex, startp, countp);
 					auto vardata = GetForecastDataBuffer();
 					size_t* s = &(startp[0]);
 					size_t* c = &(countp[0]);
@@ -427,12 +432,12 @@ namespace datatypes
 				}
 
 				template<typename ElementType>
-				vector<ElementType*> * GetEnsemble(const string& varName, int catchmentNumber)
+				vector<ElementType*> * GetEnsemble(const string& varName, size_t stationIndex)
 				{
 					int dataVarId = GetVarId(varName);
 					vector<size_t> startp;
 					vector<size_t> countp;
-					GetNetcdfWindow(varName, catchmentNumber, startp, countp);
+					GetNetcdfWindow(varName, stationIndex, startp, countp);
 					auto n = GetTimeLength();
 					auto vardata = GetEnsembleDataBuffer(1, n);
 
@@ -464,17 +469,17 @@ namespace datatypes
 				*
 				* \tparam	ElementType	type of element expected for this variable.
 				* \param	varName		   	Name of the variable.
-				* \param	catchmentNumber	The catchment number.
+				* \param	stationIndex	The catchment number.
 				*
 				* \return	All the values for the time series defined with this variable name.
 				*/
 				template<typename ElementType>
-				vector<ElementType> GetValues(const string& varName, int catchmentNumber)
+				vector<ElementType> GetValues(const string& varName, size_t stationIndex)
 				{
 					int dataVarId = GetVarId(varName);
 					vector<size_t> startp;
 					vector<size_t> countp;
-					GetNetcdfWindow(varName, catchmentNumber, startp, countp);
+					GetNetcdfWindow(varName, stationIndex, startp, countp);
 					vector<ElementType> vardata (GetTimeLength());
 					ElementType* op = &(vardata[0]);
 					size_t* s = &(startp[0]);
@@ -488,17 +493,81 @@ namespace datatypes
 				}
 
 				template<typename ElementType>
-				TTimeSeries<ElementType> * GetSeries(const string& varName, int catchmentNumber)
+				vector<ElementType> GetValues(const string& varName)
 				{
-					auto values = GetValues<ElementType>(varName, catchmentNumber);
+					size_t n = GetTimeLength();
+					size_t nIds = GetNumIdentifiers();
+					size_t N = n * nIds;
+					vector<ElementType> values(N);
+					int dataVarId = GetVarId(varName);
+
+					vector<size_t> startp;
+					vector<size_t> countp;
+					GetNetcdfWindow(varName, startp, countp);
+					size_t* s = &(startp[0]);
+					size_t* c = &(countp[0]);
+					ElementType* vardata = values.data();
+					int code = NcGetVara(ncid, dataVarId, s, c, vardata);
+					if (code != NC_NOERR)
+					{
+						ExceptionUtilities::ThrowInvalidOperation("GetValues failed for variable " + varName);
+					}
+					return values;
+				}
+
+				template<typename ElementType>
+				TTimeSeries<ElementType> * GetSeries(const string& varName, size_t stationIndex)
+				{
+					auto values = GetValues<ElementType>(varName, stationIndex);
 					auto result = new TTimeSeries<ElementType>(values, this->TimeForIndex(0), this->GetTimeStep());
 					return result;
 				}
 
 				template<typename ElementType>
-				MultiTimeSeries<TTimeSeries<ElementType>*> * GetEnsembleSeries(const string& varName, int catchmentNumber)
+				MultiTimeSeries<TTimeSeries<ElementType>*>* GetSeries(const string& varName)
 				{
-					auto series = GetEnsemble<ElementType>(varName, catchmentNumber);
+					vector<ElementType> values = GetValues<ElementType>(varName);
+					size_t tlen = GetTimeLength();
+					size_t n = GetNumIdentifiers();
+					size_t N = n * tlen;
+					if (values.size() != N)
+						datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Inconsistencies between values length and expected total size of data");
+
+					auto varDims = GetVarDims(varName);
+					ElementType* d = values.data();
+					auto start = TimeForIndex(0);
+					auto tstep = GetTimeStep();
+					if (isTimeFastestVarying(varDims))
+					{
+						vector<ElementType*> vv(n);
+						for (size_t i = 0; i < n; i++)
+						{
+							vv[i] = d;
+							d += tlen;
+						}
+						return new MultiTimeSeries<TTimeSeries<ElementType>*>(vv, tlen, GetStart(), GetTimeStep());
+					}
+					else
+					{
+						vector<ElementType> v(tlen);
+						vector<vector<ElementType>> vv;
+						vv.assign(n, v);
+						for (size_t t = 0; t < tlen; t++)
+						{
+							for (size_t s = 0; s < n; s++)
+							{
+								vv[s][t] = *d;
+								d += 1;
+							}
+						}
+						return new MultiTimeSeries<TTimeSeries<ElementType>*>(vv, GetStart(), GetTimeStep());
+					}
+				}
+
+				template<typename ElementType>
+				MultiTimeSeries<TTimeSeries<ElementType>*> * GetEnsembleSeries(const string& varName, size_t stationIndex)
+				{
+					auto series = GetEnsemble<ElementType>(varName, stationIndex);
 					auto result = new MultiTimeSeries<TTimeSeries<ElementType>*>(*series, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
 					for (auto& d : (*series))
 					{
@@ -513,17 +582,17 @@ namespace datatypes
 				*
 				* \tparam	ElementType	type of element expected for this variable.
 				* \param	varName		   	Name of the variable.
-				* \param	catchmentNumber	The catchment number.
+				* \param	stationIndex	The catchment number.
 				* \param	timeIndex	   	Zero-based index of the time.
 				* \param [in]	values 	[in] the values to write to file.
 				*/
 				template<typename ElementType>
-				void SetForecasts(const string& varName, int catchmentNumber, int timeIndex, vector<ElementType*> &values) 	// TODO: checks on 'values'
+				void SetForecasts(const string& varName, size_t stationIndex, size_t timeIndex, vector<ElementType*> &values) 	// TODO: checks on 'values'
 				{
 					int dataVarId = GetVarId(varName);
 					vector<size_t> startp;
 					vector<size_t> countp;
-					GetEnsFcastNetcdfWindow(varName, catchmentNumber, timeIndex, startp, countp);
+					GetEnsFcastNetcdfWindow(varName, stationIndex, timeIndex, startp, countp);
 					auto vardata = GetForecastDataBuffer();
 
 					ElementType * dest;
@@ -541,13 +610,13 @@ namespace datatypes
 				}
 
 				template<typename ElementType>
-				void SetEnsembles(const string& varName, int catchmentNumber, vector<ElementType*> &values)
+				void SetEnsembles(const string& varName, size_t stationIndex, vector<ElementType*> &values)
 				{
 					int dataVarId = GetVarId(varName);
 					vector<size_t> startp;
 					vector<size_t> countp;
-					GetNetcdfWindow(varName, catchmentNumber, startp, countp);
-					int n = GetTimeLength();
+					GetNetcdfWindow(varName, stationIndex, startp, countp);
+					size_t n = GetTimeLength();
 					auto vardata = GetEnsembleDataBuffer(1, n);
 
 					for (int i = 0; i < ensembleSize; i++)
@@ -567,15 +636,15 @@ namespace datatypes
 				}
 
 				template<typename ElementType>
-				void SetValues(const string& varName, int catchmentNumber, const vector<ElementType>& values)
+				void SetValues(const string& varName, size_t stationIndex, const vector<ElementType>& values)
 				{
-					int n = GetTimeLength();
+					size_t n = GetTimeLength();
 					if (values.size() != n)
 						datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("vector passed does not have the length of the main time dimension");
 					int dataVarId = GetVarId(varName);
 					vector<size_t> startp;
 					vector<size_t> countp;
-					GetNetcdfWindow(varName, catchmentNumber, startp, countp);
+					GetNetcdfWindow(varName, stationIndex, startp, countp);
 					size_t* s = &(startp[0]);
 					size_t* c = &(countp[0]);
 					const double* vardata = values.data();
@@ -651,7 +720,6 @@ namespace datatypes
 				static string CreateTimeUnitsAttribute(const ptime& utcStart, const TimeStep& timeStep);
 				static ptime ParseStartDate(const string& unitsAttribute);
 				static string ParseTimeUnits(const string& unitsAttribute);
-				static ptime GetStartDateFromFile(const string& filename);
 
 				TimeStep GetTimeStep();
 				TimeStep GetLeadTimeStep();
@@ -819,8 +887,8 @@ namespace datatypes
 				void ReadGeometry();
 				void ReadGeometryDimensions();
 				void ReadGeometryVariables();
-				void WriteGeometry(int nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const std::map<string, VariableDefinition>& varDefinitions);
-				void DefineMandatoryDimensions(int nEns, int nLead, int nStations);
+				void WriteGeometry(size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const std::map<string, VariableDefinition>& varDefinitions);
+				void DefineMandatoryDimensions(size_t nEns, size_t nLead, size_t nStations);
 				void DefineDimVariables();
 				void DefineVariables();
 				void WriteCommonVarData();
@@ -838,18 +906,18 @@ namespace datatypes
 				size_t InquireDimLength(int dimId);
 				size_t GetNumDims(const string& ncVarName);
 				void ReadTimeUnits();
-				vector<string> * GetStringVariable(int strLen, int varId, int n);
+				vector<string> * GetStringVariable(size_t strLen, int varId, size_t n);
 				string GetStringAttribute(const string& attName);
 				bool HasAttribute(const string& attName);
 				nc_type GetDataType(int variableId);
-				vector<int> ReadAsInt(int varId, int size);
-				vector<float> ReadAsFloat(int varId, int size, bool strict=true);
-				vector<double> ReadAsDouble(int varId, int size);
+				vector<int> ReadAsInt(int varId, size_t size);
+				vector<float> ReadAsFloat(int varId, size_t size, bool strict=true);
+				vector<double> ReadAsDouble(int varId, size_t size);
 
 				void ErrorLossPrecision(int varId);
 
 /*				template<class T>
-				vector<T> GetVariable(int varId, int n)
+				vector<T> GetVariable(int varId, size_t n)
 				{
 					if (varId < 0) return nullptr;
 					T* result = new T[n];
@@ -863,7 +931,7 @@ namespace datatypes
 				}
 */
 				template<class T>
-				void SetVariableDimOne(int varId, T* values, int n)
+				void SetVariableDimOne(int varId, T* values, size_t n)
 				{
 					if (values == nullptr)
 						ExceptionUtilities::ThrowInvalidArgument("SwiftNetCDFAccess::SetVariableDimOne: values cannot be a nullptr");
@@ -886,7 +954,7 @@ namespace datatypes
 				}
 
 				template<class T>
-				vector<T> GetVariableDimOne(int varId, int n)
+				vector<T> GetVariableDimOne(int varId, size_t n)
 				{
 					if (n <= 0)
 						ExceptionUtilities::ThrowInvalidArgument("SwiftNetCDFAccess::GetVariableDimOne: data size must be strictly positive");
@@ -906,7 +974,7 @@ namespace datatypes
 				}
 
 				template<class T, class TStored>
-				vector<T> GetVariableDimOne(int varId, int n)
+				vector<T> GetVariableDimOne(int varId, size_t n)
 				{
 					vector<T> result(n);
 					vector<TStored> tmp = GetVariableDimOne<TStored>(varId, n);
@@ -918,7 +986,7 @@ namespace datatypes
 				}
 
 				template<class T, class TStored>
-				void SetVariable(int varId, T* values, int n)
+				void SetVariable(int varId, T* values, size_t n)
 				{
 					if (values == nullptr)
 						ExceptionUtilities::ThrowInvalidArgument("SwiftNetCDFAccess::SetVariable: values cannot be a nullptr");
@@ -934,37 +1002,37 @@ namespace datatypes
 				/**
 				 * \brief	Gets the NetCDF start/count specifications for an ensemble forecast time series.
 				 *
-				 * \param	catchmentNumber	The catchment number.
+				 * \param	stationIndex	The catchment number.
 				 * \param	timeIndex	   	Zero-based index of the time.
 				 * \param [in,out]	startp 	the dimensions start indices.
 				 * \param [in,out]	countp 	the dimensions counts.
 				 */
-				void GetEnsFcastNetcdfWindow(const string& varName, int catchmentNumber, int timeIndex, vector<size_t>& startp, vector<size_t>& countp);
+				void GetEnsFcastNetcdfWindow(const string& varName, size_t stationIndex, size_t timeIndex, vector<size_t>& startp, vector<size_t>& countp);
 
 				/**
 				* \brief	Gets the NetCDF start/count specifications for the data pertaining to an ensemble of time series.
 				*
-				* \param	catchmentNumber	The catchment number.
+				* \param	stationIndex	The catchment number.
 				* \param [in,out]	startp 	the dimensions start indices.
 				* \param [in,out]	countp 	the dimensions counts.
 				*/
-//				void GetEnsNetcdfWindow(int catchmentNumber, vector<size_t>& startp, vector<size_t>& countp);
+//				void GetEnsNetcdfWindow(size_t stationIndex, vector<size_t>& startp, vector<size_t>& countp);
 
 				/**
 				* \brief	Gets the NetCDF start/count specifications for the data pertaining to a time index.
 				*
-				* \param	catchmentNumber	The catchment number.
+				* \param	stationIndex	The catchment number.
 				* \param [in,out]	startp 	the dimensions start indices.
 				* \param [in,out]	countp 	the dimensions counts.
 				*/
-				void GetNetcdfWindow(const string& varName, int catchmentNumber, vector<size_t>& startp, vector<size_t>& countp);
+				void GetNetcdfWindow(const string& varName, size_t stationIndex, vector<size_t>& startp, vector<size_t>& countp);
 
 				void GetNetcdfWindow(const string& varName, vector<size_t>& startp, vector<size_t>& countp);
 
 				int GetVarId(const string& varName);
-				double * GetForecastDataBuffer(int numStations = 1, int numTimeSteps = 1);
-				double * GetEnsembleDataBuffer(int numStations, int numTimeSteps);
-				double * GetSingleSeriesDataBuffer(int numStations, int numTimeSteps);
+				double * GetForecastDataBuffer(size_t numStations = 1, size_t numTimeSteps = 1);
+				double * GetEnsembleDataBuffer(size_t numStations, size_t numTimeSteps);
+				double * GetSingleSeriesDataBuffer(size_t numStations, size_t numTimeSteps);
 				int ncid = -1;
 				int timeDimId, stationDimId, leadTimeDimId, ensMemberDimId, strLenDimId;
 				int timeVarId = -1, stationNameVarId = -1, stationIdVarId = -1, leadTimeVarId = -1, ensMemberVarId = -1, latVarId = -1, lonVarId = -1, elevationVarId = -1;
@@ -999,7 +1067,7 @@ namespace datatypes
 				vector<int> variableVarIds ;
 
 				//int stepMultiplier ;
-				int ensembleSize;
+				size_t ensembleSize;
 				string catchmentName;
 
 				//vector<string> variableNames;
@@ -1042,7 +1110,7 @@ namespace datatypes
 		//		this->dataAccess = dataAccess;
 		//		this->varName = varName;
 		//		this->identifier = identifier;
-		//		this->catchmentNumber = this->GetNcAccess()->IndexForIdentifier(identifier);
+		//		this->stationIndex = this->GetNcAccess()->IndexForIdentifier(identifier);
 		//	}
 
 		//	/**
@@ -1055,7 +1123,7 @@ namespace datatypes
 		//	MultiTimeSeries<TimeSeries*> * GetForecasts(int i)
 
 		//	{
-		//		auto series = this->GetNcAccess()->GetForecasts<T>(varName, catchmentNumber, i);
+		//		auto series = this->GetNcAccess()->GetForecasts<T>(varName, stationIndex, i);
 		//		auto result = new MultiTimeSeries<TimeSeries*>(*series, this->GetLeadTimeCount(), this->GetNcAccess()->TimeForIndex(i), this->GetTimeStep());
 		//		for (auto& d : (*series))
 		//		{
@@ -1072,7 +1140,7 @@ namespace datatypes
 		//	 */
 		//	TTimeSeries<T> * GetSeries()
 		//	{
-		//		auto values = this->GetNcAccess()->GetValues<T>(varName, catchmentNumber);
+		//		auto values = this->GetNcAccess()->GetValues<T>(varName, stationIndex);
 		//		auto result = new TTimeSeries<T>(values, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
 		//		delete values;
 		//		return result;
@@ -1080,7 +1148,7 @@ namespace datatypes
 
 		//	MultiTimeSeries<TimeSeries*> * GetEnsembleSeries()
 		//	{
-		//		auto series = this->GetNcAccess()->GetEnsemble<T>(varName, catchmentNumber);
+		//		auto series = this->GetNcAccess()->GetEnsemble<T>(varName, stationIndex);
 		//		auto result = new MultiTimeSeries<TimeSeries*>(*series, this->GetTimeLength(), this->TimeForIndex(0), this->GetTimeStep());
 		//		for (auto& d : (*series))
 		//		{
@@ -1094,7 +1162,7 @@ namespace datatypes
 		//	{
 		//		this->GetNcAccess()->WriteForecastsVarData();
 		//		auto values = forecasts->GetValues();
-		//		this->GetNcAccess()->SetForecasts(varName, catchmentNumber, i, (*values));
+		//		this->GetNcAccess()->SetForecasts(varName, stationIndex, i, (*values));
 		//		for (auto& d : (*values))
 		//		{
 		//			if (d != nullptr) delete[] d;
@@ -1106,7 +1174,7 @@ namespace datatypes
 		//	{
 		//		this->GetNcAccess()->WriteEnsembleVarData();
 		//		vector<T*>* values = ensemble->GetValues();
-		//		this->GetNcAccess()->SetEnsembles(varName, catchmentNumber, *values);
+		//		this->GetNcAccess()->SetEnsembles(varName, stationIndex, *values);
 		//		for (T* data : *values)
 		//			if (data != nullptr) delete[] data;
 		//		delete values;
@@ -1116,7 +1184,7 @@ namespace datatypes
 		//	{
 		//		this->GetNcAccess()->WriteSingleSeriesVarData();
 		//		T* values = timeSeries->GetValues();
-		//		this->GetNcAccess()->SetValues(varName, catchmentNumber, values);
+		//		this->GetNcAccess()->SetValues(varName, stationIndex, values);
 		//		delete[] values;
 		//	}
 
@@ -1140,7 +1208,7 @@ namespace datatypes
 		//		return this->GetNcAccess()->GetTimeStep();
 		//	}
 
-		//	ptime TimeForIndex(int timeIndex)
+		//	ptime TimeForIndex(size_t timeIndex)
 		//	{
 		//		return this->GetNcAccess()->TimeForIndex(timeIndex);
 		//	}
@@ -1149,7 +1217,7 @@ namespace datatypes
 		//	SwiftNetCDFAccess * dataAccess = nullptr;
 		//	string varName;
 		//	string identifier;
-		//	int catchmentNumber;
+		//	size_t stationIndex;
 		//};
 
 		//template <typename T = double>
@@ -1180,7 +1248,7 @@ namespace datatypes
 		//	 * \param[in]	varNames	 	List of names of the variables.
 		//	 * \param[in]	varAttributes	Attributes for each variables; the keys of the dictionary must be found in the varNames parameter.
 		//	 */
-		//	NetCdfSingleSeriesStoreStore(const string& filename, int nEns, int nLead, const string& timeUnits, vector<double>& timeVar, vector<string>& stationIds, vector<string>& varNames,
+		//	NetCdfSingleSeriesStoreStore(const string& filename, size_t nEns, size_t nLead, const string& timeUnits, vector<double>& timeVar, vector<string>& stationIds, vector<string>& varNames,
 		//		std::map<string, VariableAttributes>& varAttributes = std::map<string, VariableAttributes>())
 		//	{
 		//		dataAccess = new SwiftNetCDFAccess(filename, nEns, nLead, timeUnits, timeVar, stationIds, varNames, varAttributes);
@@ -1266,7 +1334,7 @@ namespace datatypes
 		};
 
 		template <typename T>
-		class DATATYPES_DLL_LIB SingleNetCdfFileStore
+		class /*DATATYPES_DLL_LIB*/ SingleNetCdfFileStore
 		{
 
 		private:
@@ -1345,7 +1413,7 @@ namespace datatypes
 				return varName;
 			}
 
-			int IndexForIdentifier() const
+			size_t IndexForIdentifier() const
 			{
 				if (identifier.empty())
 				{
@@ -1422,7 +1490,7 @@ namespace datatypes
 				return this->GetNcAccess()->GetTimeStep();
 			}
 
-			ptime TimeForIndex(int timeIndex) const
+			ptime TimeForIndex(size_t timeIndex) const
 			{
 				return this->GetNcAccess()->TimeForIndex(timeIndex);
 			}
@@ -1447,21 +1515,21 @@ namespace datatypes
 				return this->GetNcAccess()->GetEnd();
 			}
 
-			int IndexForIdentifier(const string& identifier) const
+			size_t IndexForIdentifier(const string& identifier) const
 			{
 				return this->GetNcAccess()->IndexForIdentifier(identifier);
 			}
 
-			vector<string> GetIdentifiers() const
-			{
-				return this->GetNcAccess()->GetIdentifiers();
-			}
+			//vector<string> GetIdentifiers() const
+			//{
+			//	return this->GetNcAccess()->GetIdentifiers();
+			//}
 
 		};
 
 
 		template <typename T>
-		class DATATYPES_DLL_LIB NetCdfSingleSeriesStore :
+		class /*DATATYPES_DLL_LIB*/ NetCdfSingleSeriesStore :
 			public SingleTimeSeriesStore<T>,
 			public SingleNetCdfFileStore<T>
 		{
@@ -1495,7 +1563,7 @@ namespace datatypes
 				if (&src == this) {
 					return *this;
 				}
-				MoveFrom(src);
+				SingleNetCdfFileStore<T>::MoveFrom(src);
 				return *this;
 			}
 
@@ -1548,9 +1616,17 @@ namespace datatypes
 				if(index < 0)
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Index not found for data identifier: " + identifier);
 
-				// Meed to disambiguate the call to the template method GetSeries for GCC, somehow. Even if this does not look ambiguous.
+				// Need to disambiguate the call to the template method GetSeries for GCC, somehow. Even if this does not look ambiguous.
 				// See e.g. http://stackoverflow.com/questions/15572415/expected-primary-expression-before-in-g-but-not-in-microsoft-compiler
 				return this->GetNcAccess()->template GetSeries<T>(this->GetNcVarName(), index);
+			}
+
+			MultiTimeSeries<TTimeSeries<T>*>* ReadAllCollection()
+			{
+				MultiTimeSeries<TTimeSeries<T>*>* result = new MultiTimeSeries<TTimeSeries<T>*>();
+				// Need to disambiguate the call to the template method GetSeries for GCC, somehow. Even if this does not look ambiguous.
+				// See e.g. http://stackoverflow.com/questions/15572415/expected-primary-expression-before-in-g-but-not-in-microsoft-compiler
+				return this->GetNcAccess()->template GetSeries<T>(this->GetNcVarName());
 			}
 
 			void Write(TTimeSeries<T> * timeSeries)
@@ -1594,12 +1670,13 @@ namespace datatypes
 
 			vector<string> GetIdentifiers() const
 			{
-				return this->GetNcAccess()->GetIdentifiers();
+				vector<string> x = { SingleNetCdfFileStore<T>::GetIdentifier() };
+				return x;
 			}
 		};
 
 		template <typename T>
-		class DATATYPES_DLL_LIB NetCdfEnsembleTimeSeriesStore : public EnsembleTimeSeriesStore < T >, public SingleNetCdfFileStore<T>
+		class /*DATATYPES_DLL_LIB*/ NetCdfEnsembleTimeSeriesStore : public EnsembleTimeSeriesStore < T >, public SingleNetCdfFileStore<T>
 		{
 			//
 		public:
@@ -1635,6 +1712,12 @@ namespace datatypes
 				return result;
 			}
 
+			vector<string> GetIdentifiers() const 
+			{ 
+				vector<string> x = { SingleNetCdfFileStore<T>::GetIdentifier() };
+				return x;
+			}
+
 			MultiTimeSeries<TTimeSeries<T>*>* Read()
 			{
 				return this->GetNcAccess()->template GetEnsembleSeries<T>(this->GetNcVarName(), this->IndexForIdentifier());
@@ -1642,9 +1725,9 @@ namespace datatypes
 
 			void Write(MultiTimeSeries<TTimeSeries<T>*> * ensemble)
 			{
-				int catchmentNumber = this->IndexForIdentifier();
+				size_t stationIndex = this->IndexForIdentifier();
 				vector<T*>* values = ensemble->GetValues();
-				this->GetNcAccess()->SetEnsembles(this->GetNcVarName(), catchmentNumber, *values);
+				this->GetNcAccess()->SetEnsembles(this->GetNcVarName(), stationIndex, *values);
 				for (T* data : *values)
 					if (data != nullptr) delete[] data;
 				delete values;
@@ -1829,7 +1912,7 @@ namespace datatypes
 
 
 		template <typename T=double>
-		class DATATYPES_DLL_LIB NetCdfTimeSeriesEnsembleTimeSeriesStore :
+		class /*DATATYPES_DLL_LIB*/ NetCdfTimeSeriesEnsembleTimeSeriesStore :
 			public WritableTimeSeriesEnsembleTimeSeriesStore < T >,
 			public SingleNetCdfFileStore<T>
 		{
@@ -1895,6 +1978,12 @@ namespace datatypes
 				return result;
 			}
 
+			vector<string> GetIdentifiers() const
+			{
+				vector<string> x = { SingleNetCdfFileStore<T>::GetIdentifier() };
+				return x;
+			}
+
 			/**
 			 * \brief	Gets the ensemble forecast for a given index in the time dimension
 			 *
@@ -1902,13 +1991,13 @@ namespace datatypes
 			 *
 			 * \return	a pointer to a new MultiTimeSeries.
 			 */
-			PtrEnsemblePtrType GetForecasts(int i)
+			PtrEnsemblePtrType GetForecasts(size_t i)
 			{
-				int catchmentNumber = this->IndexForIdentifier();
+				size_t stationIndex = this->IndexForIdentifier();
 				auto nc =this->GetNcAccess();
 				ptime issueTime = nc->TimeForIndex(i);
 				std::pair<ptime, TimeStep> fcastGeom = nc->GetLeadTimeGeometry(issueTime);
-				vector<ElementType*>* series = nc->template GetForecasts<T>(this->GetNcVarName(), catchmentNumber, i);
+				vector<ElementType*>* series = nc->template GetForecasts<T>(this->GetNcVarName(), stationIndex, i);
 				auto result = new EnsemblePtrType(*series, this->GetLeadTimeCount(), fcastGeom.first, fcastGeom.second);
 				for (auto& d : (*series))
 				{
@@ -1918,11 +2007,11 @@ namespace datatypes
 				return result;
 			}
 
-			void SetForecasts(int i, MultiTimeSeries<TimeSeries*> * forecasts)
+			void SetForecasts(size_t i, MultiTimeSeries<TimeSeries*> * forecasts)
 			{
-				int catchmentNumber = this->IndexForIdentifier();
+				size_t stationIndex = this->IndexForIdentifier();
 				auto values = forecasts->GetValues();
-				this->GetNcAccess()->SetForecasts(this->GetNcVarName(), catchmentNumber, i, (*values));
+				this->GetNcAccess()->SetForecasts(this->GetNcVarName(), stationIndex, i, (*values));
 				for (auto& d : (*values))
 				{
 					if (d != nullptr) delete[] d;
@@ -1943,7 +2032,7 @@ namespace datatypes
 			{
 				char * end;
 				const char* q = ensembleIdentifier.c_str();
-				int index = -1;
+				size_t index = -1;
 				ptime dateIndex = TimeStep::PtimeFromIsoString(ensembleIdentifier);
 				if (dateIndex == not_a_date_time)
 				{
@@ -1964,12 +2053,12 @@ namespace datatypes
 				return GetForecasts(index);
 			}
 
-			int GetIndexForTime(const ptime& dateIndex)
+			size_t GetIndexForTime(const ptime& dateIndex)
 			{
 				if (indexForTime == nullptr)
 				{
 					vector<ptime> p = this->GetNcAccess()->GetTimeDim();
-					indexForTime = new std::map<ptime, int>();
+					indexForTime = new std::map<ptime, size_t>();
 					for (size_t i = 0; i < p.size(); i++)
 					{
 						(*indexForTime)[p[i]] = i;
@@ -2103,7 +2192,7 @@ namespace datatypes
 			}
 
 		private:
-			std::map<ptime, int> * indexForTime = nullptr;
+			std::map<ptime, size_t> * indexForTime = nullptr;
 		};
 
 
@@ -2281,7 +2370,7 @@ namespace datatypes
 		* \tparam	T	The type of each data item this can handle.
 		*/
 		template <typename T>
-		class DATATYPES_DLL_LIB MultiFileTimeSeriesEnsembleTimeSeriesStore : 
+		class /*DATATYPES_DLL_LIB*/ MultiFileTimeSeriesEnsembleTimeSeriesStore : 
 			public TimeSeriesEnsembleTimeSeriesStore < T >
 		{
 		public:
@@ -2398,7 +2487,10 @@ namespace datatypes
 
 			ptime GetEnd() const
 			{
-				return timeStep.AddSteps(start, length);
+				if (length < 0)
+					return start;
+				size_t n = length;
+				return timeStep.AddSteps(start, n);
 			}
 
 			string ShortFileNamePattern() const

@@ -866,7 +866,10 @@ namespace datatypes
 				else if (m == "daily_to_hourly")
 					return DailyToHourly(timeSeries);
 				else
+				{
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Time series resampling method not known: " + method);
+					return nullptr;
+				}
 			}
 
 			static PtrSeriesType DailyToHourly(const SeriesType& dailyTimeSeries)
@@ -995,10 +998,13 @@ namespace datatypes
 				if (ta != tb)
 					return false;
 
-				int n = ta.GetNumSteps(from, to);
-				int offsetA = a.IndexForTime(from);
-				int offsetB = b.IndexForTime(from);
-				for (size_t i = 0; i < n; i++)
+				auto n = ta.GetNumSteps(from, to);
+				if (n < 0)
+					return false;
+				size_t s = (size_t)n;
+				auto offsetA = a.IndexForTime(from);
+				auto offsetB = b.IndexForTime(from);
+				for (size_t i = 0; i < s; i++)
 				{
 					auto valA = a[i + offsetA];
 					auto valB = b[i + offsetB];
@@ -1101,14 +1107,14 @@ namespace datatypes
 				if (end > timeSeries.GetEndDate())
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("end needs to be less than time series end");
 
-				int sIndex = timeSeries.UpperIndexForTime(start);
-				int eIndex = timeSeries.LowerIndexForTime(end);
+				size_t sIndex = timeSeries.UpperIndexForTime(start);
+				size_t eIndex = timeSeries.LowerIndexForTime(end);
 
-				int len = timeSeries.GetLength();
+				size_t len = timeSeries.GetLength();
 				double* d = new double[len];
 				timeSeries.CopyTo(d, 0, len - 1);
 
-				for (int i = sIndex; i <= eIndex; i++)
+				for (size_t i = sIndex; i <= eIndex; i++)
 					d[i] = maskValue;
 
 				PtrSeriesType result = new SeriesType(d, len, timeSeries.GetStartDate(), timeSeries.GetTimeStep());

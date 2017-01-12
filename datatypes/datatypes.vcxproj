@@ -39,7 +39,7 @@
   <PropertyGroup>
     <IncludePath>$(VisualLeakDetectorPath)\include;$(NetcdfIncludePath);$(BoostPath);$(IncludePath)</IncludePath>
     <ReferencePath>$(VisualLeakDetectorLibPath);$(NetcdfLibPath);$(ReferencePath)</ReferencePath>
-    <LibraryPath>$(VisualLeakDetectorLibPath);$(NetcdfLibPath);$(BoostLibPath);$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VisualLeakDetectorLibPath);$(NetcdfLibPath);$(BoostLibPath);$(YamlcppLibPath);$(JsoncppLibPath);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -48,7 +48,7 @@
       <AdditionalOptions>"-D_SCL_SECURE_NO_WARNINGS" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(VisualLeakDetectorLibPath);$(BoostLibPath);$(NetcdfLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VisualLeakDetectorLibPath);$(BoostLibPath);$(NetcdfLibPath);$(YamlcppLibPath);$(JsoncppLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>netcdf.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!--AdditionalDependencies>vld.lib;%(AdditionalDependencies)</AdditionalDependencies-->
     </Link>

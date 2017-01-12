@@ -47,6 +47,19 @@ namespace datatypes {
 			static string ReadEnvironmentVariable(const string& envVar);
 			static string BuildPath(const vector<string>& folders);
 			static TimeSeriesLibrary CreateEnsembleTimeSeriesLibrary(string& rainObsId, string& petObsId, string& rainFcastId, string& petFcastId);
+			static TimeSeriesLibrary GetTestTimeSeriesLibrary();
+
+			const static string kVarSingleStation;
+			const static string kVarMultiStations;
+			const static string kFileSingleStation;
+			const static string kFileMultiStations;
+
+			const static string kSingleStationId;
+			const static string kStationIdOne;
+			const static string kStationIdTwo;
+			const static size_t kTimeSeriesLength;
+
+			static vector<string> TestStationIds();
 		};
 
 		class DATATYPES_DLL_LIB TestSingleTimeSeriesStore :
@@ -59,6 +72,7 @@ namespace datatypes {
 			string GetDataSummary() const;
 			TTimeSeries<double>* Read();
 			TTimeSeries<double>* Read(const string& blah);
+			MultiTimeSeries<TTimeSeries<double>*>* ReadAllCollection();
 			std::vector<std::string> GetIdentifiers() const;
 		private:
 			TTimeSeries<double> innerTs;
