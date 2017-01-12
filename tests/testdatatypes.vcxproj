@@ -40,7 +40,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <IncludePath>../datatypes;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../libswift;../../datatypes;$(BoostPath);$(NetcdfIncludePath);../../Externals</IncludePath>
-    <LibraryPath>$(LibraryPath);$(OutDir);$(BoostLibPath)</LibraryPath>
+    <LibraryPath>$(LibraryPath);$(OutDir);$(BoostLibPath);$(YamlcppLibPath);$(JsoncppLibPath)</LibraryPath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -48,7 +48,7 @@
       <AdditionalOptions>"-D_SCL_SECURE_NO_WARNINGS" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(VisualLeakDetectorLibPath);$(BoostLibPath);$(NetcdfLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VisualLeakDetectorLibPath);$(BoostLibPath);$(YamlcppLibPath);$(JsoncppLibPath);$(NetcdfLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>netcdf.lib;datatypes.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!--AdditionalDependencies>vld.lib;%(AdditionalDependencies)</AdditionalDependencies-->
     </Link>
@@ -59,6 +59,7 @@
     <ClCompile Include="datatypes_netcdf_tests.cpp" />
     <ClCompile Include="ensemble_timeseries.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="time_series_libraries.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="create_swift_netcdf_ens_data.R" />

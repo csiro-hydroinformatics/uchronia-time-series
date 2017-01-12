@@ -1,3 +1,9 @@
+#pragma once
+
+// Must define the switch so that datatypes constructs are declared as IMPORT definitions
+#define USING_DATATYPES
+
+#pragma warning (disable : 4251)
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -12,7 +18,7 @@
 #include "catch_macros.hpp"
 
 using namespace datatypes::tests;
-using DTH = datatypes::tests::DataTestHelper<double>;
+//using DTH = datatypes::tests::DataTestHelper<double>;
 
 using namespace boost::gregorian;
 using namespace datatypes::tests;

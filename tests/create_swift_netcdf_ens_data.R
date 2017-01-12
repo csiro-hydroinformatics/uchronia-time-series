@@ -10,8 +10,11 @@
 library(datadev)
 library(ncSwift)
 
+
 outputDataDir <- 'c:/STSF/tmp'
-if (!(dir.exists(outputDataDir))) { dir.create(outputDataDir, recursive=TRUE) }
+if (!(dir.exists(outputDataDir))) outputDataDir <- 'F:/STSF/tmp/data'
+
+# if (!(dir.exists(outputDataDir))) { dir.create(outputDataDir, recursive=TRUE) }
 
 fname <- file.path(outputDataDir, 'testswift_2015.nc')
 file.remove(fname)
@@ -54,7 +57,7 @@ rm(snc)
 #################################################
 # Create a test data file for https://jira.csiro.au/browse/WIRADA-407
 
-outputDataDir <- 'c:/STSF/tmp'
+
 
 fname <- file.path(outputDataDir, 'testswift_w407.nc')
 file.remove(fname)
@@ -95,7 +98,7 @@ mkMultiNcFileEnsembleTs(varNames='rainfall_fcast', fileStampDates=fileStampDates
 library(datadev)
 library(ncSwift)
 options(error=recover)
-outputDataDir <- 'c:/STSF/tmp'
+
 
 nTimeSteps <- 48
 timeAxisStart <- ISOdate(year=2010, month=08, day=01, hour = 14, min = 0, sec = 0, tz = "UTC")

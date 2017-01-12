@@ -1,5 +1,5 @@
 
-#include "common_datatypes.h"
+	#include "common_datatypes.h"
 
 using namespace datatypes::tests;
 
@@ -17,6 +17,34 @@ TEST_CASE("Basic access - single and double precision")
 	REQUIRE_EQUAL(42.0f, tf[3]);
 	REQUIRE_EQUAL(42.0f, tf[threeHoursLater]);
 
+}
+
+template<typename E>
+void CheckSeriesPtrData()
+{
+	// https://jira.csiro.au/browse/WIRADA-420
+	using T = TTimeSeries<E>;
+	E inputValues[6] = { 0, 1, 2, 22, 4, 5 };
+	size_t tslen = 4;
+	ptime s(date(2014, 8, 1));
+	auto tstep = TimeStep::GetDaily();
+	E* d = inputValues;
+	T ts(d, tslen, s, tstep);
+	for (size_t i = 0; i < tslen; i++)
+		REQUIRE(ts[i] == inputValues[i]);
+
+	d = &(inputValues[1]);
+	ts = T(d, tslen, s, tstep);
+	for (size_t i = 0; i < tslen; i++)
+		REQUIRE(ts[i] == inputValues[i + 1]);
+
+}
+
+TEST_CASE("Time series construction from pointers to data values")
+{
+	CheckSeriesPtrData<double>();
+	CheckSeriesPtrData<float>();
+	CheckSeriesPtrData<int>();
 }
 
 TEST_CASE("Time step calculation and number of items in the series are consistent")
