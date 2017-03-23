@@ -18,6 +18,8 @@ namespace datatypes
 		class DATATYPES_DLL_LIB TimeStepImplementation
 		{
 		public:
+			virtual ~TimeStepImplementation();
+
 			static void CheckIsDateTime(const ptime& instant);
 
 			virtual TimeStepImplementation* Clone() = 0;
@@ -40,7 +42,7 @@ namespace datatypes
 			virtual bool IsRegular() const = 0;
 			virtual time_duration GetRegularStepDuration() const = 0;
 			virtual std::string GetName() const = 0;
-		
+
 		protected:
 			virtual const double GetLinearIndexing(const ptime& start, const ptime& end) const = 0;
 		};
@@ -53,7 +55,7 @@ namespace datatypes
 			static RegularTimeStepImplementation* GetDaily();
 			
 			RegularTimeStepImplementation(const time_duration& stepDuration);
-			~RegularTimeStepImplementation();
+			virtual ~RegularTimeStepImplementation();
 			
 			TimeStepImplementation* Clone();
 			bool Equals(TimeStepImplementation* tsImpl) const;
@@ -92,6 +94,8 @@ namespace datatypes
 			public TimeStepImplementation
 		{
 		public:
+			virtual ~IrregularTimeStepImplementation() {}
+
 			virtual TimeStepImplementation* Clone() = 0;
 			virtual bool Equals(TimeStepImplementation* tsImpl) const = 0;
 
@@ -116,6 +120,8 @@ namespace datatypes
 			public IrregularTimeStepImplementation
 		{
 		public:
+			virtual ~MonthlyQppTimeStepImplementation() {}
+
 			TimeStepImplementation* Clone();
 			bool Equals(TimeStepImplementation* tsImpl) const;
 

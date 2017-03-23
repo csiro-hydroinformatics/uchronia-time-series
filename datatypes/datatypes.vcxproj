@@ -33,22 +33,16 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(SolutionDir)/config/swift_dependencies_paths.props" Condition="exists('$(SolutionDir)/config/swift_dependencies_paths.props')" Label="SolutionCommonProps" />
-    <Import Project="../Solutions/config/swift_dependencies_paths.props" Condition="!exists('$(SolutionDir)/config/swift_dependencies_paths.props') and  exists('../Solutions/config/swift_dependencies_paths.props')" Label="SolutionCommonProps" />
+   <Import Project="$(UserProfile)/vcpp_config.props" Condition="exists('$(UserProfile)/vcpp_config.props')" />
   </ImportGroup>
   <PropertyGroup>
-    <IncludePath>$(VisualLeakDetectorPath)\include;$(NetcdfIncludePath);$(BoostPath);$(IncludePath)</IncludePath>
-    <ReferencePath>$(VisualLeakDetectorLibPath);$(NetcdfLibPath);$(ReferencePath)</ReferencePath>
-    <LibraryPath>$(VisualLeakDetectorLibPath);$(NetcdfLibPath);$(BoostLibPath);$(YamlcppLibPath);$(JsoncppLibPath);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(LocalIncludePaths);$(IncludePath)</IncludePath>
+    <ReferencePath>$(VisualLeakDetectorLibPath);$(LocalLibraryPaths);$(ReferencePath)</ReferencePath>
+    <LibraryPath>$(VisualLeakDetectorLibPath);$(LocalLibraryPaths);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
-    <ClCompile>
-      <Optimization>$(OptimizationSetting)</Optimization>
-      <!-- <SDLCheck>true</SDLCheck> -->
-      <AdditionalOptions>"-D_SCL_SECURE_NO_WARNINGS" %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(VisualLeakDetectorLibPath);$(BoostLibPath);$(NetcdfLibPath);$(YamlcppLibPath);$(JsoncppLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(LocalLibraryPaths);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>netcdf.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!--AdditionalDependencies>vld.lib;%(AdditionalDependencies)</AdditionalDependencies-->
     </Link>

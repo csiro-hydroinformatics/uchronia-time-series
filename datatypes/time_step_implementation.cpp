@@ -4,6 +4,8 @@ namespace datatypes
 {
 	namespace timeseries
 	{
+		TimeStepImplementation::~TimeStepImplementation() {}
+
 		void TimeStepImplementation::CheckIsDateTime(const ptime& instant)
 		{
 			if (instant.is_not_a_date_time())

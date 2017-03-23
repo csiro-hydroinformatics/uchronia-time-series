@@ -718,6 +718,10 @@ namespace datatypes
 
 			EnsembleTimeSeriesStore<double> * GetEnsembleSeriesInformation(const string& dataId);
 
+			bool IsDataIdTsEnsemble(const string& dataId);
+			bool IsDataIdEnsemble(const string& dataId);
+			bool IsDataIdSingle(const string& dataId);
+
 			TimeSeriesEnsembleTimeSeriesStore<double> * GetTimeSeriesEnsembleSeriesInformation(const string& dataId);
 
 			SingleTimeSeriesStore<double>* CreateTsSource(const TimeSeriesSourceInfo& desc);

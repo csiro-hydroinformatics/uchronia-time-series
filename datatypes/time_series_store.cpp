@@ -516,8 +516,16 @@ namespace datatypes
 
 		MultiTimeSeries<TTimeSeries<double>*>* TimeSeriesLibrary::GetEnsembleTimeSeries(const string& dataId)
 		{
-			EnsembleTimeSeriesStore<double>* dataSource = GetEnsembleSeriesInformation(dataId);
-			return dataSource->Read();
+			if (IsDataIdEnsemble(dataId))
+			{
+				EnsembleTimeSeriesStore<double>* dataSource = GetEnsembleSeriesInformation(dataId);
+				return dataSource->Read();
+			}
+			else if (IsDataIdSingle(dataId))
+				return GetAllTimeSeries(dataId);
+			else
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + dataId);
+
 		}
 
 		MultiTimeSeries<TTimeSeries<double>*>* TimeSeriesLibrary::GetAllTimeSeries(const string& dataId)
@@ -579,6 +587,11 @@ namespace datatypes
 			EnsembleTimeSeriesStore<double> * dataAccess = ensTimeSeriesProviders[id];
 			return dataAccess;
 		}
+
+		bool TimeSeriesLibrary::IsDataIdTsEnsemble(const string& dataId) { return hasKey(tsEnsTimeSeriesProviders, dataId); }
+		bool TimeSeriesLibrary::IsDataIdEnsemble(const string& dataId) { return hasKey(ensTimeSeriesProviders, dataId); }
+		bool TimeSeriesLibrary::IsDataIdSingle(const string& dataId) { return hasKey(timeSeriesProviders, dataId); }
+
 
 		bool TimeSeriesLibrary::CanCreateTimeSeriesEnsembleSeriesStore(const string& dataId)
 		{

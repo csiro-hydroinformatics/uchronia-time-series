@@ -348,12 +348,12 @@ TEST_CASE("Reading single instance time series caters for degenerate dimensions"
 	//REQUIRE_EQUAL(0, singleTsStore.GetEnsembleSize());
 	//REQUIRE_EQUAL(0, singleTsStore.GetLeadTimeCount());
 	singleTsPtr = singleTsStore.Read();
-	ts = *singleTsPtr;
-	REQUIRE_EQUAL(1.31, ts[0]);
-	REQUIRE_EQUAL(2.31, ts[1]);
-	REQUIRE_EQUAL(48, ts.GetLength());
-	REQUIRE_EQUAL(48.31, ts[47]);
-	REQUIRE_EQUAL(startDate, ts.GetStartDate());
+	TimeSeries& ts2 = *singleTsPtr;
+	REQUIRE_EQUAL(1.31, ts2[0]);
+	REQUIRE_EQUAL(2.31, ts2[1]);
+	REQUIRE_EQUAL(48, ts2.GetLength());
+	REQUIRE_EQUAL(48.31, ts2[47]);
+	REQUIRE_EQUAL(startDate, ts2.GetStartDate());
 
 }
 

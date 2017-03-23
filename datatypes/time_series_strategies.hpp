@@ -285,6 +285,9 @@ namespace datatypes
 
 			void CopyTo(vector<T>& dest, size_t from = 0, size_t to = -1) const
 			{
+				size_t tsLen = this->Size();
+				if (tsLen == 0)
+					return;
 				CheckIntervalBounds(from, to);
 				size_t len = (to - from) + 1;
 				if (dest.size() != len)

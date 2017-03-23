@@ -10,6 +10,11 @@ namespace datatypes
 {
 	namespace utils
 	{
+		using namespace std;
+		bad_lexical_cast::bad_lexical_cast(const string& msg) 
+			: invalid_argument(msg.c_str())
+		{
+		}
 		
 		vector<string> StringProcessing::Split(const string& s, const string& separators)
 		{
@@ -31,6 +36,22 @@ namespace datatypes
 			if (removeEmptyEntries)
 				split = RemoveEmpty(split);
 			return split;
+		}
+
+		vector<string> StringProcessing::Concatenate(const vector<vector<string>>& vars)
+		{
+			vector<string> res;
+			for (const auto& v : vars)
+			{
+				Concatenate(res, v);
+			}
+			return res;
+		}
+		void StringProcessing::Concatenate(vector<string>& a, const vector<string>& b)
+		{
+			size_t offset = a.size();
+			a.resize(a.size() + b.size());
+			std::copy(b.begin(), b.end(), a.begin() + offset);
 		}
 
 		vector<string> StringProcessing::RemoveEmpty(const vector<string>& s)

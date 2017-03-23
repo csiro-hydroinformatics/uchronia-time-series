@@ -34,21 +34,16 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(SolutionDir)/config/swift_dependencies_paths.props" Condition="exists('$(SolutionDir)/config/swift_dependencies_paths.props')" Label="SolutionCommonProps" />
-    <Import Project="../Solutions/config/swift_dependencies_paths.props" Condition="!exists('$(SolutionDir)/config/swift_dependencies_paths.props') and  exists('../Solutions/config/swift_dependencies_paths.props')" Label="SolutionCommonProps" />
+   <Import Project="$(UserProfile)/vcpp_config.props" Condition="exists('$(UserProfile)/vcpp_config.props')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>../datatypes;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../libswift;../../datatypes;$(BoostPath);$(NetcdfIncludePath);../../Externals</IncludePath>
-    <LibraryPath>$(LibraryPath);$(OutDir);$(BoostLibPath);$(YamlcppLibPath);$(JsoncppLibPath)</LibraryPath>
-    <ReferencePath>$(ReferencePath)</ReferencePath>
+    <IncludePath>../;../datatypes;$(LocalIncludePaths);$(IncludePath)</IncludePath>
+    <LibraryPath>$(OutDir);$(LocalLibraryPaths);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
-    <ClCompile>
-      <AdditionalOptions>"-D_SCL_SECURE_NO_WARNINGS" %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(VisualLeakDetectorLibPath);$(BoostLibPath);$(YamlcppLibPath);$(JsoncppLibPath);$(NetcdfLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutDir);$(LocalLibraryPaths);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>netcdf.lib;datatypes.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!--AdditionalDependencies>vld.lib;%(AdditionalDependencies)</AdditionalDependencies-->
     </Link>

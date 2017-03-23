@@ -322,6 +322,12 @@ namespace datatypes
 
 			string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, const TimeStep& timeStep)
 			{
+				if (!timeStep.IsRegular())
+				{
+					if (timeStep == timeStep.GetMonthlyQpp())
+						return CreateTimeUnitsAttribute(utcStart, "months");
+				}
+
 				const time_duration oneDay(24, 0, 0);
 				const time_duration oneHour(1, 0, 0);
 				const time_duration oneMinute(0, 1, 0);
@@ -346,6 +352,9 @@ namespace datatypes
 
 			time_duration SwiftNetCDFAccess::CreateTimeUnits(const TimeStep& timeStep)
 			{
+				if (!timeStep.IsRegular())
+					return time_duration();//Irregular time steps will report a zero length duration
+
 				const time_duration oneDay(24, 0, 0);
 				const time_duration oneHour(1, 0, 0);
 				const time_duration oneMinute(0, 1, 0);
@@ -363,6 +372,20 @@ namespace datatypes
 
 			vector<double> SwiftNetCDFAccess::CreateTimeVector(const ptime& start, const TimeStep& timeStep, const ptime& origin, const time_duration& timeStepAxis, const size_t length)
 			{
+				if (!timeStep.IsRegular())
+				{
+					if (timeStepAxis.total_seconds() == 0)
+					{
+						double by = 1.0;//Irregular time steps cannot work with multiples of themselves like regular time steps can, so this is always 1
+						double offset = timeStep.GetOffset(start, origin);
+						return datatypes::utils::SeqVec<double>(offset, by, length);
+					}
+					else
+					{
+						ExceptionUtilities::ThrowInvalidArgument("Cannot specify a non zero timeStepAxis duration when using an irregular main time step");
+					}
+				}
+
 				auto duration = timeStep.GetRegularStepDuration();
 				auto durationUnit = timeStepAxis;
 				double axisUnitsSeconds = timeStepAxis.total_seconds();
@@ -615,6 +638,10 @@ namespace datatypes
 				else if (t2string == string("minu"))
 				{
 					timeUnits = SWIFT_TIME_UNIT_MINUTE;
+				}
+				else if (t2string == string("mont"))
+				{
+					timeUnits = SWIFT_TIME_UNIT_MONTH;
 				}
 				else
 				{
@@ -1299,6 +1326,7 @@ namespace datatypes
 				if (timeUnits == SWIFT_TIME_UNIT_DAY) return TimeStep::GetDaily();
 				else if (timeUnits == SWIFT_TIME_UNIT_HOUR) return TimeStep::GetHourly();
 				else if (timeUnits == SWIFT_TIME_UNIT_MINUTE) return TimeStep::GetHourly() / 60;
+				else if (timeUnits == SWIFT_TIME_UNIT_MONTH) return TimeStep::GetMonthlyQpp();
 				// Below is proabaly only legacy
 				else if (timeUnits == string("hr")) return TimeStep::GetHourly();
 				else if (timeUnits == string("da")) return TimeStep::GetDaily();
@@ -1595,6 +1623,8 @@ namespace datatypes
 			store.WriteToIdentifiers(toSave);
 		}
 
+		template void TimeSeriesIOHelper<double>::Write(const string& varName, std::map<string, TTimeSeries<double>*>& recordedTimeSeries, const std::map<string, string>& idMap, const string& filePath);
+
 		template <typename T>
 		void TimeSeriesIOHelper<T>::Write(DimensionsDefinitions& dimDefinitions, const map<std::string, VariableDefinition>& varDefinitions,
 			std::map<string, TTimeSeries<T>*>& recordedTimeSeries, const string& filePath)
@@ -1604,6 +1634,9 @@ namespace datatypes
 			NetCdfSingleSeriesStore<T> store(filePath, dimDefinitions, varDefinitions, "");
 			store.WriteToNcVariables(recordedTimeSeries);
 		}
+
+		template void TimeSeriesIOHelper<double>::Write(DimensionsDefinitions& dimDefinitions, const map<std::string, VariableDefinition>& varDefinitions, std::map<string, TTimeSeries<double>*>& recordedTimeSeries, const string& filePath);
+
 		template <typename T>
 		typename TimeSeriesIOHelper<T>::PtrEnsemblePtrType TimeSeriesIOHelper<T>::ReadForecastTimeSeries(const string& netCdfFilepath, const string& varName, const string& identifier, int index)
 		{

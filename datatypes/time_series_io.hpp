@@ -805,9 +805,27 @@ namespace datatypes
 					auto tsu = GetTimeUnitTimeStep();
 
 					if (timeVec.size() <= 1)
+					{
 						timeStep = tsu;
+					}
 					else
-						timeStep = tsu * (timeVec[1] - timeVec[0]);
+					{
+						if (tsu.IsRegular())
+						{
+							timeStep = tsu * (timeVec[1] - timeVec[0]);
+						}
+						else
+						{
+							if ((timeVec[1] - timeVec[0]) == 1)
+							{
+								timeStep = tsu;
+							}
+							else
+							{
+								exceptions::ExceptionUtilities::ThrowNotSupported("No support for multiple increments of an irregular time step");
+							}
+						}
+					}
 
 					cachedFlag = true;
 					return timeStep;
@@ -938,9 +956,9 @@ namespace datatypes
 					if (n <= 0)
 						ExceptionUtilities::ThrowInvalidArgument("SwiftNetCDFAccess::SetVariableDimOne: data size must be strictly positive");
 					//if (varId < 0) return nullptr;
-					const size_t startp = { 0 };
-					const size_t countp = { (size_t)n };
-					int code = NcPutVara<T>(ncid, varId, &startp, &countp, values);
+					const size_t startp[1] = { 0 };
+					const size_t countp[1] = { (size_t)n };
+					int code = NcPutVara<T>(ncid, varId, &(startp[0]), &(countp[0]), values);
 					if (code != NC_NOERR)
 					{
 						ExceptionUtilities::ThrowInvalidOperation("SetVariableDimOne failed for variable ID " + std::to_string(varId));
@@ -959,10 +977,10 @@ namespace datatypes
 					if (n <= 0)
 						ExceptionUtilities::ThrowInvalidArgument("SwiftNetCDFAccess::GetVariableDimOne: data size must be strictly positive");
 					//if (varId < 0) return nullptr;
-					const size_t startp = { 0 };
-					const size_t countp = { (size_t)n };
+					const size_t startp[1] = { 0 };
+					const size_t countp[1] = { (size_t)n };
 					T* values = new T[n];
-					int code = NcGetVara<T>(ncid, varId, &startp, &countp, values);
+					int code = NcGetVara<T>(ncid, varId, &(startp[0]), &(countp[0]), values);
 					if (code != NC_NOERR)
 					{
 						delete values;
@@ -1344,6 +1362,7 @@ namespace datatypes
 			string fileName;
 
 		protected:
+			SingleNetCdfFileStore() {}
 			/**
 			* \brief	Constructor to create a new SWIFT netCDF file
 			*
@@ -1413,10 +1432,36 @@ namespace datatypes
 				return varName;
 			}
 
-			size_t IndexForIdentifier() const
+			string DataSummaryForIdentifier() const
+			{
+				if (identifier.empty())
+					return string(", identifier: <NA>");
+				else
+					return string(", identifier: ") + this->GetIdentifier();
+			}
+
+			string GetDefaultDataSummary() const
+			{
+				auto start = this->GetStart();
+				auto end = this->GetEnd();
+				string result =
+					string("variable name: ") + this->GetNcVarName() +
+					DataSummaryForIdentifier() +
+					string(", start: ") + to_iso_extended_string(start) +
+					string(", end: ") + to_iso_extended_string(end) +
+					string(", time length: ") + boost::lexical_cast<string>(this->GetNcAccess()->GetTimeLength()) +
+					string(", time step: ") + this->GetNcAccess()->GetTimeStep().GetName();
+				return result;
+			}
+
+			size_t IndexForIdentifier(bool strict=true) const
 			{
 				if (identifier.empty())
 				{
+					if (strict)
+					{
+						datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("This netCDF data provider does not have a unique identifier (station ID)");
+					}
 					// TODO: reassess how to deal with it, if really acceptable
 					if (GetNcAccess()->GetNumIdentifiers() == 1)
 						return 0;
@@ -1424,15 +1469,35 @@ namespace datatypes
 				return IndexForIdentifier(this->identifier);
 			}
 
-			string GetIdentifier() const
+			virtual string GetIdentifier(bool strict = true) const
+			{
+				if (identifier.empty())
+				{
+					if (strict)
+					{
+						datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("This netCDF data provider does not have a unique identifier (station ID)");
+					}
+					// TODO: reassess how to deal with it, if really acceptable
+					if (GetNcAccess()->GetNumIdentifiers() == 1)
+					{
+						auto ids = GetIdentifiers();
+						if (ids.size() == 1)
+							return ids[0];
+						datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Inconsistency between netCDF claimed number of identifiers and retrieved list");
+					}
+				}
+				return this->identifier;
+			}
+
+			virtual vector<string> GetIdentifiers() const
 			{
 				if (identifier.empty())
 				{
 					// TODO: reassess how to deal with it, if really acceptable
-					if (GetNcAccess()->GetNumIdentifiers() == 1)
-						return "0";
+					return GetNcAccess()->GetIdentifiers();
 				}
-				return this->identifier;
+				else
+					return vector<string>({ this->identifier });
 			}
 
 			SwiftNetCDFAccess* GetNcAccess() const
@@ -1572,7 +1637,7 @@ namespace datatypes
 				if (&src == this) {
 					return *this;
 				}
-				CopyFrom(src);
+				SingleNetCdfFileStore<T>::CopyFrom(src);
 				return *this;
 			}
 
@@ -1590,16 +1655,7 @@ namespace datatypes
 
 			string GetDataSummary() const
 			{
-				auto start = this->GetNcAccess()->GetStart();
-				auto end = this->GetNcAccess()->GetEnd();
-				string result =
-					string("variable name: ") + this->GetNcVarName() +
-					string(", identifier: ") + this->GetIdentifier() +
-					string(", start: ") + to_iso_extended_string(start) +
-					string(", end: ") + to_iso_extended_string(end) +
-					string(", time length: ") + boost::lexical_cast<string>(this->GetNcAccess()->GetTimeLength()) +
-					string(", time step: ") + this->GetNcAccess()->GetTimeStep().GetName();
-				return result;
+				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
 
 			TTimeSeries<T>* Read()
@@ -1670,6 +1726,7 @@ namespace datatypes
 
 			vector<string> GetIdentifiers() const
 			{
+				return SingleNetCdfFileStore<T>::GetIdentifiers();
 				vector<string> x = { SingleNetCdfFileStore<T>::GetIdentifier() };
 				return x;
 			}
@@ -1700,20 +1757,12 @@ namespace datatypes
 
 			string GetDataSummary() const
 			{
-				auto start = this->GetNcAccess()->GetStart();
-				auto end = this->GetNcAccess()->GetEnd();
-				string result =
-					string("variable name: ") + this->GetNcVarName() +
-					string(", identifier: ") + this->GetIdentifier() +
-					string(", start: ") + to_iso_extended_string(start) +
-					string(", end: ") + to_iso_extended_string(end) +
-					string(", time length: ") + boost::lexical_cast<string>(this->GetNcAccess()->GetTimeLength()) +
-					string(", time step: ") + this->GetNcAccess()->GetTimeStep().GetName();
-				return result;
+				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
 
 			vector<string> GetIdentifiers() const 
 			{ 
+				return SingleNetCdfFileStore<T>::GetIdentifiers();
 				vector<string> x = { SingleNetCdfFileStore<T>::GetIdentifier() };
 				return x;
 			}
@@ -1980,6 +2029,7 @@ namespace datatypes
 
 			vector<string> GetIdentifiers() const
 			{
+				return SingleNetCdfFileStore<T>::GetIdentifiers();
 				vector<string> x = { SingleNetCdfFileStore<T>::GetIdentifier() };
 				return x;
 			}
@@ -1993,7 +2043,7 @@ namespace datatypes
 			 */
 			PtrEnsemblePtrType GetForecasts(size_t i)
 			{
-				size_t stationIndex = this->IndexForIdentifier();
+				size_t stationIndex = this->IndexForIdentifier(false);
 				auto nc =this->GetNcAccess();
 				ptime issueTime = nc->TimeForIndex(i);
 				std::pair<ptime, TimeStep> fcastGeom = nc->GetLeadTimeGeometry(issueTime);
@@ -2009,7 +2059,7 @@ namespace datatypes
 
 			void SetForecasts(size_t i, MultiTimeSeries<TimeSeries*> * forecasts)
 			{
-				size_t stationIndex = this->IndexForIdentifier();
+				size_t stationIndex = this->IndexForIdentifier(false);
 				auto values = forecasts->GetValues();
 				this->GetNcAccess()->SetForecasts(this->GetNcVarName(), stationIndex, i, (*values));
 				for (auto& d : (*values))
@@ -2105,16 +2155,7 @@ namespace datatypes
 
 			string GetDataSummary() const
 			{
-				auto start = GetStart();
-				auto end = GetEnd();
-				string result =
-					string("variable name: ") + this->GetNcVarName() +
-					string(", identifier: ") + this->GetIdentifier() +
-					string(", start: ") + to_iso_extended_string(start) +
-					string(", end: ") + to_iso_extended_string(end) +
-					string(", time length: ") + boost::lexical_cast<string>(this->GetNcAccess()->GetTimeLength()) +
-					string(", time step: ") + this->GetNcAccess()->GetTimeStep().GetName();
-				return result;
+				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
 
 			using WritableTimeSeriesEnsembleTimeSeriesStore < T >::GetEnsembleSize;

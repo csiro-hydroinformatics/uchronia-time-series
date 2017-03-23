@@ -59,6 +59,7 @@ using std::pair;
 #define SWIFT_TIME_UNIT_MINUTE string("minute")
 #define SWIFT_TIME_UNIT_HOUR string("hour")
 #define SWIFT_TIME_UNIT_DAY string("day")
+#define SWIFT_TIME_UNIT_MONTH string("month")
 
 namespace datatypes
 {
@@ -113,6 +114,16 @@ namespace datatypes
 					K newKey = newKeys.at(kvpair.first);
 					res[newKey] = kvpair.second;
 				}
+				return res;
+			}
+
+			template<typename K = string, typename V = string>
+			static map<K, V> Zip(const vector<K>& key, const vector<V>& values)
+			{
+				map<K, V> res;
+				if (key.size() > values.size()) throw std::logic_error("Zip function must have less keys than values");
+				for (size_t i = 0; i < key.size(); i++)
+					res[key[i]] = values[i];
 				return res;
 			}
 
@@ -280,6 +291,12 @@ namespace datatypes
 			U::Dispose(v);
 		}
 
+		class DATATYPES_DLL_LIB bad_lexical_cast : public std::invalid_argument
+		{
+		public:
+			bad_lexical_cast(const string& msg);
+		};
+
 		class DATATYPES_DLL_LIB StringProcessing
 		{
 		public:
@@ -287,6 +304,11 @@ namespace datatypes
 			static string TrimAny(const string& s, const string& charactersToTrim);
 			static vector<string> SplitOnSpaces(const string& s, bool removeEmptyEntries);
 			static vector<string> RemoveEmpty(const vector<string>& s);
+
+			static vector<string> Concatenate(const vector<vector<string>>& vars);
+			static void Concatenate(vector<string>& a, const vector<string>& b);
+
+
 			//			static bool Contains(const string& toTest, const vector<string>& toMatch, bool caseSensitive = true);
 			static bool Contains(const string& toTest, const string& toMatch, bool caseSensitive = true);
 			static bool StartsWith(const string& toTest, const string& toMatch, bool caseSensitive = true);
@@ -303,13 +325,25 @@ namespace datatypes
 			template <typename Target>
 			static Target Parse(const string& strId)
 			{
-				return boost::lexical_cast<Target>(strId);
+				try {
+					return boost::lexical_cast<Target>(strId);
+				}
+				catch (boost::bad_lexical_cast& c)
+				{
+					throw datatypes::utils::bad_lexical_cast(string("Failed to convert '") + strId + string("' via a lexical cast to a ") + string(typeid(Target).name()));
+				}
 			}
 
 			template <typename Target>
 			static string ToString(const Target& value)
 			{
-				return boost::lexical_cast<string>(value);
+				try {
+					return boost::lexical_cast<string>(value);
+				}
+				catch (boost::bad_lexical_cast& c)
+				{
+					throw datatypes::utils::bad_lexical_cast(string("Failed to convert a value of type '") + string(typeid(Target).name()) + string("' to a string"));
+				}
 			}
 
 			static const string kElementSeparatorToken;
