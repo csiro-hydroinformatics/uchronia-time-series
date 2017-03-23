@@ -3,7 +3,7 @@
 #include <stdexcept> 
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
-#include "io_helper.h"
+#include "datatypes/io_helper.h"
 
 using std::string;
 using std::vector;

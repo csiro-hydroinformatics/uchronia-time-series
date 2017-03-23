@@ -6,10 +6,10 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
-#include "exception_utilities.h"
-#include "time_series_store.hpp"
-#include "time_series_io.hpp"
-#include "io_helper.h"
+#include "datatypes/exception_utilities.h"
+#include "datatypes/time_series_store.hpp"
+#include "datatypes/time_series_io.hpp"
+#include "datatypes/io_helper.h"
 
 namespace datatypes
 {

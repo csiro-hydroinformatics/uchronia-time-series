@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../common.h"
-#include "../time_series_store.hpp"
+#include "datatypes/common.h"
+#include "datatypes/time_series_store.hpp"
 
 using namespace datatypes::timeseries;
 

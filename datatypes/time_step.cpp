@@ -4,8 +4,8 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string.hpp>    
 
-#include "time_step.h"
-#include "exception_utilities.h"
+#include "datatypes/time_step.h"
+#include "datatypes/exception_utilities.h"
 
 using namespace datatypes::exceptions;
 

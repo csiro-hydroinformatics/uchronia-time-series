@@ -1,7 +1,7 @@
-#include "../common.h"
+#include "datatypes/common.h"
 #include "datatypes_test_helpers.h"
 #include "datatypes_test_helpers.hpp"
-#include "../time_series_io.hpp"
+#include "datatypes/time_series_io.hpp"
 
 
 namespace datatypes {

@@ -121,3 +121,4 @@ doc/api/doxyoutput/
 datatypes/lib_paths.props
 *.exp
 *.rda
+*.opendb

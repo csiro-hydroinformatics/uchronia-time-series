@@ -1,9 +1,9 @@
 #pragma once
 
 #include <boost/filesystem.hpp>
-#include "../common.h"
-#include "../time_series.hpp"
-#include "../time_series_io.hpp"
+#include "datatypes/common.h"
+#include "datatypes/time_series.hpp"
+#include "datatypes/time_series_io.hpp"
 
 #define TEST_START_TIME ptime(date(2010, 8, 1)) + hours(14)
 
