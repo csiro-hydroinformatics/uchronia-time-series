@@ -1715,7 +1715,7 @@ namespace datatypes
 
 			string GetDataSummary() const
 			{
-				return GetDefaultDataSummary();
+				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
 
 			TTimeSeries<T>* Read()
@@ -1818,7 +1818,7 @@ namespace datatypes
 
 			string GetDataSummary() const
 			{
-				return GetDefaultDataSummary();
+				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
 
 			vector<string> GetIdentifiers() const 
@@ -2232,7 +2232,7 @@ namespace datatypes
 
 			string GetDataSummary() const
 			{
-				return GetDefaultDataSummary();
+				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
 
 			using WritableTimeSeriesEnsembleTimeSeriesStore < T >::GetEnsembleSize;
