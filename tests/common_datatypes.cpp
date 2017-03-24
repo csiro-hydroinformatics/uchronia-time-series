@@ -50,6 +50,8 @@ string       var1_ens = ("var1_ens");
 string       var2_ens = ("var2_ens");
 vector<string> stationIds({ "123", "456" });
 string tDesc("accumulated over the preceding interval");
+string dType("der");
+string dDesc("AWAP data interpolated from observations");
 string pt("Point");
 
 SwiftNetCDFAccess* CreateTestSwiftFile(string testFilePath,
@@ -68,15 +70,15 @@ SwiftNetCDFAccess* CreateTestSwiftFile(string testFilePath,
 	map<string, VariableDefinition> varDefs;
 
 	double fillVal = TEST_FILL_VALUE;
-	string tsType("2");
-	varDefs[var1_fcast_ens] = VariableDefinition(var1_fcast_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_FOUR_DIMENSIONS_DATA), var1_fcast_ens, string("mm"), fillVal, tsType, tDesc, pt);
-	varDefs[var2_fcast_ens] = VariableDefinition(var2_fcast_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_FOUR_DIMENSIONS_DATA), var2_fcast_ens, string("mm"), fillVal, tsType, tDesc, pt);
-	varDefs[var1_obs] = VariableDefinition(var1_obs, string(DATATYPES_DOUBLE_PRECISION_ID), DATATYPES_TWO_DIMENSIONS_DATA, var1_obs, string("mm"), fillVal, tsType, tDesc, pt);
-	varDefs[var2_obs] = VariableDefinition(var2_obs, string(DATATYPES_DOUBLE_PRECISION_ID), DATATYPES_TWO_DIMENSIONS_DATA, var2_obs, string("mm"), fillVal, tsType, tDesc, pt);
-	varDefs[var1_ens] = VariableDefinition(var1_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_THREE_DIMENSIONS_DATA), var1_ens, string("mm"), fillVal, tsType, tDesc, pt);
-	varDefs[var2_ens] = VariableDefinition(var2_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_THREE_DIMENSIONS_DATA), var2_ens, string("mm"), fillVal, tsType, tDesc, pt);
-
-	SwiftNetCDFAccess* access = new SwiftNetCDFAccess(testFilePath, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefs);
+	int tsType = 2;
+	varDefs[var1_fcast_ens] = VariableDefinition(var1_fcast_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_FOUR_DIMENSIONS_DATA), var1_fcast_ens, string("mm"), fillVal, tsType, tDesc, dType, dDesc, pt);
+	varDefs[var2_fcast_ens] = VariableDefinition(var2_fcast_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_FOUR_DIMENSIONS_DATA), var2_fcast_ens, string("mm"), fillVal, tsType, tDesc, dType, dDesc, pt);
+	varDefs[var1_obs] = VariableDefinition(var1_obs, string(DATATYPES_DOUBLE_PRECISION_ID), DATATYPES_TWO_DIMENSIONS_DATA, var1_obs, string("mm"), fillVal, tsType, tDesc, dType, dDesc, pt);
+	varDefs[var2_obs] = VariableDefinition(var2_obs, string(DATATYPES_DOUBLE_PRECISION_ID), DATATYPES_TWO_DIMENSIONS_DATA, var2_obs, string("mm"), fillVal, tsType, tDesc, dType, dDesc, pt);
+	varDefs[var1_ens] = VariableDefinition(var1_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_THREE_DIMENSIONS_DATA), var1_ens, string("mm"), fillVal, tsType, tDesc, dType, dDesc, pt);
+	varDefs[var2_ens] = VariableDefinition(var2_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_THREE_DIMENSIONS_DATA), var2_ens, string("mm"), fillVal, tsType, tDesc, dType, dDesc, pt);
+	GlobalAttributes globAtts = GlobalAttributes::CreateDefault();
+	SwiftNetCDFAccess* access = new SwiftNetCDFAccess(testFilePath, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefs, globAtts);
 	return access;
 }
 

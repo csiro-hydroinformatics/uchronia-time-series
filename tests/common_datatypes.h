@@ -54,7 +54,13 @@ public:
 	~TempFileCleaner();
 };
 
-using NcFileDef = std::pair < DimensionsDefinitions, map<string, VariableDefinition>>;
+class NcFileDef
+{
+public:
+	DimensionsDefinitions DimDefs;
+	map<string, VariableDefinition> VarDefs;
+	GlobalAttributes GlobAtts;
+};
 
 template<typename TStore>
 NcFileDef CreateNcIo(string& timeUnits, const vector<string>& stationIds,
@@ -63,8 +69,10 @@ NcFileDef CreateNcIo(string& timeUnits, const vector<string>& stationIds,
 	const string& longName = "test data",
 	const string& units = "mm",
 	double fillValue = DEFAULT_MISSING_DATA_VALUE,
-	const string& type = "9",
-	const string& typeDescription = "Data type description")
+	int type = 9,
+	const string& typeDescription = "Aggregation type description",
+	const string& datType = "der",
+	const string& datDescription = "Data type description")
 {
 	NcFileDef result;
 	timeUnits = SwiftNetCDFAccess::CreateTimeUnitsAttribute(startDate, timeStep);
@@ -73,12 +81,13 @@ NcFileDef CreateNcIo(string& timeUnits, const vector<string>& stationIds,
 	vector<double> timeVar = timeVars.first;
 	vector<double> leadTimeVar = timeVars.second;
 
-	result.first = DimensionsDefinitions(ensembleSize, leadTimeVar, timeUnits, timeVar, stationIds);
+	result.DimDefs = DimensionsDefinitions(ensembleSize, leadTimeVar, timeUnits, timeVar, stationIds);
 	map<string, VariableDefinition> v;
 	for (auto& ncVarname : ncVarnames)
-		v[ncVarname] = VariableDefinition(ncVarname, DATATYPES_DOUBLE_PRECISION_ID, TStore::Dimensions(), longName, units, fillValue, type, typeDescription, "Point");
+		v[ncVarname] = VariableDefinition(ncVarname, DATATYPES_DOUBLE_PRECISION_ID, TStore::Dimensions(), longName, units, fillValue, type, typeDescription, datType, datDescription, "Point");
 
-	result.second = v;
+	result.VarDefs = v;
+	result.GlobAtts = GlobalAttributes::CreateDefault();
 	return result;
 }
 
@@ -89,12 +98,14 @@ NcFileDef CreateNcIo(string& timeUnits, const vector<string>& stationIds,
 	const string& longName = "test data",
 	const string& units = "mm",
 	double fillValue = DEFAULT_MISSING_DATA_VALUE,
-	const string& type = "9",
-	const string& typeDescription = "Data type description")
+	int type = 9,
+	const string& typeDescription = "Aggregation type description",
+	const string& datType = "der",
+	const string& datDescription = "Data type description")
 {
 	return CreateNcIo<TStore>(timeUnits, stationIds,
 		tsLength, ensembleSize, leadTimeSize, timeStepLead, startDate, timeStep, vector<string> {ncVarname},
-		longName, units, fillValue, type, typeDescription);
+		longName, units, fillValue, type, typeDescription, datType, datDescription);
 }
 
 #define TEST_FILL_VALUE -9999.9
@@ -107,6 +118,8 @@ extern string       var1_ens;
 extern string       var2_ens;
 extern vector<string> stationIds;
 extern string tDesc;
+extern string dType;
+extern string dDesc;
 extern string pt;
 
 SwiftNetCDFAccess* CreateTestSwiftFile(string testFilePath,
