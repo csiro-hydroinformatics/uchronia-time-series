@@ -33,19 +33,44 @@ namespace datatypes
 	{
 		using namespace datatypes::exceptions;
 
+		/** \brief	A class to hold the global attributes of a file stored in the SWIFT netCDF format*/
+		class DATATYPES_DLL_LIB GlobalAttributes
+		{
+		public:
+			string Title;
+			string Institution;
+			string Source;
+			string Catchment;
+			double STFConventionVersion;
+			string STFNCSpec;
+			string Comment;
+			string History;
+
+			GlobalAttributes();
+			GlobalAttributes(const string& title, const string& institution, const string& source, const string& catchment, double stfConventionVersion, const string& stfNcSpec, const string& comment, const string& history);
+			GlobalAttributes(GlobalAttributes&& src);
+			GlobalAttributes(const GlobalAttributes& src);
+			GlobalAttributes& operator=(const GlobalAttributes& src);
+
+			static GlobalAttributes CreateDefault();
+			static GlobalAttributes CreateDefault(const string& catchment);
+		};
+
 		/** \brief	A class to hold the attributes of a netCDF variable stored in the SWIFT netCDF format*/
 		class DATATYPES_DLL_LIB VariableAttributes
 		{
 		public:
 			string LongName;
 			string Units;
-			string Type;
+			int Type = 0;
 			string TypeDescription;
 			string LocationType;
+			string DatType;
+			string DatDescription;
 			double FillValue;
 			static const double DefaultFillValue();
 			VariableAttributes();
-			VariableAttributes(const string& longName, const string& units, const string& type, const string& typeDescription, const string& locationType, double fillValue);
+			VariableAttributes(const string& longName, const string& units, int type, const string& typeDescription, const string& datType, const string& datDescription, const string& locationType, double fillValue);
 			VariableAttributes(VariableAttributes&& src);
 			VariableAttributes(const VariableAttributes& src);
 			VariableAttributes& operator=(const VariableAttributes& src);
@@ -57,7 +82,7 @@ namespace datatypes
 			const string kSinglePrecision = DATATYPES_SINGLE_PRECISION_ID;
 		public:
 
-			VariableDefinition(const string& name, const string& precision, const string& dimensions, const string& longName, const string& units, double fillValue, const string& type, const string& typeDescription, const string& locationType);
+			VariableDefinition(const string& name, const string& precision, const string& dimensions, const string& longName, const string& units, double fillValue, int type, const string& typeDescription, const string& datType, const string& datDescription, const string& locationType);
 			VariableDefinition(const string& name, const VariableAttributes& attribs, const string& dimensions, const string& precision=DATATYPES_DOUBLE_PRECISION_ID);
 			VariableAttributes attributes;
 			string Name;
@@ -73,11 +98,11 @@ namespace datatypes
 			VariableDefinition& operator=(VariableDefinition&& src);
 			VariableDefinition& operator=(const VariableDefinition& src);
 
-			static VariableDefinition PointTimeSeries(const string& name, const string& units, const string& longName, const string& type = "<NA>", const string& typeDescription = "<NA>",
-				const string& precision = DATATYPES_DOUBLE_PRECISION_ID, double fillValue = DEFAULT_MISSING_DATA_VALUE, const string& locationType = "Point");
+			static VariableDefinition PointTimeSeries(const string& name, const string& units, const string& longName, int type = 0, const string& typeDescription = "<NA>",
+				const string& datType = "<NA>", const string& datDescription = "<NA>", const string& precision = DATATYPES_DOUBLE_PRECISION_ID, double fillValue = DEFAULT_MISSING_DATA_VALUE, const string& locationType = "Point");
 
-			static VariableDefinition TimeSeriesEnsembleTimeSeries(const string& name, const string& units, const string& longName, const string& type = "<NA>", const string& typeDescription = "<NA>",
-				const string& precision = DATATYPES_DOUBLE_PRECISION_ID, double fillValue = DEFAULT_MISSING_DATA_VALUE, const string& locationType = "Point");
+			static VariableDefinition TimeSeriesEnsembleTimeSeries(const string& name, const string& units, const string& longName, int type = 0, const string& typeDescription = "<NA>",
+				const string& datType = "<NA>", const string& datDescription = "<NA>", const string& precision = DATATYPES_DOUBLE_PRECISION_ID, double fillValue = DEFAULT_MISSING_DATA_VALUE, const string& locationType = "Point");
 
 		};
 
@@ -85,10 +110,10 @@ namespace datatypes
 		{
 		public:
 			DimensionsDefinitions(const size_t ensembleSize, const vector<double>& leadTimeVar,
-				const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds = DEFAULT_STATION_IDENTIFIER);
-			DimensionsDefinitions(const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds = DEFAULT_STATION_IDENTIFIER);
+				const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds = DEFAULT_STATION_IDENTIFIER, const string& leadTimeUnits = "");
+			DimensionsDefinitions(const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds = DEFAULT_STATION_IDENTIFIER, const string& leadTimeUnits = "");
 			DimensionsDefinitions(ptime tsEnsStart, const TimeStep& mainTimeStep, size_t tsLength, size_t ensembleSize, const TimeStep& fcastTimeStep, 
-				size_t leadTimeSize, int fcastOffset=1, const vector<string>& stationIds = DEFAULT_STATION_IDENTIFIER);
+				size_t leadTimeSize, int fcastOffset = 1, const vector<string>& stationIds = DEFAULT_STATION_IDENTIFIER, const string& leadTimeUnits = "");
 			DimensionsDefinitions();
 			DimensionsDefinitions(DimensionsDefinitions&& src);
 			DimensionsDefinitions(const DimensionsDefinitions& src);
@@ -100,6 +125,7 @@ namespace datatypes
 			string TimeUnits; 
 			vector<double> TimeVar;
 			vector<string> StationIds;
+			string LeadTimeUnits;
 		};
 
 		template<typename ElementType>
@@ -266,7 +292,7 @@ namespace datatypes
 				static void ThrowOnFileOpenFail(const string& filename, int code);
 				static void ThrowOnVarInquiryFail(const string& varName, int code);
 				void Init(const string& filename, const size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds,
-					const std::map<string, VariableDefinition>& varDefinitions);
+					const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& leadTimeUnits);
 			public:
 
 				/**
@@ -293,10 +319,10 @@ namespace datatypes
 
 				SwiftNetCDFAccess(const string& filename, const size_t nEns, const vector<double>& leadTimeVar,
 					const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds,
-					const std::map<string, VariableDefinition>& varDefinitions);
+					const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& leadTimeUnits = "");
 
 				SwiftNetCDFAccess(const string& filename, const DimensionsDefinitions& dimDefinitions,
-					const std::map<string, VariableDefinition>& varDefinitions);
+					const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes);
 
 				~SwiftNetCDFAccess();
 
@@ -680,8 +706,14 @@ namespace datatypes
 
 				vector<string> ReadVariableNames(bool removeDimVars=true);
 				vector<string> ReadAttributeNames(const string& varName);
-				string ReadStringAttribute(const string& varName, const string& attName);
-				double ReadNumericAttribute(const string& varName, const string& attName);
+
+				string ReadStringAttribute(int varId, const string& attName, bool throwIfNotFound = false, string defaultValue = "");
+				string ReadStringAttribute(const string& varName, const string& attName, bool throwIfNotFound = false, string defaultValue = "");
+				double ReadNumericAttribute(int varId, const string& attName, bool throwIfNotFound = false, double defaultValue = 0.0);
+				double ReadNumericAttribute(const string& varName, const string& attName, bool throwIfNotFound = false, double defaultValue = 0.0);
+
+				VariableAttributes ReadAttributes(const string& varName);
+				GlobalAttributes ReadGlobalAttributes();
 
 				template<typename ElementType>
 				static string CreateTimeUnitsAttribute(const TTimeSeries<ElementType>& tSeries)
@@ -716,10 +748,12 @@ namespace datatypes
 
 				static std::pair<ptime, TimeStep> CreateTimeGeometry(const string& axisDefinition, const vector<double>& timeCoords);
 
+				static string GetTimeStepName(const TimeStep& timeStep);
 				static string CreateTimeUnitsAttribute(const ptime& utcStart, const string& units);
 				static string CreateTimeUnitsAttribute(const ptime& utcStart, const TimeStep& timeStep);
 				static ptime ParseStartDate(const string& unitsAttribute);
 				static string ParseTimeUnits(const string& unitsAttribute);
+				static string CreateLeadTimeUnitsAttribute(const TimeStep& timeStep);
 
 				TimeStep GetTimeStep();
 				TimeStep GetLeadTimeStep();
@@ -738,6 +772,15 @@ namespace datatypes
 				}
 
 				static time_duration CreateTimeUnits(const TimeStep& timeStep);
+
+				static time_duration TimeOffsetIn;
+				static time_duration TimeOffsetOut;
+
+				static void SetTimeOffsetIn(const time_duration& td);
+				static void SetTimeOffsetOut(const time_duration& td);
+
+				GlobalAttributes GetGlobalAttributes();
+				VariableAttributes GetAttributes(const string& varName);
 
 			private:
 				TimeStep GetTimeUnitTimeStep() const;
@@ -886,17 +929,22 @@ namespace datatypes
 				static const string kLongNameAttName;
 				static const string kAxisAttName;
 				static const string kTypeAttName;
+				static const string kTypeDescriptionAttName;
+				static const string kDatTypeAttName;
+				static const string kDatDescriptionAttName;
+				static const string kLocationTypeAttName;
 
 				static const string kCatchmentAttName;
 				static const string kFillValueAttName;
 
-				static const string kHistoryAttName;
+				static const string kGlobalAttNameTitle;
 				static const string kGlobalAttNameInstitution;
 				static const string kGlobalAttNameSource;
 				static const string kGlobalAttNameCatchment;
 				static const string kGlobalAttNameSTF_convention_version;
 				static const string kGlobalAttNameSTF_nc_spec;
 				static const string kGlobalAttNameComment;
+				static const string kGlobalAttNameHistory;
 
 				static const string kAttNameTimeStandard;
 
@@ -905,18 +953,21 @@ namespace datatypes
 				void ReadGeometry();
 				void ReadGeometryDimensions();
 				void ReadGeometryVariables();
-				void WriteGeometry(size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const std::map<string, VariableDefinition>& varDefinitions);
+				void WriteGeometry(size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& leadTimeUnits = "");
 				void DefineMandatoryDimensions(size_t nEns, size_t nLead, size_t nStations);
 				void DefineDimVariables();
 				void DefineVariables();
 				void WriteCommonVarData();
 				int AddGlobalAttribute(const string& attName, const string& attValue);
+				int AddGlobalAttribute(const string& attName, double attValue);
 				int AddGlobalAttribute(char * attName, char * attValue);
 				int AddAttribute(int varId, const string& attName, const string& attValue);
+				int AddAttribute(int varId, const string& attName, int attValue);
+				int AddAttribute(int varId, const string& attName, double attValue);
 				void AddVariableAttributes(int varId, const VariableAttributes& varAttributes);
-				void AddVariableAttributes(int varId, const string& longName, const string& units, const string& type, double fillValue);
+				void AddVariableAttributes(int varId, const string& longName, const string& units, int type, const string& typeDescription, const string& datType, const string& datDescription, double fillValue, const string& locationType);
 				void AddAttributes(int varId, const string& varName, std::map<string, VariableAttributes>& varAttributes);
-				void FillAttributes(const string& timeUnits);
+				void FillAttributes(const GlobalAttributes& globalAttributes, const string& timeUnits, const string& leadTimeUnits);
 				void SetTimeVar(const vector<double>& timeVar);
 				void SetLeadTimeVar(const vector<double>& leadTimeVar);
 				void InquireDimIds();
@@ -925,8 +976,6 @@ namespace datatypes
 				size_t GetNumDims(const string& ncVarName);
 				void ReadTimeUnits();
 				vector<string> * GetStringVariable(size_t strLen, int varId, size_t n);
-				string GetStringAttribute(const string& attName);
-				bool HasAttribute(const string& attName);
 				nc_type GetDataType(int variableId);
 				vector<int> ReadAsInt(int varId, size_t size);
 				vector<float> ReadAsFloat(int varId, size_t size, bool strict=true);
@@ -1325,7 +1374,7 @@ namespace datatypes
 			static void Write(const string& varName, std::map<string, TTimeSeries<T>*>& recordedTimeSeries,
 				const std::map<string, string>& idMap, const string& filePath);
 
-			static void Write(DimensionsDefinitions& dimDefinitions, const map<std::string, VariableDefinition>& varDefinitions,
+			static void Write(DimensionsDefinitions& dimDefinitions, const map<std::string, VariableDefinition>& varDefinitions, const GlobalAttributes& GlobalAttributes,
 				std::map<string, TTimeSeries<T>*>& recordedTimeSeries, const string& filePath);
 
 			static PtrEnsemblePtrType ReadForecastTimeSeries(const string& netCdfFilepath, const string& varName, const string& identifier, int index);
@@ -1372,20 +1421,21 @@ namespace datatypes
 			* \param	timeUnits			 	Units of the temporal dimension(s).
 			* \param [in]	timeVar		 	The values of the "main" time dimension, consistent with the temporal units given with the previous parameter
 			* \param [in]	stationIds   	List of identifiers for the stations.
+			* \param [in]	leadTimeUnits	Units of the lead time dimension (if applicable)
 			*/
 			SingleNetCdfFileStore(const string& fname, const size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds,
-				const std::map<string, VariableDefinition>& varDefinitions,
-				const string& ncVarName = "", const string& identifier = "") :
+				const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes,
+				const string& ncVarName = "", const string& identifier = "", const string& leadTimeUnits = "") :
 				ncVarName(ncVarName), identifier(identifier), fileName(fname)
 			{
-				dataAccess = new SwiftNetCDFAccess(fname, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions);
+				dataAccess = new SwiftNetCDFAccess(fname, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions, globalAttributes, leadTimeUnits);
 			}
 
-			SingleNetCdfFileStore(const string& fname, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions,
+			SingleNetCdfFileStore(const string& fname, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes,
 				const string& ncVarName = "", const string& identifier = "") :
 				ncVarName(ncVarName), identifier(identifier), fileName(fname)
 			{
-				dataAccess = new SwiftNetCDFAccess(fname, dimDefinitions, varDefinitions);
+				dataAccess = new SwiftNetCDFAccess(fname, dimDefinitions, varDefinitions, globalAttributes);
 			}
 			
 			SingleNetCdfFileStore(const string& fname, const string& ncVarName = "", const string& identifier = "", bool writeMode = false) :
@@ -1395,11 +1445,11 @@ namespace datatypes
 					dataAccess = new SwiftNetCDFAccess(fname);
 			}
 
-			void Init(const string& filename, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions)
+			void Init(const string& filename, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes)
 			{
 				if (dataAccess != nullptr)
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("netCDF single file store already bound to a netCDF file");
-				dataAccess = new SwiftNetCDFAccess(filename, dimDefinitions, varDefinitions);
+				dataAccess = new SwiftNetCDFAccess(filename, dimDefinitions, varDefinitions, globalAttributes);
 			}
 
 			void MoveFrom(SingleNetCdfFileStore& src)
@@ -1590,6 +1640,16 @@ namespace datatypes
 			//	return this->GetNcAccess()->GetIdentifiers();
 			//}
 
+			VariableAttributes GetVarAttributes()
+			{
+				std::string ncVarName = GetNcVarName();
+				return this->GetNcAccess()->GetAttributes(ncVarName);
+			}
+
+			GlobalAttributes GetGlobalAttributes()
+			{
+				return this->GetNcAccess()->GetGlobalAttributes();
+			}
 		};
 
 
@@ -1602,13 +1662,13 @@ namespace datatypes
 		public:
 
 			NetCdfSingleSeriesStore(const string& filename, const size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds,
-				const std::map<string, VariableDefinition>& varDefinitions, const string& ncVarName, const string& identifier = "") :
-				SingleNetCdfFileStore<T>(filename, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions, ncVarName, identifier)
+				const std::map<string, VariableDefinition>& varDefinitions, const string& ncVarName, const string& identifier = "", const string& leadTimeUnits = "") :
+				SingleNetCdfFileStore<T>(filename, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions, ncVarName, identifier, leadTimeUnits)
 			{
 			}
 
-			NetCdfSingleSeriesStore(const string& filename, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions, const string& ncVarName, const string& identifier = "") :
-				SingleNetCdfFileStore<T>(filename, dimDefinitions, varDefinitions, ncVarName, identifier)
+			NetCdfSingleSeriesStore(const string& filename, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& ncVarName, const string& identifier = "") :
+				SingleNetCdfFileStore<T>(filename, dimDefinitions, varDefinitions, globalAttributes, ncVarName, identifier)
 			{
 			}
 
@@ -1655,7 +1715,7 @@ namespace datatypes
 
 			string GetDataSummary() const
 			{
-				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
+				return GetDefaultDataSummary();
 			}
 
 			TTimeSeries<T>* Read()
@@ -1738,13 +1798,14 @@ namespace datatypes
 			//
 		public:
 			NetCdfEnsembleTimeSeriesStore(const string& filename, const size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds,
-				const std::map<string, VariableDefinition>& varDefinitions, const string& ncVarName, const string& identifier = "") :
-				SingleNetCdfFileStore<T>(filename, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions, ncVarName, identifier)
+				const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& ncVarName, const string& identifier = "", const string& leadTimeUnits = "") :
+				SingleNetCdfFileStore<T>(filename, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions, globalAttributes, ncVarName, identifier, leadTimeUnits)
 			{
 			}
 
-			NetCdfEnsembleTimeSeriesStore(const string& filename, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions, const string& ncVarName, const string& identifier = "") :
-				SingleNetCdfFileStore<T>(filename, dimDefinitions, varDefinitions, ncVarName, identifier)
+			NetCdfEnsembleTimeSeriesStore(const string& filename, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes,
+				const string& ncVarName, const string& identifier = "") :
+				SingleNetCdfFileStore<T>(filename, dimDefinitions, varDefinitions, globalAttributes, ncVarName, identifier)
 			{
 			}
 
@@ -1757,7 +1818,7 @@ namespace datatypes
 
 			string GetDataSummary() const
 			{
-				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
+				return GetDefaultDataSummary();
 			}
 
 			vector<string> GetIdentifiers() const 
@@ -1967,13 +2028,14 @@ namespace datatypes
 		{
 		public:
 			NetCdfTimeSeriesEnsembleTimeSeriesStore(const string& filename, const size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds,
-				const std::map<string, VariableDefinition>& varDefinitions, const string& ncVarName, const string& identifier = "") :
-				SingleNetCdfFileStore<T>(filename, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions, ncVarName, identifier)
+				const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& ncVarName, const string& identifier = "") :
+				SingleNetCdfFileStore<T>(filename, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions, globalAttributes, ncVarName, identifier)
 			{
 			}
 
-			NetCdfTimeSeriesEnsembleTimeSeriesStore(const string& filename, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions, const string& ncVarName, const string& identifier = "") :
-				SingleNetCdfFileStore<T>(filename, dimDefinitions, varDefinitions, ncVarName, identifier)
+			NetCdfTimeSeriesEnsembleTimeSeriesStore(const string& filename, const DimensionsDefinitions& dimDefinitions, const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes,
+				const string& ncVarName, const string& identifier = "") :
+				SingleNetCdfFileStore<T>(filename, dimDefinitions, varDefinitions, globalAttributes, ncVarName, identifier)
 			{
 			}
 
@@ -2045,7 +2107,7 @@ namespace datatypes
 			{
 				size_t stationIndex = this->IndexForIdentifier(false);
 				auto nc =this->GetNcAccess();
-				ptime issueTime = nc->TimeForIndex(i);
+				ptime issueTime = GetTimeForIndex(i);
 				std::pair<ptime, TimeStep> fcastGeom = nc->GetLeadTimeGeometry(issueTime);
 				vector<ElementType*>* series = nc->template GetForecasts<T>(this->GetNcVarName(), stationIndex, i);
 				auto result = new EnsemblePtrType(*series, this->GetLeadTimeCount(), fcastGeom.first, fcastGeom.second);
@@ -2075,6 +2137,12 @@ namespace datatypes
 				{
 					delete indexForTime;
 					indexForTime = nullptr;
+				}
+
+				if (timeForIndex != nullptr)
+				{
+					delete timeForIndex;
+					timeForIndex = nullptr;
 				}
 			};
 
@@ -2117,6 +2185,15 @@ namespace datatypes
 				return indexForTime->at(dateIndex);
 			}
 
+			ptime GetTimeForIndex(size_t index)
+			{
+				if (timeForIndex == nullptr)
+				{
+					timeForIndex = new std::vector<ptime>(this->GetNcAccess()->GetTimeDim());
+				}
+				return (*timeForIndex)[index];
+			}
+
 			//vector<string> GetItemIdentifiers() const
 			//{
 			//	vector<ptime> times = this->GetNcAccess()->GetTimeDim();
@@ -2155,7 +2232,7 @@ namespace datatypes
 
 			string GetDataSummary() const
 			{
-				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
+				return GetDefaultDataSummary();
 			}
 
 			using WritableTimeSeriesEnsembleTimeSeriesStore < T >::GetEnsembleSize;
@@ -2179,12 +2256,15 @@ namespace datatypes
 				string longName = "<NA>";
 				string units = "";
 				double fillValue = DEFAULT_MISSING_DATA_VALUE;
-				string type = "9";
+				int type = 9;
 				string typeDescription = "<NA>";
+				string datType = "<NA>";
+				string datDescription = "<NA>";
 
 				map<string, VariableDefinition> v;
-				v[ncVarname] = VariableDefinition(ncVarname, DATATYPES_DOUBLE_PRECISION_ID, Dimensions(), longName, units, fillValue, type, typeDescription, "Point");
-				SingleNetCdfFileStore<T>::Init(this->GetFileName(), dimDef, v);
+				v[ncVarname] = VariableDefinition(ncVarname, DATATYPES_DOUBLE_PRECISION_ID, Dimensions(), longName, units, fillValue, type, typeDescription, datType, datDescription, "Point");
+				GlobalAttributes globAtts = GlobalAttributes::CreateDefault();
+				SingleNetCdfFileStore<T>::Init(this->GetFileName(), dimDef, v, globAtts);
 				for (size_t i = 0; i < values.size(); i++)
 				{
 					SetItem(ncVarname, i, values[i]);
@@ -2233,6 +2313,7 @@ namespace datatypes
 			}
 
 		private:
+			std::vector<ptime> * timeForIndex = nullptr;
 			std::map<ptime, size_t> * indexForTime = nullptr;
 		};
 

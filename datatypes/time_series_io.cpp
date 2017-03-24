@@ -11,6 +11,73 @@ namespace datatypes
 {
 	namespace timeseries
 	{
+		GlobalAttributes::GlobalAttributes() {}
+
+		GlobalAttributes::GlobalAttributes(const string& title, const string& institution, const string& source, const string& catchment, double stfConventionVersion, const string& stfNcSpec, const string& comment, const string& history)
+		{
+			Title = title;
+			Institution = institution;
+			Source = source;
+			Catchment = catchment;
+			STFConventionVersion = stfConventionVersion;
+			STFNCSpec = stfNcSpec;
+			Comment = comment;
+			History = history;
+		}
+
+		GlobalAttributes::GlobalAttributes(GlobalAttributes&& src) {
+			*this = std::move(src);
+		}
+
+		GlobalAttributes::GlobalAttributes(const GlobalAttributes& src)
+		{
+			Title = src.Title;
+			Institution = src.Institution;
+			Source = src.Source;
+			Catchment = src.Catchment;
+			STFConventionVersion = src.STFConventionVersion;
+			STFNCSpec = src.STFNCSpec;
+			Comment = src.Comment;
+			History = src.History;
+		}
+
+		GlobalAttributes& GlobalAttributes::operator=(const GlobalAttributes& src)
+		{
+			if (&src == this) {
+				return *this;
+			}
+			Title = src.Title;
+			Institution = src.Institution;
+			Source = src.Source;
+			Catchment = src.Catchment;
+			STFConventionVersion = src.STFConventionVersion;
+			STFNCSpec = src.STFNCSpec;
+			Comment = src.Comment;
+			History = src.History;
+			return *this;
+		}
+
+		GlobalAttributes GlobalAttributes::CreateDefault()
+		{
+			return CreateDefault("<unspecified>");
+		}
+
+		GlobalAttributes GlobalAttributes::CreateDefault(const string& catchment)
+		{
+			string timeStamp = boost::posix_time::to_iso_extended_string(boost::posix_time::second_clock::universal_time());
+			string history = timeStamp + " UTC - New file created";
+
+			return GlobalAttributes(
+				"",
+				"CSIRO Land and Water",
+				"SWIFT (devel version)",
+				string(catchment),
+				2.0,
+				"https://confluence.csiro.au/display/wirada/netCDF+for+Water+Forecasting+Specification+v2.0",
+				"",
+				history);
+		}
+
 
 		const double VariableAttributes::DefaultFillValue() 
 		{ 
@@ -22,12 +89,14 @@ namespace datatypes
 			FillValue = DefaultFillValue(); 
 		}
 		
-		VariableAttributes::VariableAttributes(const string& longName, const string& units, const string& type, const string& typeDescription, const string& locationType, double fillValue)
+		VariableAttributes::VariableAttributes(const string& longName, const string& units, int type, const string& typeDescription, const string& datType, const string& datDescription, const string& locationType, double fillValue)
 		{
 			LongName = longName;
 			Units = units;
 			Type = type;
 			TypeDescription = typeDescription;
+			DatType = datType;
+			DatDescription = datDescription;
 			LocationType = locationType;
 			FillValue = fillValue;
 		}
@@ -41,6 +110,8 @@ namespace datatypes
 			Units = src.Units;
 			Type = src.Type;
 			TypeDescription = src.TypeDescription;
+			DatType = src.DatType;
+			DatDescription = src.DatDescription;
 			LocationType = src.LocationType;
 			FillValue = src.FillValue;
 		}
@@ -54,13 +125,15 @@ namespace datatypes
 			Units = src.Units;
 			Type = src.Type;
 			TypeDescription = src.TypeDescription;
+			DatType = src.DatType;
+			DatDescription = src.DatDescription;
 			LocationType = src.LocationType;
 			FillValue = src.FillValue;
 			return *this;
 		}
 
-		VariableDefinition::VariableDefinition(const string& name, const string& precision, const string& dimensions, const string& longName, const string& units, double fillValue, const string& type, const string& typeDescription, const string& locationType) :
-			attributes(VariableAttributes(longName, units, type, typeDescription, locationType, fillValue))
+		VariableDefinition::VariableDefinition(const string& name, const string& precision, const string& dimensions, const string& longName, const string& units, double fillValue, int type, const string& typeDescription, const string& datType, const string& datDescription, const string& locationType) :
+			attributes(VariableAttributes(longName, units, type, typeDescription, datType, datDescription, locationType, fillValue))
 		{
 			Name = name;
 			Precision = precision;
@@ -133,16 +206,16 @@ namespace datatypes
 			return *this;
 		}
 
-		VariableDefinition VariableDefinition::PointTimeSeries(const string& name, const string& units, const string& longName, const string& type, const string& typeDescription,
-			const string& precision, double fillValue, const string& locationType)
+		VariableDefinition VariableDefinition::PointTimeSeries(const string& name, const string& units, const string& longName, int type, const string& typeDescription,
+			const string& datType, const string& datDescription, const string& precision, double fillValue, const string& locationType)
 		{
-			return VariableDefinition(name, precision, "2", longName, units, fillValue, type, typeDescription, locationType);
+			return VariableDefinition(name, precision, "2", longName, units, fillValue, type, typeDescription, datType, datDescription, locationType);
 		}
 
-		VariableDefinition VariableDefinition::TimeSeriesEnsembleTimeSeries(const string& name, const string& units, const string& longName, const string& type, const string& typeDescription,
-			const string& precision, double fillValue, const string& locationType)
+		VariableDefinition VariableDefinition::TimeSeriesEnsembleTimeSeries(const string& name, const string& units, const string& longName, int type, const string& typeDescription,
+			const string& datType, const string& datDescription, const string& precision, double fillValue, const string& locationType)
 		{
-			return VariableDefinition(name, precision, DATATYPES_FOUR_DIMENSIONS_DATA, longName, units, fillValue, type, typeDescription, locationType);
+			return VariableDefinition(name, precision, DATATYPES_FOUR_DIMENSIONS_DATA, longName, units, fillValue, type, typeDescription, datType, datDescription, locationType);
 		}
 
 
@@ -158,16 +231,17 @@ namespace datatypes
 		//}
 
 		DimensionsDefinitions::DimensionsDefinitions(const size_t ensembleSize, const vector<double>& leadTimeVar,
-			const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds)
+			const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const string& leadTimeUnits)
 		{
 			EnsembleSize = ensembleSize;
 			LeadTimeVar = leadTimeVar;
 			TimeUnits = timeUnits;
 			TimeVar = timeVar;
 			StationIds = stationIds;
+			LeadTimeUnits = leadTimeUnits;
 		}
 
-		DimensionsDefinitions::DimensionsDefinitions(const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds)
+		DimensionsDefinitions::DimensionsDefinitions(const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const string& leadTimeUnits)
 		{
 			EnsembleSize = 1;// 0;
 			LeadTimeVar = vector<double>();
@@ -175,9 +249,10 @@ namespace datatypes
 			TimeUnits = timeUnits;
 			TimeVar = timeVar;
 			StationIds = stationIds;
+			LeadTimeUnits = leadTimeUnits;
 		}
 
-		DimensionsDefinitions::DimensionsDefinitions(ptime tsEnsStart, const TimeStep& mainTimeStep, size_t tsLength, size_t ensembleSize, const TimeStep& fcastTimeStep, size_t leadTimeSize, int fcastOffset, const vector<string>& stationIds)
+		DimensionsDefinitions::DimensionsDefinitions(ptime tsEnsStart, const TimeStep& mainTimeStep, size_t tsLength, size_t ensembleSize, const TimeStep& fcastTimeStep, size_t leadTimeSize, int fcastOffset, const vector<string>& stationIds, const string& leadTimeUnits)
 		{
 			TimeUnits = SwiftNetCDFAccess::CreateTimeUnitsAttribute(tsEnsStart, mainTimeStep);
 			auto timeVecs = SwiftNetCDFAccess::CreateTimeVectors(tsEnsStart, mainTimeStep, tsLength, fcastTimeStep, leadTimeSize, fcastOffset);
@@ -185,6 +260,7 @@ namespace datatypes
 			LeadTimeVar = timeVecs.second;
 			EnsembleSize = ensembleSize;
 			StationIds = stationIds;
+			LeadTimeUnits = leadTimeUnits;
 		}
 
 		DimensionsDefinitions::DimensionsDefinitions() {
@@ -247,19 +323,19 @@ namespace datatypes
 
 			SwiftNetCDFAccess::SwiftNetCDFAccess(const string& filename, const size_t nEns, const vector<double>& leadTimeVar, 
 				const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds,
-				const std::map<string, VariableDefinition>& varDefinitions)
+				const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& leadTimeUnits)
 			{
-				Init(filename, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions);
+				Init(filename, nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions, globalAttributes, leadTimeUnits);
 			}
 
 			SwiftNetCDFAccess::SwiftNetCDFAccess(const string& filename, const DimensionsDefinitions& d,
-				const std::map<string, VariableDefinition>& varDefinitions)
+				const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes)
 			{
-				Init(filename, d.EnsembleSize, d.LeadTimeVar, d.TimeUnits, d.TimeVar, d.StationIds, varDefinitions);
+				Init(filename, d.EnsembleSize, d.LeadTimeVar, d.TimeUnits, d.TimeVar, d.StationIds, varDefinitions, globalAttributes, d.LeadTimeUnits);
 			}
 
 			void SwiftNetCDFAccess::Init(const string& filename, const size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds,
-				const std::map<string, VariableDefinition>& varDefinitions)
+				const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& leadTimeUnits)
 			{
 				if (nEns == 0) ExceptionUtilities::ThrowOutOfRange("SWIFT netCDF ensemble size must be strictly positive");
 				if (leadTimeVar.size() == 0) ExceptionUtilities::ThrowOutOfRange("SWIFT netCDF lead time dimension size must be strictly positive");
@@ -273,7 +349,7 @@ namespace datatypes
 				}
 				else
 				{
-					WriteGeometry(nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions);
+					WriteGeometry(nEns, leadTimeVar, timeUnits, timeVar, stationIds, varDefinitions, globalAttributes, leadTimeUnits);
 					DefineVariables();
 				}
 			}
@@ -316,38 +392,59 @@ namespace datatypes
 				is.imbue(format);
 				ptime startDate;
 				is >> startDate;
-				return startDate;
 
+				// Shift the start time from the timezone specified in the file to that defined in TimeOffsetIn
+				int tzp = (int)t2string.find_last_of('+');
+				int tzn = (int)t2string.find_last_of('-');
+				int ind = (tzp > 0) ? tzp : tzn;
+				int direction = (tzp > 0) ? 1 : -1;
+				std::string timezone = t2string.substr(ind + 1);
+				int hours = boost::lexical_cast<int>(timezone.substr(0, 2)) * direction;
+				int minutes = boost::lexical_cast<int>(timezone.substr(2, 2)) * direction;
+				time_duration inputOffset = time_duration(hours, minutes, 0);
+				time_duration diff = inputOffset - TimeOffsetIn;
+				startDate = startDate - diff;
+
+				return startDate;
 			}
 
-			string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, const TimeStep& timeStep)
+			string SwiftNetCDFAccess::GetTimeStepName(const TimeStep& timeStep)
 			{
 				if (!timeStep.IsRegular())
 				{
 					if (timeStep == timeStep.GetMonthlyQpp())
-						return CreateTimeUnitsAttribute(utcStart, "months");
+						return "months";
 				}
 
 				const time_duration oneDay(24, 0, 0);
 				const time_duration oneHour(1, 0, 0);
 				const time_duration oneMinute(0, 1, 0);
 				const time_duration oneSecond(0, 0, 1);
-				string timeUnit;
 
 				auto duration = timeStep.GetRegularStepDuration();
 
-				if(duration >= oneDay)
-					timeUnit = "days";
+				if (duration >= oneDay)
+					return"days";
 				else if (duration >= oneHour)
-					timeUnit = "hours";
+					return "hours";
 				else if (duration >= oneMinute)
-					timeUnit = "minutes";
+					return "minutes";
 				else if (duration >= oneSecond)
-					timeUnit = "seconds";
+					return "seconds";
 				else // (duration < oneSecond)
-					ExceptionUtilities::ThrowNotSupported("SwiftNetCDFAccess::CreateTimeUnitsAttribute: sub-second time step not yet supported");
+					ExceptionUtilities::ThrowNotSupported("SwiftNetCDFAccess::GetTimeStepName: sub-second time step not yet supported");
+			}
 
+			string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, const TimeStep& timeStep)
+			{
+				string timeUnit = GetTimeStepName(timeStep);
 				return CreateTimeUnitsAttribute(utcStart, timeUnit);
+			}
+
+			string SwiftNetCDFAccess::CreateLeadTimeUnitsAttribute(const TimeStep& timeStep)
+			{
+				string timeUnit = GetTimeStepName(timeStep);
+				return timeUnit + " since time";
 			}
 
 			time_duration SwiftNetCDFAccess::CreateTimeUnits(const TimeStep& timeStep)
@@ -358,6 +455,7 @@ namespace datatypes
 				const time_duration oneDay(24, 0, 0);
 				const time_duration oneHour(1, 0, 0);
 				const time_duration oneMinute(0, 1, 0);
+				const time_duration oneSecond(0, 0, 1);
 				string timeUnit;
 
 				auto duration = timeStep.GetRegularStepDuration();
@@ -366,8 +464,10 @@ namespace datatypes
 					return oneDay;
 				else if (duration >= oneHour)
 					return oneHour;
-				else // (duration < oneHour)
+				else if (duration >= oneMinute)
 					return oneMinute;
+				else
+					return oneSecond;
 			}
 
 			vector<double> SwiftNetCDFAccess::CreateTimeVector(const ptime& start, const TimeStep& timeStep, const ptime& origin, const time_duration& timeStepAxis, const size_t length)
@@ -377,7 +477,7 @@ namespace datatypes
 					if (timeStepAxis.total_seconds() == 0)
 					{
 						double by = 1.0;//Irregular time steps cannot work with multiples of themselves like regular time steps can, so this is always 1
-						double offset = timeStep.GetOffset(start, origin);
+						double offset = timeStep.GetOffset(origin, start);
 						return datatypes::utils::SeqVec<double>(offset, by, length);
 					}
 					else
@@ -420,8 +520,32 @@ namespace datatypes
 			string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, const string& units)
 			{
 				string timeUnit(units);
-				auto startStr = boost::posix_time::to_iso_extended_string(utcStart);
-				return timeUnit + " since " + startStr + " +0000";
+
+				// Shift the start time from TimeOffsetIn to TimeOffsetOut
+				ptime start = ptime(utcStart);
+				time_duration diff = TimeOffsetIn - TimeOffsetOut;
+				start = start - diff;
+				char sign = (TimeOffsetOut >= time_duration()) ? '+' : '-';
+				int direction = (TimeOffsetOut >= time_duration()) ? 1 : -1;
+				int hours = TimeOffsetOut.hours() * direction;
+				int minutes = TimeOffsetOut.minutes() * direction;
+				std::ostringstream ss;
+				ss << std::setw(2) << std::setfill('0') << hours << std::setw(2) << std::setfill('0') << minutes;
+				std::string timezone = sign + ss.str();
+				ss.clear();
+
+				// Output date time in NetCDF spec format e.g. 2000-12-31 09:00:00.0 +1000
+				using namespace boost::gregorian;
+				namespace bt = boost::posix_time;
+
+				auto format = std::locale(std::locale::classic(), new bt::time_facet("%Y-%m-%d %H:%M:%S"));
+				std::ostringstream oss;
+				oss.imbue(format);
+				oss << start;
+				std::string startStr = oss.str();
+				oss.clear();
+
+				return timeUnit + " since " + startStr + ".0 " + timezone;
 			}
 
 			void SwiftNetCDFAccess::ReadGeometryDimensions()
@@ -450,7 +574,7 @@ namespace datatypes
 				if (elevationVarId >= 0)
 					stationElevation = GetVariableDimOne<double>(elevationVarId, numStations);
 
-				catchmentName = HasAttribute(kCatchmentAttName) ? GetStringAttribute(kCatchmentAttName) : "<unspecified>";
+				catchmentName = ReadStringAttribute(NC_GLOBAL, kCatchmentAttName, false, "<unspecified>");//v1
 
 				// time dimensions used to be specified as integers in SWIFT v1 specs (TBC). 
 				// Also, some files including in the unit test files have NC_DOUBLE precision for time dimensions. 
@@ -481,12 +605,12 @@ namespace datatypes
 				SetVariableDimOne<float>(leadTimeVarId, leadTimeVec);
 			}
 
-			void SwiftNetCDFAccess::WriteGeometry(size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const std::map<string, VariableDefinition>& varDefinitions)
+			void SwiftNetCDFAccess::WriteGeometry(size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds, const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& leadTimeUnits)
 			{
 				using namespace std;
 				DefineMandatoryDimensions(nEns, leadTimeVar.size(), stationIds.size());
 				DefineDimVariables();
-				FillAttributes(timeUnits);
+				FillAttributes(globalAttributes, timeUnits, leadTimeUnits);
 
 				this->variableDefinitions = varDefinitions;
 
@@ -518,9 +642,24 @@ namespace datatypes
 				return AddAttribute(NC_GLOBAL, attName, attValue);
 			}
 
+			int SwiftNetCDFAccess::AddGlobalAttribute(const string& attName, double attValue)
+			{
+				return AddAttribute(NC_GLOBAL, attName, attValue);
+			}
+
 			int SwiftNetCDFAccess::AddAttribute(int varId, const string& attName, const string& attValue)
 			{
 				return nc_put_att(ncid, varId, attName.c_str(), NC_CHAR, attValue.size() + 1, attValue.c_str());
+			}
+
+			int SwiftNetCDFAccess::AddAttribute(int varId, const string& attName, int attValue)
+			{
+				return nc_put_att_int(ncid, varId, attName.c_str(), NC_INT, (size_t)1, &attValue);
+			}
+
+			int SwiftNetCDFAccess::AddAttribute(int varId, const string& attName, double attValue)
+			{
+				return nc_put_att_double(ncid, varId, attName.c_str(), NC_DOUBLE, (size_t)1, &attValue);
 			}
 
 			int SwiftNetCDFAccess::AddGlobalAttribute(char * attName, char * attValue)
@@ -528,50 +667,50 @@ namespace datatypes
 				return AddGlobalAttribute(string(attName), string(attValue));
 			}
 
-			void SwiftNetCDFAccess::FillAttributes(const string& timeUnits)
+			void SwiftNetCDFAccess::FillAttributes(const GlobalAttributes& globalAttributes, const string& timeUnits, const string& leadTimeUnits)
 			{
-				using namespace boost::gregorian;
-				namespace bt = boost::posix_time;
-
-				//tempstring = variableName + " for " + mHead.mCatchmentName;
-				//int tempint = tempstring.length() + 1;
-				//int code = nc_put_att(ncid, NC_GLOBAL, "title", NC_CHAR, tempint, tempstring.c_str());
-
 				int code;
-				code = AddGlobalAttribute(kGlobalAttNameInstitution, string("CSIRO Land and Water"));
-				code = AddGlobalAttribute(kGlobalAttNameSource, string("SWIFT (devel version)"));
-				code = AddGlobalAttribute(kGlobalAttNameCatchment, this->catchmentName);
-				code = AddGlobalAttribute(kGlobalAttNameSTF_convention_version, string("2.0"));
-				code = AddGlobalAttribute(kGlobalAttNameSTF_nc_spec, string("https://confluence.csiro.au/display/wirada/netCDF+for+Water+Forecasting+Specification+v2.0"));
-				code = AddGlobalAttribute(kGlobalAttNameComment, string(""));
-
-				auto todo = string("TODO");
-
-				// Not sure whether what is wanted. 
-				// See for instance, for formats: http://www.boost.org/doc/libs/1_56_0/doc/html/date_time/date_time_io.html
-				auto timeStamp = bt::to_iso_extended_string(bt::second_clock::universal_time());
-				code = AddGlobalAttribute(string(kHistoryAttName), timeStamp + string(" UTC - New file created "));
+				code = AddGlobalAttribute(kGlobalAttNameTitle, globalAttributes.Title);
+				code = AddGlobalAttribute(kGlobalAttNameInstitution, globalAttributes.Institution);
+				code = AddGlobalAttribute(kGlobalAttNameSource, globalAttributes.Source);
+				code = AddGlobalAttribute(kGlobalAttNameCatchment, globalAttributes.Catchment);
+				code = AddGlobalAttribute(kGlobalAttNameSTF_convention_version, globalAttributes.STFConventionVersion);
+				code = AddGlobalAttribute(kGlobalAttNameSTF_nc_spec, globalAttributes.STFNCSpec);
+				code = AddGlobalAttribute(kGlobalAttNameComment, globalAttributes.Comment);
+				code = AddGlobalAttribute(kGlobalAttNameHistory, globalAttributes.History);
 
 				code = AddAttribute(timeVarId, string(kStandardNameAttName), string(kTimeVarName));
 				code = AddAttribute(timeVarId, string(kLongNameAttName), string(kTimeVarName));
 
 				code = AddAttribute(timeVarId, string(kUnitsAttName), string(timeUnits));
-				code = AddAttribute(timeVarId, string(kAttNameTimeStandard), todo);
-				code = AddAttribute(timeVarId, string(kAxisAttName), todo);
+				code = AddAttribute(timeVarId, string(kAttNameTimeStandard), string("UTC"));
+				code = AddAttribute(timeVarId, string(kAxisAttName), string("t"));
+				
+				code = AddAttribute(stationIdVarId, string(kLongNameAttName), string("station or node identification code"));
+				code = AddAttribute(stationNameVarId, string(kLongNameAttName), string("station or node name"));
 
-				code = AddAttribute(stationIdVarId, string(kLongNameAttName), todo);
-				code = AddAttribute(stationNameVarId, string(kLongNameAttName), todo);
-
-				code = AddAttribute(ensMemberVarId, string(kLongNameAttName), todo);
-				code = AddAttribute(ensMemberVarId, string(kStandardNameAttName), todo);
+				code = AddAttribute(ensMemberVarId, string(kLongNameAttName), string("ensemble member"));
+				code = AddAttribute(ensMemberVarId, string(kStandardNameAttName), string("ens_member"));
 				code = AddAttribute(ensMemberVarId, string(kUnitsAttName), string("member id"));
 				code = AddAttribute(ensMemberVarId, string(kAxisAttName), string("u"));
 
 				code = AddAttribute(leadTimeVarId, string(kLongNameAttName), string("forecast lead time"));
 				code = AddAttribute(leadTimeVarId, string(kStandardNameAttName), string("lead time"));
-				code = AddAttribute(leadTimeVarId, string(kUnitsAttName), todo);
+				code = AddAttribute(leadTimeVarId, string(kUnitsAttName), string(leadTimeUnits));
 				code = AddAttribute(leadTimeVarId, string(kAxisAttName), string("v"));
 
+				code = AddAttribute(latVarId, string(kLongNameAttName), string("latitude"));
+				code = AddAttribute(latVarId, string(kUnitsAttName), string("degrees_north"));
+				code = AddAttribute(latVarId, string(kAxisAttName), string("y"));
+
+				code = AddAttribute(lonVarId, string(kLongNameAttName), string("longitude"));
+				code = AddAttribute(lonVarId, string(kUnitsAttName), string("degrees_east"));
+				code = AddAttribute(lonVarId, string(kAxisAttName), string("x"));
+
+				code = AddAttribute(elevationVarId, string(kStandardNameAttName), string("elevation"));
+				code = AddAttribute(elevationVarId, string(kLongNameAttName), string("station elevation above sea level"));
+				code = AddAttribute(elevationVarId, string(kUnitsAttName), string("m"));
+				
 				this->startDate = ParseStartDate(string(timeUnits));
 
 			}
@@ -723,12 +862,24 @@ namespace datatypes
 				return attNames;
 			}
 
-			string SwiftNetCDFAccess::ReadStringAttribute(const string& varName, const string& attName)
+			string SwiftNetCDFAccess::ReadStringAttribute(const string& varName, const string& attName, bool throwIfNotFound, string defaultValue)
 			{
 				int varId = GetVarId(varName);
+				return ReadStringAttribute(varId, attName, throwIfNotFound, defaultValue);
+			}
 
+			string SwiftNetCDFAccess::ReadStringAttribute(int varId, const string& attName, bool throwIfNotFound, string defaultValue)
+			{
 				nc_type type;
 				int code = nc_inq_atttype(ncid, varId, attName.c_str(), &type);
+
+				if (code == NC_ENOTATT)
+				{
+					if (throwIfNotFound)
+						ExceptionUtilities::ThrowInvalidArgument("Attribute attName does not exist.");
+					else
+						return defaultValue;
+				}
 
 				if (type != NC_CHAR)
 					ExceptionUtilities::ThrowInvalidArgument("Attribute attName not of type string.");
@@ -738,21 +889,33 @@ namespace datatypes
 
 				char* strAtt = new char[size];
 				code = nc_get_att_text(ncid, varId, attName.c_str(), strAtt);
-				string result = string(strAtt);
+				string result = (strAtt[size - 1] == '\0') ? string(strAtt, size - 1) : string(strAtt, size);
 
 				delete[] strAtt;
 
 				return result;
 			}
 
-			double SwiftNetCDFAccess::ReadNumericAttribute(const string& varName, const string& attName)
+			double SwiftNetCDFAccess::ReadNumericAttribute(const string& varName, const string& attName, bool throwIfNotFound, double defaultValue)
 			{
 				int varId = GetVarId(varName);
+				return ReadNumericAttribute(varId, attName, throwIfNotFound, defaultValue);
+			}
 
+			double SwiftNetCDFAccess::ReadNumericAttribute(int varId, const string& attName, bool throwIfNotFound, double defaultValue)
+			{
 				nc_type type;
 				int code = nc_inq_atttype(ncid, varId, attName.c_str(), &type);
 
-				if (type != NC_DOUBLE || type != NC_FLOAT || type != NC_INT || type != NC_INT64)
+				if (code == NC_ENOTATT)
+				{
+					if (throwIfNotFound)
+						ExceptionUtilities::ThrowInvalidArgument("Attribute attName does not exist.");
+					else
+						return defaultValue;
+				}
+
+				if (type != NC_DOUBLE && type != NC_FLOAT && type != NC_INT && type != NC_INT64)
 					ExceptionUtilities::ThrowInvalidArgument("Attribute attName not of numeric type (double, float, int or int64).");
 
 				if (type == NC_DOUBLE)
@@ -779,26 +942,6 @@ namespace datatypes
 					code = nc_get_att_long(ncid, varId, attName.c_str(), &l);
 					return (double)l;
 				}
-			}
-
-			string SwiftNetCDFAccess::GetStringAttribute(const string& attName)
-			{
-				size_t size;
-				int code = nc_inq_attlen(ncid, NC_GLOBAL, attName.c_str(), &size);
-
-				char * tempchars = new char[size + 1];
-				code = nc_get_att(ncid, NC_GLOBAL, attName.c_str(), tempchars);
-
-				auto result = string(tempchars, size);
-				delete[] tempchars;
-				return result;
-			}
-
-			bool SwiftNetCDFAccess::HasAttribute(const string& attName)
-			{
-				size_t size;
-				int code = nc_inq_attlen(ncid, NC_GLOBAL, attName.c_str(), &size);
-				return (code == NC_NOERR);
 			}
 
 			nc_type SwiftNetCDFAccess::GetDataType(int variableId)
@@ -951,28 +1094,68 @@ namespace datatypes
 
 			void SwiftNetCDFAccess::AddVariableAttributes(int varId, const VariableAttributes& varAttributes)
 			{
-				AddVariableAttributes(varId, varAttributes.LongName, varAttributes.Units, varAttributes.Type, varAttributes.FillValue);
+				AddVariableAttributes(varId, varAttributes.LongName, varAttributes.Units, varAttributes.Type, varAttributes.TypeDescription, varAttributes.DatType, varAttributes.DatDescription, varAttributes.FillValue, varAttributes.LocationType);
 			}
 
-			void SwiftNetCDFAccess::AddVariableAttributes(int varId, const string& longName, const string& units, const string& type, double fillValue)
+			void SwiftNetCDFAccess::AddVariableAttributes(int varId, const string& longName, const string& units, int type, const string& typeDescription, const string& datType, const string& datDescription, double fillValue, const string& locationType)
 			{
-				int code = nc_put_att_double(ncid, varId, kFillValueAttName.c_str(), NC_DOUBLE, (size_t)1, &fillValue);
+				int code = AddAttribute(varId, string(kFillValueAttName), fillValue);
 				code = AddAttribute(varId, string(kLongNameAttName), longName);
 				code = AddAttribute(varId, string(kUnitsAttName), units);
 				code = AddAttribute(varId, string(kTypeAttName), type);
+				code = AddAttribute(varId, string(kTypeDescriptionAttName), typeDescription);
+				code = AddAttribute(varId, string(kDatTypeAttName), datType);
+				code = AddAttribute(varId, string(kDatDescriptionAttName), datDescription);
+				code = AddAttribute(varId, string(kLocationTypeAttName), locationType);
 			}
 
 			void SwiftNetCDFAccess::AddAttributes(int varId, const string& varName, std::map<string, VariableAttributes>& varAttributes)
 			{
 				if (varAttributes.find(varName) == varAttributes.end())
 				{
-					AddVariableAttributes(varId, varName, string("unknown"), string("unknown"), VariableAttributes::DefaultFillValue());
+					AddVariableAttributes(varId, varName, string("unknown"), 0, string("unknown"), string("unknown"), string("unknown"), VariableAttributes::DefaultFillValue(), string("unknown"));
 				}
 				else
 				{
 					auto att = varAttributes.at(varName);
-					AddVariableAttributes(varId, att.LongName, att.Units, att.Type, att.FillValue);
+					AddVariableAttributes(varId, att.LongName, att.Units, att.Type, att.TypeDescription, att.DatType, att.DatDescription, att.FillValue, att.LocationType);
 				}
+			}
+
+			VariableAttributes SwiftNetCDFAccess::ReadAttributes(const string& varName)
+			{
+				VariableAttributes varAttrib = VariableAttributes();
+				varAttrib.FillValue = ReadNumericAttribute(varName, kFillValueAttName);
+				varAttrib.LongName = ReadStringAttribute(varName, kLongNameAttName);
+				varAttrib.Units = ReadStringAttribute(varName, kUnitsAttName);
+				varAttrib.Type = (int)ReadNumericAttribute(varName, kTypeAttName);
+				varAttrib.TypeDescription = ReadStringAttribute(varName, kTypeDescriptionAttName);
+				varAttrib.DatType = ReadStringAttribute(varName, kDatTypeAttName);
+				varAttrib.DatDescription = ReadStringAttribute(varName, kDatDescriptionAttName);
+				varAttrib.LocationType = ReadStringAttribute(varName, kLocationTypeAttName);
+				return varAttrib;
+			}
+
+			VariableAttributes SwiftNetCDFAccess::GetAttributes(const string& varName)
+			{
+				auto iter = variableDefinitions.find(varName);
+				if (iter != variableDefinitions.end())
+					return variableDefinitions[varName].attributes;
+				return ReadAttributes(varName);
+			}
+
+			GlobalAttributes SwiftNetCDFAccess::GetGlobalAttributes()
+			{
+				GlobalAttributes globAttrib = GlobalAttributes();
+				globAttrib.Title = ReadStringAttribute(NC_GLOBAL, string(kGlobalAttNameTitle));
+				globAttrib.Institution = ReadStringAttribute(NC_GLOBAL, string(kGlobalAttNameInstitution));
+				globAttrib.Source = ReadStringAttribute(NC_GLOBAL, string(kGlobalAttNameSource));
+				globAttrib.Catchment = ReadStringAttribute(NC_GLOBAL, string(kGlobalAttNameCatchment));
+				globAttrib.STFConventionVersion = ReadNumericAttribute(NC_GLOBAL, string(kGlobalAttNameSTF_convention_version));
+				globAttrib.STFNCSpec = ReadStringAttribute(NC_GLOBAL, string(kGlobalAttNameSTF_nc_spec));
+				globAttrib.Comment = ReadStringAttribute(NC_GLOBAL, string(kGlobalAttNameComment));
+				globAttrib.History = ReadStringAttribute(NC_GLOBAL, string(kGlobalAttNameHistory));
+				return globAttrib;
 			}
 
 			const string SwiftNetCDFAccess::kTimeDimName = "time";
@@ -997,17 +1180,22 @@ namespace datatypes
 			const string SwiftNetCDFAccess::kLongNameAttName = "long_name";
 			const string SwiftNetCDFAccess::kAxisAttName = "axis";
 			const string SwiftNetCDFAccess::kTypeAttName = "type";
+			const string SwiftNetCDFAccess::kTypeDescriptionAttName = "type_description";
+			const string SwiftNetCDFAccess::kDatTypeAttName = "dat_type";
+			const string SwiftNetCDFAccess::kDatDescriptionAttName = "dat_type_description";
+			const string SwiftNetCDFAccess::kLocationTypeAttName = "location_type";
 
 			const string SwiftNetCDFAccess::kCatchmentAttName = "Catchment";
 			const string SwiftNetCDFAccess::kFillValueAttName = "_FillValue";
 
-			const string SwiftNetCDFAccess::kHistoryAttName = "history";
+			const string SwiftNetCDFAccess::kGlobalAttNameTitle = "title";
 			const string SwiftNetCDFAccess::kGlobalAttNameInstitution = "institution";
 			const string SwiftNetCDFAccess::kGlobalAttNameSource = "source";
 			const string SwiftNetCDFAccess::kGlobalAttNameCatchment = "catchment";
 			const string SwiftNetCDFAccess::kGlobalAttNameSTF_convention_version = "STF_convention_version";
 			const string SwiftNetCDFAccess::kGlobalAttNameSTF_nc_spec = "STF_nc_spec";
 			const string SwiftNetCDFAccess::kGlobalAttNameComment = "comment";
+			const string SwiftNetCDFAccess::kGlobalAttNameHistory = "history";
 			const string SwiftNetCDFAccess::kAttNameTimeStandard = "time_standard";
 
 			void SwiftNetCDFAccess::CheckCompliance(const string& filename, int majorVersion, int minorVersion, vector<string>& warnings, vector<string>& errors)
@@ -1097,18 +1285,18 @@ namespace datatypes
 						code = checkVarType(ncid, elevationVarId, kElevationVarName, NC_FLOAT);
 
 						// Global attributes
-						code = checkHasAttribute(ncid, kHistoryAttName);
+						code = checkHasAttribute(ncid, kGlobalAttNameTitle);
 						code = checkHasAttribute(ncid, kGlobalAttNameInstitution);
 						code = checkHasAttribute(ncid, kGlobalAttNameSource);
 						code = checkHasAttribute(ncid, kGlobalAttNameCatchment);
 						code = checkHasAttribute(ncid, kGlobalAttNameSTF_convention_version);
 						code = checkHasAttribute(ncid, kGlobalAttNameSTF_nc_spec);
 						code = checkHasAttribute(ncid, kGlobalAttNameComment);
+						code = checkHasAttribute(ncid, kGlobalAttNameHistory);
 
 						// variable dimensions
 
 						// variable names
-
 
 						nc_close(ncid);
 					}
@@ -1231,7 +1419,7 @@ namespace datatypes
 			vector<ptime> SwiftNetCDFAccess::GetTimeDim()
 			{
 				size_t timeLen = this->GetTimeLength();
-				auto tstep = GetTimeStep();
+				auto tstep = GetTimeUnitTimeStep();
 				vector<ptime> result(timeLen);
 				for (size_t i = 0; i < timeLen; i++)
 				{
@@ -1297,9 +1485,15 @@ namespace datatypes
 					this->ptimeVec = vector<ptime>(numTimeSteps);
 					auto timeStart = GetStart();
 					auto tst = GetTimeStep();
-					for (size_t i = 0; i < numTimeSteps; i++)
+					if (timeVec.size() == numTimeSteps)
 					{
-						ptimeVec[i] = tst.AddSteps(timeStart, i);
+						for (size_t i = 0; i < numTimeSteps; i++)
+							ptimeVec[i] = tst.AddSteps(timeStart, timeVec[i]);
+					}
+					else // default fallback
+					{
+						for (size_t i = 0; i < numTimeSteps; i++)
+							ptimeVec[i] = tst.AddSteps(timeStart, i);
 					}
 					cachedTimeVector = true;
 					return this->ptimeVec[timeIndex];
@@ -1475,6 +1669,19 @@ namespace datatypes
 			}
 		}
 
+		time_duration SwiftNetCDFAccess::TimeOffsetIn;
+		time_duration SwiftNetCDFAccess::TimeOffsetOut;
+
+		void SwiftNetCDFAccess::SetTimeOffsetIn(const time_duration& td)
+		{
+			TimeOffsetIn = time_duration(td);
+		}
+
+		void SwiftNetCDFAccess::SetTimeOffsetOut(const time_duration& td)
+		{
+			TimeOffsetOut = time_duration(td);
+		}
+
 		TimeSeriesLibrary* TimeSeriesLibraryFactory::CreateLibraryPtr(const TimeSeriesLibraryDescription& description)
 		{
 			TimeSeriesLibrary* result = new TimeSeriesLibrary();
@@ -1618,7 +1825,8 @@ namespace datatypes
 			dimDefinitions.StationIds = stationIds;
 			std::map<string, VariableDefinition> varDefinitions;
 			varDefinitions[varName] = VariableDefinition::PointTimeSeries(varName, "<NA>", varName);
-			NetCdfSingleSeriesStore<T> store(filePath, dimDefinitions, varDefinitions, varName);
+			GlobalAttributes globAtts = GlobalAttributes::CreateDefault();
+			NetCdfSingleSeriesStore<T> store(filePath, dimDefinitions, varDefinitions, globAtts, varName);
 			std::map<string, TTimeSeries<T>*> toSave = STLHelper::Remap<string, TTimeSeries<T>*>(recordedTimeSeries, idMap);
 			store.WriteToIdentifiers(toSave);
 		}
@@ -1626,16 +1834,16 @@ namespace datatypes
 		template void TimeSeriesIOHelper<double>::Write(const string& varName, std::map<string, TTimeSeries<double>*>& recordedTimeSeries, const std::map<string, string>& idMap, const string& filePath);
 
 		template <typename T>
-		void TimeSeriesIOHelper<T>::Write(DimensionsDefinitions& dimDefinitions, const map<std::string, VariableDefinition>& varDefinitions,
+		void TimeSeriesIOHelper<T>::Write(DimensionsDefinitions& dimDefinitions, const map<std::string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes,
 			std::map<string, TTimeSeries<T>*>& recordedTimeSeries, const string& filePath)
 		{
 			using datatypes::utils::STLHelper;
 			if (recordedTimeSeries.size() == 0) return;
-			NetCdfSingleSeriesStore<T> store(filePath, dimDefinitions, varDefinitions, "");
+			NetCdfSingleSeriesStore<T> store(filePath, dimDefinitions, varDefinitions, globalAttributes, "");
 			store.WriteToNcVariables(recordedTimeSeries);
 		}
 
-		template void TimeSeriesIOHelper<double>::Write(DimensionsDefinitions& dimDefinitions, const map<std::string, VariableDefinition>& varDefinitions, std::map<string, TTimeSeries<double>*>& recordedTimeSeries, const string& filePath);
+		template void TimeSeriesIOHelper<double>::Write(DimensionsDefinitions& dimDefinitions, const map<std::string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, std::map<string, TTimeSeries<double>*>& recordedTimeSeries, const string& filePath);
 
 		template <typename T>
 		typename TimeSeriesIOHelper<T>::PtrEnsemblePtrType TimeSeriesIOHelper<T>::ReadForecastTimeSeries(const string& netCdfFilepath, const string& varName, const string& identifier, int index)

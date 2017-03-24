@@ -480,7 +480,7 @@ TEST_CASE("Write and read a single netcdf time series file")
 	string varOneName = "rain_der";
 	string timeUnits;
 	NcFileDef args = CreateNcIo<NetCdfSingleSeriesStore<double>>(timeUnits, stationIds, numberOfTimeSteps, numberOfEnsembles, leadTime, timeStep, startDate, timeStep, varOneName);
-	NetCdfSingleSeriesStore<double> writeSeries(testFilePath, args.first, args.second, varOneName, stationOneId);
+	NetCdfSingleSeriesStore<double> writeSeries(testFilePath, args.DimDefs, args.VarDefs, args.GlobAtts, varOneName, stationOneId);
 
 	auto inputTimeSeriesData = DTH::SeqVec(0, 1, numberOfTimeSteps);
 	TTimeSeries<double> inputTs(inputTimeSeriesData, startDate, timeStep);
@@ -541,7 +541,7 @@ TEST_CASE("Write and read an ensemble netcdf file")
 	map<string, VariableAttributes> varAttribs;
 
 	NcFileDef args = CreateNcIo<NetCdfEnsembleTimeSeriesStore<double>>(timeUnits, stationIds, numberOfTimeSteps, numberOfEnsembles, leadTime, timeStep, startDate, timeStep, varOneName);
-	NetCdfEnsembleTimeSeriesStore<double> writeSeries(testFilePath, args.first, args.second, varOneName, stationOneId);
+	NetCdfEnsembleTimeSeriesStore<double> writeSeries(testFilePath, args.DimDefs, args.VarDefs, args.GlobAtts, varOneName, stationOneId);
 
 	vector<double*> inputTimeSeriesVec;
 
@@ -602,7 +602,7 @@ TEST_CASE("Write and read a forecast ensemble netcdf time series file")
 	string timeUnits;
 	vector<double> timeVar;
 	NcFileDef args = CreateNcIo<NetCdfTimeSeriesEnsembleTimeSeriesStore<double>>(timeUnits, stationIds, tsEtsLength, ensSize, tsLength, fcastTstep, startDate, etsTstep, varOneName);
-	NetCdfTimeSeriesEnsembleTimeSeriesStore<double> writeSeries(testFilePath, args.first, args.second, varOneName, stationOneId);
+	NetCdfTimeSeriesEnsembleTimeSeriesStore<double> writeSeries(testFilePath, args.DimDefs, args.VarDefs, args.GlobAtts, varOneName, stationOneId);
 
 	using DTH = datatypes::tests::DataTestHelper<double>;
 	EnsembleForecastTimeSeries<> ensTs = DTH::CreateTsEnsembleTs(
@@ -664,8 +664,12 @@ TEST_CASE("Time Series written to netCDF")
 	int nVars = 2;
 
 	std::map<std::string, VariableDefinition> varDefs;
-	varDefs[var1_fcast_ens] = VariableDefinition(var1_fcast_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_FOUR_DIMENSIONS_DATA), var1_fcast_ens, string("mm"), TEST_FILL_VALUE, string("2"), tDesc, pt);
-	varDefs[var2_fcast_ens] = VariableDefinition(var2_fcast_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_FOUR_DIMENSIONS_DATA), var2_fcast_ens, string("mm"), TEST_FILL_VALUE, string("2"), tDesc, pt);
+	varDefs[var1_fcast_ens] = VariableDefinition(var1_fcast_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_FOUR_DIMENSIONS_DATA), var1_fcast_ens, string("mm"), TEST_FILL_VALUE, 2, tDesc, dType, dDesc, pt);
+	varDefs[var2_fcast_ens] = VariableDefinition(var2_fcast_ens, string(DATATYPES_DOUBLE_PRECISION_ID), string(DATATYPES_FOUR_DIMENSIONS_DATA), var2_fcast_ens, string("mm"), TEST_FILL_VALUE, 2, tDesc, dType, dDesc, pt);
+
+	std::string catchmentName = "456";
+
+	GlobalAttributes globAtts = GlobalAttributes::CreateDefault(catchmentName);
 
 	//SwiftNetCDFAccess* writeAccess = CreateNcIo(fname, startDate, timeStep, numberOfTimeSteps, numberOfEnsembles, leadTime, varOneName, stationIds);
 	//SwiftNetCDFTimeSeriesStore<double> store(fname, nEns, nLead, timeUnits, timeVar, stationIds, varNames, varAttrs);
@@ -676,7 +680,7 @@ TEST_CASE("Time Series written to netCDF")
 	//REQUIRE_EQUAL(startDate, store.GetStart());
 
 	NetCdfTimeSeriesEnsembleTimeSeriesStore<double> ensts(fname, nEns, leadTimeVar, timeUnits, timeVar, stationIds,
-		varDefs, var2_fcast_ens /*variable name*/, "456"/*catchment*/);
+		varDefs, globAtts, var2_fcast_ens, catchmentName);
 	REQUIRE_EQUAL(nEns, ensts.GetEnsembleSize());
 	REQUIRE_EQUAL(nLead, ensts.GetLeadTimeCount());
 
@@ -706,7 +710,7 @@ TEST_CASE("Swift NetCDF variable attributes")
 
 	ptime d(date(2011, 2, 16));
 	auto f = [](const ptime& d, const TimeStep& t) { return SwiftNetCDFAccess::CreateTimeUnitsAttribute(d, t); };
-	string since(" since 2011-02-16T00:00:00 +0000");
+	string since(" since 2011-02-16 00:00:00.0 +0000");
 	REQUIRE(f(d, daily) == "days" + since);
 	REQUIRE(f(d, daily * 2) == "days" + since);
 	REQUIRE(f(d, hourly) == "hours" + since);
@@ -767,7 +771,7 @@ TEST_CASE("DimensionsDefinition")
 	//ptime& tsEnsStart = not_a_date_time, const vector<string>& stationIds = DEFAULT_STATION_IDENTIFIER)
 	auto dimDef = DimensionsFromSeries<double>(ensTs);
 	REQUIRE(dimDef.EnsembleSize == ensSize);
-	REQUIRE(dimDef.TimeUnits == "hours since 2008-03-04T00:00:00 +0000");
+	REQUIRE(dimDef.TimeUnits == "hours since 2008-03-04 00:00:00.0 +0000");
 	REQUIRE(VectorEqual<double>(dimDef.TimeVar, SeqVec<double>(0, 6, tsEtsLength)));
 	REQUIRE(VectorEqual<double>(dimDef.LeadTimeVar, SeqVec<double>(0.25, 0.25, tsLength)));
 }
