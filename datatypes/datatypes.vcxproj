@@ -64,10 +64,10 @@
     <ClInclude Include="internals_c_api.hpp" />
     <ClInclude Include="shared_pointer_conversions.hpp" />
     <ClCompile Include="C:\src\github_jm\rcpp-interop-commons\src\c_cpp_interop.h" />
+    <ClInclude Include="../include/datatypes/exception_utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp" />
-    <ClCompile Include="exception_utilities.h" />
     <ClCompile Include="extern_c_api.cpp" />
     <ClCompile Include="io_helper.cpp" />
     <ClCompile Include="tests/datatypes_test_helpers.cpp" />

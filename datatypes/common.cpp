@@ -4,7 +4,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string.hpp>    
 
-#include "common.h"
+#include "datatypes/common.h"
 
 namespace datatypes
 {

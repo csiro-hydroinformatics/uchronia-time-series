@@ -38,7 +38,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>../;../datatypes;$(LocalIncludePaths);$(IncludePath)</IncludePath>
+    <IncludePath>../;../../datatypes/include;$(LocalIncludePaths);$(IncludePath)</IncludePath>
     <LibraryPath>$(OutDir);$(LocalLibraryPaths);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>

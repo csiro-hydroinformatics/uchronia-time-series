@@ -1,11 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "datatypes", "..\datatypes\datatypes.vcxproj", "{D0FF7544-4149-4A72-8843-EAB66C94D1D1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdatatypes", "..\tests\testdatatypes.vcxproj", "{A2B27D42-7718-481F-A6A0-BEA4EA117658}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D0FF7544-4149-4A72-8843-EAB66C94D1D1} = {D0FF7544-4149-4A72-8843-EAB66C94D1D1}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
