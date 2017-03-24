@@ -182,4 +182,27 @@ namespace datatypes
 
 
 	}
+
+	namespace interop
+	{
+		std::atomic<double > MissingValueHandling::TimeSeriesMissingValueValue(DEFAULT_MISSING_DATA_VALUE);
+	}
+
 }
+
+// Provide an implementation for c_cpp_interop.cpp
+void delete_ansi_string_array(char** values, int arrayLength)
+{
+	if (values == nullptr)
+		throw std::logic_error("delete_ansi_string_array: values cannot be a nullptr");
+	for (int i = 0; i < arrayLength; i++)
+		delete[] values[i];
+	delete[] values;
+}
+
+void delete_array(double* values) {
+	if (values == nullptr)
+		throw std::logic_error("delete_array: value cannot be a nullptr");
+	delete[] values;
+}
+

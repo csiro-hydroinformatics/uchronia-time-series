@@ -7,23 +7,7 @@
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 
-#ifdef _WIN32
-  #ifdef USING_DATATYPES
-    #define DATATYPES_DLL_LIB __declspec(dllimport)
-	#define TEMPLATE_SPECIALIZATION_EXTERN extern
-  #else
-    #define DATATYPES_DLL_LIB __declspec(dllexport)
-	#define TEMPLATE_SPECIALIZATION_EXTERN
-
-// TO prevent warnings such as:
-// Warning	C4251	'datatypes::io::IoHelper::DefaultFilePattern' : class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll - interface to be used by clients of class 'datatypes::io::IoHelper'
-	#pragma warning (disable : 4251)
-
-  #endif
-#else
-  #define DATATYPES_DLL_LIB // nothing
-  #define TEMPLATE_SPECIALIZATION_EXTERN
-#endif
+#include <datatypes/setup_exports.h>
 
 #define DEFAULT_MISSING_DATA_VALUE -9999.0
 #define DEFAULT_STATION_IDENTIFIER { "0" }
@@ -358,4 +342,18 @@ namespace datatypes
 		};
 
 	}
+
+	namespace interop
+	{
+		class DATATYPES_DLL_LIB MissingValueHandling
+		{
+			// https://jira.csiro.au/browse/WIRADA-416
+			// Ways for wrappers to specify to this API what special numeric value to use 
+			// as 'missing value' code in time series interop.
+		public:
+			/** \brief	The time series missing value. */
+			static std::atomic<double> TimeSeriesMissingValueValue;
+		};
+	}
+
 }

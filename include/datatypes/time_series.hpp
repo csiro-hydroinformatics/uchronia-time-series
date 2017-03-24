@@ -1166,6 +1166,17 @@ namespace datatypes
 
 		};
 
+		template<typename Tts>
+		void ToTimeSeriesGeomStruct(const Tts& ts, MarshaledTsGeometry& g)
+		{
+			g.Length = ts.GetLength();
+			ptime startpt = ts.GetStartDate();
+			g.TimeStepSeconds = ts.GetTimeStep().GetTimeStepDuration(startpt).total_seconds();
+			ToDateTimeStruct(startpt, g.Start);
+		}
+
+
+
 		/*******************
 		Below are implementations of the template code; they would normally be found in a .cpp file, but as
 		templates putting them here makes it more reusable from other programs.
