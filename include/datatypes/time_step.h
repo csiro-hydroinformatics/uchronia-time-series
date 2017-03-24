@@ -1,9 +1,9 @@
 #pragma once
 
 #include "boost/date_time/posix_time/posix_time.hpp"
-#include "common.h"
-#include "exception_utilities.h"
-#include "time_step_implementation.h"
+#include "datatypes/common.h"
+#include "datatypes/exception_utilities.h"
+#include "datatypes/time_step_implementation.h"
 
 using namespace boost::posix_time;
 

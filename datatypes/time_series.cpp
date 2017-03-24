@@ -1,6 +1,6 @@
-#include "common.h"
-#include "time_series.hpp"
-#include "exception_utilities.h"
+#include "datatypes/common.h"
+#include "datatypes/time_series.hpp"
+#include "datatypes/exception_utilities.h"
 
 using namespace boost::gregorian;
 

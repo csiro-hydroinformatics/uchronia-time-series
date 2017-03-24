@@ -22,9 +22,8 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string.hpp>    
 
-#include "time_series.hpp"
-#include "exception_utilities.h"
-//#include "time_series_io.hpp"
+#include "datatypes/time_series.hpp"
+#include "datatypes/exception_utilities.h"
 
 namespace datatypes
 {

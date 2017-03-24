@@ -4,10 +4,10 @@
 #include <iterator>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <boost/function.hpp>
-#include "common.h"
-#include "time_step.h"
-#include "time_series_strategies.hpp"
-#include "exception_utilities.h"
+#include "datatypes/common.h"
+#include "datatypes/time_step.h"
+#include "datatypes/time_series_strategies.hpp"
+#include "datatypes/exception_utilities.h"
 
 
 using namespace boost::posix_time;

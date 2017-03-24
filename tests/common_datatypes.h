@@ -59,7 +59,7 @@ class NcFileDef
 public:
 	DimensionsDefinitions DimDefs;
 	map<string, VariableDefinition> VarDefs;
-	GlobalAttributes GlobAtts;
+	datatypes::timeseries::GlobalAttributes GlobAtts;
 };
 
 template<typename TStore>

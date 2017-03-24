@@ -3,8 +3,8 @@
 
 //#include "boost/date_time/posix_time/posix_time.hpp"
 #include <boost/function.hpp>
-#include "common.h"
-#include "exception_utilities.h"
+#include "datatypes/common.h"
+#include "datatypes/exception_utilities.h"
 
 #include <iterator>
 
