@@ -15,34 +15,55 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="time_step.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="time_series_store.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="time_series.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="time_series_io.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="tests/datatypes_test_helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tests/datatypes_test_helpers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="time_series_strategies.hpp">
+    <ClInclude Include="../include/datatypes/common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="io_helper.h">
+    <ClInclude Include="../include/datatypes/io_helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="time_step_implementation.h">
+    <ClInclude Include="../include/datatypes/time_series.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/time_series_io.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/time_series_store.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/time_series_strategies.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/time_step.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/time_step_implementation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/extern_c_api_transparent_pointers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/extern_c_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/setup_exports.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internals_c_api.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shared_pointer_conversions.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/exception_utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="interop_conversions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,13 +86,16 @@
     <ClCompile Include="io_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="exception_utilities.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="time_step_implementation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="extern_c_api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="interop_conversions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

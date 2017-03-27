@@ -8,6 +8,7 @@
 #include "datatypes/time_step.h"
 #include "datatypes/time_series_strategies.hpp"
 #include "datatypes/exception_utilities.h"
+#include "cinterop/common_c_interop.h"
 
 
 using namespace boost::posix_time;
@@ -1165,17 +1166,6 @@ namespace datatypes
 			ptime endDate;
 
 		};
-
-		template<typename Tts>
-		void ToTimeSeriesGeomStruct(const Tts& ts, MarshaledTsGeometry& g)
-		{
-			g.Length = ts.GetLength();
-			ptime startpt = ts.GetStartDate();
-			g.TimeStepSeconds = ts.GetTimeStep().GetTimeStepDuration(startpt).total_seconds();
-			ToDateTimeStruct(startpt, g.Start);
-		}
-
-
 
 		/*******************
 		Below are implementations of the template code; they would normally be found in a .cpp file, but as

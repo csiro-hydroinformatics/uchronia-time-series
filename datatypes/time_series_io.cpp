@@ -3,9 +3,11 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include "yaml-cpp/yaml.h"
 #include "datatypes/exception_utilities.h"
 #include "datatypes/time_series_io.hpp"
 #include "datatypes/time_series_store.hpp"
+#include "tests/datatypes_test_helpers.h"
 
 namespace datatypes
 {
@@ -1667,7 +1669,354 @@ namespace datatypes
 					}
 				}
 			}
+
+			const string ConfigFileHelper::FileKey = NetCdfSourceInfo::FileKey;
+			const string ConfigFileHelper::VarKey = NetCdfSourceInfo::VarKey;
+			const string ConfigFileHelper::IdDataKey = TimeSeriesSourceInfo::IdDataKey;
+			const string ConfigFileHelper::IdentifierKey = NetCdfSourceInfo::IdentifierKey;
+			const string ConfigFileHelper::IndexKey = NetCdfSourceInfo::IndexKey;
+			const string ConfigFileHelper::TypeKey = NetCdfSourceInfo::TypeKey;
+			const string ConfigFileHelper::TimeStepKey = "TimeStep";
+			const string ConfigFileHelper::StartKey = "Start";
+			const string ConfigFileHelper::LengthKey = "Length";
+
+			const string ConfigFileHelper::EnsembleSizeKey = "EnsembleSize";
+			const string ConfigFileHelper::EnsembleLengthKey = "EnsembleLength";
+			const string ConfigFileHelper::EnsembleTimeStepKey = "EnsembleTimeStep";
+			const string ConfigFileHelper::FilePatternKey = "FilePattern";
+			const string ConfigFileHelper::MappingKey = "Mapping";
+
+			const string ConfigFileHelper::StorageKey = "Storage";
+
+			const string ConfigFileHelper::SingleSeriesCollectionTypeId = TimeSeriesSourceInfo::SingleSeriesCollectionTypeId;
+			const string ConfigFileHelper::SingleSeriesTypeId = TimeSeriesSourceInfo::SingleSeriesTypeId;
+			const string ConfigFileHelper::EnsembleSeriesTypeId = TimeSeriesSourceInfo::EnsembleSeriesTypeId;
+			const string ConfigFileHelper::TimeSeriesEnsemblesTypeId = TimeSeriesSourceInfo::TimeSeriesEnsemblesTypeId;
+
+			const string ConfigFileHelper::StorageTypeSingleNetcdfFile = NetCdfSourceInfo::StorageTypeSingleNetcdfFile;
+			const string ConfigFileHelper::StorageTypeMultipleNetcdfFiles = NetCdfSourceInfo::StorageTypeMultipleNetcdfFiles;
+
+			string ConfigFileHelper::FileName(const YAML::Node& storage)
+			{
+				string fname = storage[FileKey].as<string>();
+				return fname;
+			}
+
+			string ConfigFileHelper::FullFileName(const YAML::Node& storage, const TimeSeriesLibraryDescription& tsl)
+			{
+				using boost::filesystem::path;
+				using datatypes::io::IoHelper;
+				string fname = storage[FileKey].as<string>();
+				auto p = tsl.GetFullPath(fname);
+				if (IoHelper::FileExists(p))
+					return string(p.generic_string());
+				p = path(tsl.GetDataPath()) / fname;
+				if (IoHelper::FileExists(p))
+					return string(p.generic_string());
+				return fname;
+			}
+
+			bool ConfigFileHelper::PreCheckStorageType(const string& storageType, TimeSeriesSourceInfoBuilder* srcBuilder)
+			{
+				if (storageType == StorageTypeSingleNetcdfFile ||
+					storageType == StorageTypeMultipleNetcdfFiles)
+					return true;
+				else if (srcBuilder != nullptr && srcBuilder->HandlesStorageType(storageType))
+					return true;
+				else
+					return false;
+			}
+ 
+			TimeSeriesLibraryDescription ConfigFileHelper::LoadTimeSeriesLibraryDescription(const string& filename, const string& dataPath, TimeSeriesSourceInfoBuilder* srcBuilder)
+			{
+				using boost::filesystem::path;
+				datatypes::exceptions::ExceptionUtilities::CheckFileExists(filename);
+
+				YAML::Node config = YAML::LoadFile(filename);
+
+				TimeSeriesLibraryDescription tsl;
+
+				tsl.SetLoadedFileName(filename);
+				tsl.SetDataPath(dataPath);
+
+				auto size = config.size();
+
+
+				auto mkFname = [&](const YAML::Node& storage, const TimeSeriesLibraryDescription& tsl)
+				{
+					return ConfigFileHelper::FileName(storage);
+				};
+
+				auto mkFullFname = [&](const YAML::Node& storage, const TimeSeriesLibraryDescription& tsl)
+				{
+					return ConfigFileHelper::FullFileName(storage, tsl);
+				};
+
+				auto mkFullFnameDircheck = [&](const YAML::Node& storage, const TimeSeriesLibraryDescription& tsl)
+				{
+					using datatypes::io::IoHelper;
+					string fname = storage[FileKey].as<string>();
+					auto p = tsl.GetFullPath(fname);
+					if (IoHelper::DirExists(p.parent_path()))
+						return string(p.generic_string());
+					p = path(tsl.GetDataPath()) / fname;
+					if (IoHelper::DirExists(p.parent_path()))
+						return string(p.generic_string());
+					return fname;
+				};
+
+				for (YAML::const_iterator it = config.begin(); it != config.end(); ++it) {
+					//for (std::size_t i = 0; i<config.size(); i++) {
+					auto c = it->second;
+					//auto type = c.Type();
+					//auto tmp = c[TypeKey];
+					auto t = c[TypeKey].Scalar();
+					string dataId = c[IdDataKey].as<string>();
+					auto storage = c[StorageKey];
+					if (!storage.IsDefined())
+						datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument("Could not find a definition for the Storage component of data ID: " + dataId);
+					string storageType = storage[TypeKey].as<string>();
+
+					if(!PreCheckStorageType(storageType, srcBuilder))
+						datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Support for this storage type is not yet available: " + storageType);
+					//if (storageType == StorageTypeLegacyTxtSwiftVOne)
+					//{
+					//	if (t != SingleSeriesCollectionTypeId)
+					//		datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Support for this storage type is not yet available: " + storageType);
+					//}
+
+					string containingDirectory = tsl.GetRootDirectory();
+					if (t == SingleSeriesTypeId)
+					{
+						/*
+						var1_obs:
+						Type: single
+						Storage:
+						Type: single_nc_file
+						File: ./netcdf/testswift.nc
+						Identifier: 1
+						Var: var1_obs
+						Id: var1_obs
+						*/
+						if (storageType == StorageTypeSingleNetcdfFile)
+						{
+							string ffname = mkFullFname(storage, tsl);
+							tsl.AddSingle(dataId, TimeSeriesSourceInfo(NetCdfSourceInfo(
+								dataId,                              //const string& dataId
+								ffname,								//const string& fileName
+								storage[VarKey].as<string>(),		//const string& ncVarName
+								storage[IdentifierKey].as<string>(),//const string& identifier
+								-1,									//int index
+								storageType,						//const string& storageType
+								"",									//const string& timeStep
+								"",									//const string& start
+								-1,									//int length
+								-1,									//int ensembleSize,
+								-1,									//int ensembleLength,
+								"",									//const string& ensembleTimeStep,
+								containingDirectory                  //const string& containingDirectory
+							)));
+						}
+						else
+							datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Support for this storage type is not yet available: " + storageType);
+
+					}
+					else if (t == SingleSeriesCollectionTypeId)
+					{
+						if (storageType == StorageTypeSingleNetcdfFile)
+						{
+							string ffname = mkFname(storage, tsl);
+							tsl.AddSingle(dataId, TimeSeriesSourceInfo(NetCdfSourceInfo(
+								dataId,                              //const string& dataId
+								ffname,								//const string& fileName
+								storage[VarKey].as<string>(),		//const string& ncVarName
+								"",//const string& identifier
+								-1,									//int index
+								storageType,						//const string& storageType
+								"",									//const string& timeStep
+								"",									//const string& start
+								-1,									//int length
+								-1,									//int ensembleSize,
+								-1,									//int ensembleLength,
+								"",									//const string& ensembleTimeStep,
+								containingDirectory                  //const string& containingDirectory
+							)));
+						}
+						else //if (storageType == StorageTypeLegacyTxtSwiftVOne)
+						{
+							if (srcBuilder != nullptr && srcBuilder->HandlesStorageType(storageType))
+							{
+								srcBuilder->BuildTimeSeriesSource(storageType, dataId, storage, tsl);
+							}
+							else
+								datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Support for this storage type is not yet available: " + storageType);
+						}
+					}
+					else if (t == EnsembleSeriesTypeId)
+					{
+						/*
+						var1_ens:
+						Type: ensemble_ts
+						Id: var1_ens
+						TimeStep: 24:00:00
+						Start: 2014-08-01T00:00:00
+						Length: 240
+						EnsembleSize: 1000
+						Storage:
+						Type: single_nc_file
+						File: ./netcdf/testswift.nc
+						Var: var1_ens
+						Identifier: 1
+						Index: 0
+						*/
+						// TODO:
+						//consistency check on descr80t8 and ncdf metadata
+						if (storageType == StorageTypeSingleNetcdfFile)
+						{
+							string ffname = mkFullFname(storage, tsl);
+							tsl.AddEnsembleTs(dataId, TimeSeriesSourceInfo(NetCdfSourceInfo(
+								dataId,                              //const string& dataId
+								storage[FileKey].as<string>(),//const string& fileName
+								storage[VarKey].as<string>(),//const string& ncVarName
+								storage[IdentifierKey].as<string>(),//const string& identifier
+								storage[IndexKey].as<int>(),//int index
+								storageType,//const string& storageType
+								"",									//const string& timeStep
+								"",									//const string& start
+								-1,									//int length
+								-1,									//int ensembleSize,
+								-1,									//int ensembleLength,
+								"",									//const string& ensembleTimeStep,
+								containingDirectory                  //const string& containingDirectory
+							)));
+						}
+						else
+							datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Ensemble TS: Support for this storage type is not yet available: " + storageType);
+					}
+					else if (t == TimeSeriesEnsemblesTypeId)
+					{
+						/*
+						var2_fcast_ens:
+						Type: ts_ensemble_ts
+						Id: var2_fcast_ens
+						TimeStep: 24:00:00
+						Start: 2014-08-01T00:00:00
+						Length: 5
+						# ForecastStartOffset: +00:00:00
+						EnsembleSize: 1000
+						EnsembleLength: 240
+						EnsembleTimeStep: 01:00:00
+						Storage:
+						Type: single_nc_file
+						File: ./netcdf/testswift.nc
+						Var: var2_fcast_ens
+						Identifier: 1
+						Index: 0
+						*/
+						if (storageType == StorageTypeSingleNetcdfFile || storageType == StorageTypeMultipleNetcdfFiles)
+						{
+							string ffname = mkFullFnameDircheck(storage, tsl);
+							tsl.AddTsEnsembleTs(dataId,
+								TimeSeriesLibraryFactory::CreateNetcdfSourceInfo(
+									dataId,                               //const string& dataId
+									storageType,                          //const string& storageType
+									ffname,		  //const string& fileName
+									storage[VarKey].as<string>(),		  //const string& ncVarName
+									storage[IdentifierKey].as<string>(),  //const string& identifier
+									storage[IndexKey].as<int>(),		  //int index,
+									c[TimeStepKey].as<string>(),		  //const string& timeStep
+									c[StartKey].as<string>(),			  //const string& start
+									c[LengthKey].as<int>(),				  //int length
+									c[EnsembleSizeKey].as<int>(),		  //int ensembleSize
+									c[EnsembleLengthKey].as<int>(),		  //int ensembleLength,
+									c[EnsembleTimeStepKey].as<string>()	  //const string& ensembleTimeStep)
+								));
+						}
+						else
+							datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Time Series of Ensemble TS: Support for this storage type is not yet available: " + storageType);
+					}
+					else
+						datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("Unknown type of data source: ") + t);
+				}
+				return tsl;
+			}
+
+			void ConfigFileHelper::SaveTimeSeriesLibraryDescription(const TimeSeriesLibraryDescription& config, const string& filename)
+			{
+				//datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("ConfigFileHelper::SaveTimeSeriesLibraryDescription is not supported anymore");
+				YAML::Node node;  // starts out as null
+				auto skeys = config.GetDataIdSingle();
+				auto ensKeys = config.GetDataIdEnsembleTs();
+				auto tsetsKeys = config.GetDataIdTsEnsembleTs();
+				for (auto& k : skeys)
+				{
+					//SingleSeriesTypeId = "single";
+					//TODO: how do we deal with:
+					//SingleSeriesCollectionTypeId = "single_collection";
+					YAML::Node n;
+					n[TypeKey] = SingleSeriesTypeId;
+					n[IdDataKey] = k;
+					YAML::Node storage;
+					auto serConf = config.GetSerializableConfiguration(k, { TypeKey, FileKey, VarKey, IdentifierKey });
+					storage[TypeKey] = serConf[TypeKey];
+					storage[FileKey] = serConf[FileKey];
+					storage[VarKey] = serConf[VarKey];
+					storage[IdentifierKey] = serConf[IdentifierKey];
+					n[StorageKey] = storage;
+					node[k] = n;
+				}
+
+				for (auto& k : ensKeys)
+					//EnsembleSeriesTypeId = "ensemble_ts";
+				{
+					YAML::Node n;
+					n[TypeKey] = EnsembleSeriesTypeId;
+					n[IdDataKey] = k;
+					// TODO: the following values are placeholders
+					n[TimeStepKey] = string("24:00:00"); // TimeStep: 24:00:00
+					n[StartKey] = string("2014-08-01T00:00:00"); // Start: 2014-08-01T00:00:00
+					n[LengthKey] = 240; // Length: 240
+					n[EnsembleSizeKey] = 1000; // EnsembleSize: 1000
+					YAML::Node storage;
+					auto serConf = config.GetSerializableConfiguration(k, { TypeKey, FileKey, VarKey, IdentifierKey, IndexKey });
+					storage[TypeKey] = serConf[TypeKey];
+					storage[FileKey] = serConf[FileKey];
+					storage[VarKey] = serConf[VarKey];
+					storage[IdentifierKey] = serConf[IdentifierKey];
+					storage[IndexKey] = serConf[IndexKey];
+					n[StorageKey] = storage;
+					node[k] = n;
+				}
+
+				for (auto& k : tsetsKeys)
+					//TimeSeriesEnsemblesTypeId = "ts_ensemble_ts";
+				{
+					YAML::Node n;
+					n[TypeKey] = TimeSeriesEnsemblesTypeId;
+					n[IdDataKey] = k;
+					// TODO: the following values are placeholders
+					n[TimeStepKey] = string("24:00:00"); // TimeStep: 24:00:00
+					n[StartKey] = string("2014-08-01T00:00:00"); // Start: 2014-08-01T00:00:00
+					n[LengthKey] = 5; // Length: 5
+					n[EnsembleSizeKey] = 1000; // EnsembleSize: 1000
+											   // # ForecastStartOffset: +00:00:00
+					n[EnsembleLengthKey] = 240; // EnsembleLength: 240
+					n[EnsembleTimeStepKey] = string("01:00:00");// EnsembleTimeStep: 01:00:00
+					YAML::Node storage;
+					auto serConf = config.GetSerializableConfiguration(k, { TypeKey, FileKey, VarKey, IdentifierKey, IndexKey });
+					storage[TypeKey] = serConf[TypeKey];
+					storage[FileKey] = serConf[FileKey];
+					storage[VarKey] = serConf[VarKey];
+					storage[IdentifierKey] = serConf[IdentifierKey];
+					storage[IndexKey] = serConf[IndexKey];
+					n[StorageKey] = storage;
+					node[k] = n;
+				}
+				std::ofstream fout(filename);
+				fout << node;
+			}
 		}
+
 
 		time_duration SwiftNetCDFAccess::TimeOffsetIn;
 		time_duration SwiftNetCDFAccess::TimeOffsetOut;
@@ -1694,6 +2043,45 @@ namespace datatypes
 			TimeSeriesLibrary result;
 			CreateLibrary(description, result);
 			return result;
+		}
+
+		TimeSeriesLibrary TimeSeriesLibraryFactory::LoadTimeSeriesLibrary(const string& filepath, const string& dataPath)
+		{
+			auto tsd = datatypes::timeseries::io::ConfigFileHelper::LoadTimeSeriesLibraryDescription(filepath, dataPath);
+			return TimeSeriesLibraryFactory::CreateLibrary(tsd);
+		}
+
+		TimeSeriesLibrary* TimeSeriesLibraryFactory::LoadTimeSeriesLibraryPtr(const string& filepath, const string& dataPath)
+		{
+			auto tsd = datatypes::timeseries::io::ConfigFileHelper::LoadTimeSeriesLibraryDescription(filepath, dataPath);
+			return TimeSeriesLibraryFactory::CreateLibraryPtr(tsd);
+		}
+
+		const string TimeSeriesLibraryFactory::kTestRecorderKey = "test_recording_library";
+		const string TimeSeriesLibraryFactory::kTimeSeriesEnsemblesKey = "on_disk_single_netcdf_file";
+
+		TimeSeriesLibrary* TimeSeriesLibraryFactory::CreateTimeSeriesLibraryPtr(const string& type)
+		{
+			using datatypes::tests::TestTimeSeriesStoreFactory;
+			if (type == TimeSeriesLibraryFactory::kTestRecorderKey)
+			{
+				TimeSeriesStoreFactory* storeCreator = new TestTimeSeriesStoreFactory();
+				TimeSeriesLibrary* result = new TimeSeriesLibrary(storeCreator);
+				return result;
+			}
+			else if (type == TimeSeriesLibraryFactory::kTimeSeriesEnsemblesKey)
+			{
+				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented(TimeSeriesLibraryFactory::kTimeSeriesEnsemblesKey + ": not yet implemented");
+				//TimeSeriesStoreFactory* storeCreator = new SwiftNetcdfStoreFactory(path, DataGeometryProvider* dgp);
+				//TimeSeriesLibrary* result = new TimeSeriesLibrary(storeCreator);
+				//return result;
+				return nullptr;
+			}
+			else
+			{
+				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented(string("Unknown type of time series library: ") + type);
+				return nullptr;
+			}
 		}
 
 		void TimeSeriesLibraryFactory::CreateLibrary(const TimeSeriesLibraryDescription& description, TimeSeriesLibrary& result)

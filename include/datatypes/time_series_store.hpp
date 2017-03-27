@@ -24,6 +24,7 @@
 
 #include "datatypes/time_series.hpp"
 #include "datatypes/exception_utilities.h"
+#include "yaml-cpp/yaml.h"
 
 namespace datatypes
 {
@@ -580,12 +581,16 @@ namespace datatypes
 			EnsembleTimeSeriesStore<double>* CreateEnsembleTimeSeriesStore(const string& dataId) const;
 			TimeSeriesEnsembleTimeSeriesStore<double>* CreateTimeSeriesEnsembleTimeSeriesStore(const string& dataId) const;
 
-		private:
-			//string GetFilename(const string& dataId) const;
-			//string GetFileVariableName(const string& dataId) const;
-			//string GetIdentifier(const string& dataId) const;
-			//int GetIndex(const string& dataId) const;
+		};
 
+		/**
+		 * \brief	An abstract class to allow callers to inject custom time series data sources into a time series library
+		 */
+		class DATATYPES_DLL_LIB TimeSeriesSourceInfoBuilder
+		{
+		public:
+			virtual bool HandlesStorageType(const string storageType) const = 0;
+			virtual void BuildTimeSeriesSource(const string& storageType, const string& dataId, const YAML::Node& storage, TimeSeriesLibraryDescription& targetContainer) const = 0;
 		};
 
 		class DATATYPES_DLL_LIB TimeSeriesStoreFactory

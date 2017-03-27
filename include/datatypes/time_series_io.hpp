@@ -1141,6 +1141,49 @@ namespace datatypes
 				//std::map<string, VariableAttributes> variableAttributes;
 				std::map<string, VariableDefinition> variableDefinitions;
 			};
+
+
+			class DATATYPES_DLL_LIB ConfigFileHelper
+			{
+				using string = std::string;
+			private:
+				ConfigFileHelper();
+			public:
+				static const string FileKey;
+				static const string VarKey;
+				static const string IdentifierKey;
+				static const string IdDataKey;
+				static const string IndexKey;
+				static const string TypeKey;
+				static const string TimeStepKey;
+				static const string StartKey;
+				static const string LengthKey;
+				static const string EnsembleSizeKey;
+				static const string EnsembleLengthKey;
+				static const string EnsembleTimeStepKey;
+				static const string FilePatternKey;
+				static const string MappingKey;
+				static const string StorageKey;
+
+				static const string SingleSeriesTypeId;
+				static const string EnsembleSeriesTypeId;
+				static const string TimeSeriesEnsemblesTypeId;
+				static const string SingleSeriesCollectionTypeId;
+
+
+				static const string StorageTypeSingleNetcdfFile;
+				static const string StorageTypeMultipleNetcdfFiles;
+
+				static TimeSeriesLibraryDescription LoadTimeSeriesLibraryDescription(const string& filename, const string& dataPath = "", TimeSeriesSourceInfoBuilder* srcBuilder = nullptr);
+				static void SaveTimeSeriesLibraryDescription(const TimeSeriesLibraryDescription& config, const string& filename);
+
+				static string FileName(const YAML::Node& storage);
+				static string FullFileName(const YAML::Node& storage, const TimeSeriesLibraryDescription& tsl);
+
+			private:
+				static bool PreCheckStorageType(const string& storageType, TimeSeriesSourceInfoBuilder* srcBuilder = nullptr);
+			};
+
 		}
 
 		using namespace datatypes::timeseries::io;
@@ -2719,6 +2762,11 @@ namespace datatypes
 			static TimeSeriesLibrary CreateLibrary(const TimeSeriesLibraryDescription& description);
 			static TimeSeriesLibrary* CreateLibraryPtr(const TimeSeriesLibraryDescription& description);
 
+			static TimeSeriesLibrary LoadTimeSeriesLibrary(const string& filepath, const string& dataPath);
+			static TimeSeriesLibrary* LoadTimeSeriesLibraryPtr(const string& filepath, const string& dataPath);
+
+			static TimeSeriesLibrary* CreateTimeSeriesLibraryPtr(const string& type);
+
 			static SingleTimeSeriesStore<double>* CreateTsSource(const string& ncFilename, const string& ncVarName, const string& ncIdentifier);
 			static EnsembleTimeSeriesStore<double>* CreateEnsTsSource(const string& ncFilename, const string& ncVarName, const string& ncIdentifier);
 			static TimeSeriesEnsembleTimeSeriesStore<double>* CreateTsEnsTsSource(const string& ncFilename, const string& ncVarName, const string& ncIdentifier);
@@ -2731,6 +2779,9 @@ namespace datatypes
 			static TimeSeriesSourceInfo CreateNetcdfSourceInfo(const string& dataId, const string& storageType, const string& ncFilename, const string& ncVarName, const string& ncIdentifier, int index,
 				const string& timeStep, const string& start, int length, int ensembleSize, int ensembleLength,
 				const string& ensembleTimeStep);
+
+			static const string kTestRecorderKey;
+			static const string kTimeSeriesEnsemblesKey;
 
 		};
 
