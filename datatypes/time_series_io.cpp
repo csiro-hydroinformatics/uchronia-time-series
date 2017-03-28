@@ -7,7 +7,7 @@
 #include "datatypes/exception_utilities.h"
 #include "datatypes/time_series_io.hpp"
 #include "datatypes/time_series_store.hpp"
-#include "tests/datatypes_test_helpers.h"
+#include "datatypes/datatypes_test_helpers.h"
 
 namespace datatypes
 {

@@ -48,7 +48,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="interop_conversions.h" />
+    <ClInclude Include="../include/datatypes/interop_conversions.h" />
+    <ClInclude Include="../include/datatypes/interop_conversions.hpp" />
     <ClInclude Include="tests/datatypes_test_helpers.h" />
     <ClInclude Include="tests/datatypes_test_helpers.hpp" />
     <ClInclude Include="../include/datatypes/common.h" />

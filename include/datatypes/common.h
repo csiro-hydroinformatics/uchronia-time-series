@@ -341,6 +341,14 @@ namespace datatypes
 			static bool funEquals(const string& toTest, const string& toMatch);
 		};
 
+		template<typename T=ptime>
+		T CreateTime(int year, int month, int day, int hour, int minute, int second)
+		{
+			using namespace boost::gregorian;
+			return T(date(year, month, day), hours(hour) + minutes(minute) + seconds(second));
+		}
+
+
 	}
 
 	namespace interop

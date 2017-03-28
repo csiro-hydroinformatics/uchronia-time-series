@@ -10,8 +10,8 @@
 #include <string>
 #include <queue>
 #include <boost/filesystem.hpp>
-#include "datatypes/tests/datatypes_test_helpers.hpp"
-#include "datatypes/tests/datatypes_test_helpers.h"
+#include "datatypes/datatypes_test_helpers.hpp"
+#include "datatypes/datatypes_test_helpers.h"
 #include "datatypes/time_series.hpp"
 #include "datatypes/time_series_store.hpp"
 #include "datatypes/time_series_io.hpp"

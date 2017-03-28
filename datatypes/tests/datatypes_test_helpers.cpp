@@ -1,6 +1,6 @@
 #include "datatypes/common.h"
-#include "datatypes_test_helpers.h"
-#include "datatypes_test_helpers.hpp"
+#include "datatypes/datatypes_test_helpers.h"
+#include "datatypes/datatypes_test_helpers.hpp"
 #include "datatypes/time_series_io.hpp"
 
 

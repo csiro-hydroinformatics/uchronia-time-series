@@ -7,7 +7,8 @@
 using namespace cinterop::utils;
 
 #define DATATYPES_USE_CPP_POINTERS
-#include "interop_conversions.h"
+#include "datatypes/interop_conversions.h"
+#include "datatypes/interop_conversions.hpp"
 
 TimeSeries CreateTimeSeries(double * values, const regular_time_series_geometry& g)
 {
