@@ -342,7 +342,7 @@ namespace datatypes
 		};
 
 		template<typename T=ptime>
-		T CreateTime(int year, int month, int day, int hour, int minute, int second)
+		T CreateTime(int year, int month, int day, int hour = 0, int minute = 0, int second = 0)
 		{
 			using namespace boost::gregorian;
 			return T(date(year, month, day), hours(hour) + minutes(minute) + seconds(second));
