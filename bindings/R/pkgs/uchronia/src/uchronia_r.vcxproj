@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EFFCE5EA-B495-4AE3-8566-D11726B1DC1C}</ProjectGuid>
+    <RootNamespace>uchronia</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)/Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)/Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup>
+    <Import Project="$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(UserProfile)/vcpp_config.props" Condition="exists('$(UserProfile)/vcpp_config.props')" />
+    <Import Project="./r_program.props" Condition="exists('./r_program.props')" />
+  </ImportGroup>
+  <PropertyGroup>
+    <IncludePath>../inst/include;$(RcppPkgPath)/include;$(RInstallPath)/include;$(WindowsSDK_IncludePath);$(VC_IncludePath);$(LocalIncludePaths);$(IncludePath)</IncludePath>
+    <LibraryPath>$(LocalLibraryPaths);$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>RPP_USE_OPAQUE_POINTERS;_CRT_SECURE_NO_WARNINGS;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>$(UseDebugLibraries)</GenerateDebugInformation>
+      <AdditionalDependencies>Rdll.lib;datatypes.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>uchronia_r.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="RcppExports.cpp" />
+    <ClCompile Include="rcpp_custom.cpp" />
+    <ClCompile Include="rcpp_generated.cpp" />
+    <ClCompile Include="uchronia_struct_interop.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--<ClInclude Include="../inst/include/swift_wrapper_setup.h" />-->
+    <ClInclude Include="../inst/include/uchronia_r_exports.h" />
+    <ClInclude Include="../inst/include/uchronia_wrapper_setup.h" />
+    <ClInclude Include="../inst/include/uchronia.h" />
+    <ClInclude Include="..\inst\include\rcpp_uchronia.h" />
+    <ClInclude Include="uchronia_struct_interop.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)/Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

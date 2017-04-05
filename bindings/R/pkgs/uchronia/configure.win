@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# To use the MS toolchain to compile:
+# set COMPILE_WITH_VCPP=YES
+
+RSCRIPT="${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe"
+# echo "if [ ! -e ${RSCRIPT} ]" 
+
+if [ ! -e "${RSCRIPT}" ] 
+then
+	echo "error: file ${RSCRIPT} not found"
+	CURDIR=`pwd`
+	echo "Current directory (pwd) is $CURDIR"	       
+	exit 1
+fi
+
+# export RSCRIPT
+
+# SRC_DIR=./src
+# RSCRIPT=C:/PROGRA~1/R/R-33~1.3/bin/x64/Rscript.exe
+
+CONFIGURE_WIN_PART=`${RSCRIPT} -e "msvs:::get_configure_win_part()"`
+# echo CONFIGURE_WIN_PART=${CONFIGURE_WIN_PART}
+# exit 0
+
+if [ ! -e "${CONFIGURE_WIN_PART}" ] 
+then
+	echo "error: file ${CONFIGURE_WIN_PART} not found"
+	CURDIR=`pwd`
+	echo "Current directory (pwd) is $CURDIR"	       
+	exit 1
+fi
+
+./cleanup.win
+
+solution_filename="uchronia_r.sln"
+from_dll_filenoext="uchronia_r"
+to_dll_filenoext="uchronia_r"
+
+. ${CONFIGURE_WIN_PART}
+
+exit 0

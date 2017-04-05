@@ -1,0 +1,28 @@
+#!/bin/sh
+
+if ["$RPP_R_SRC_DIR" = ""]
+then
+	RPP_R_SRC_DIR=./src
+	if [ ! -e ${RPP_R_SRC_DIR} ] 
+	then
+		echo "error: no suitable package src dir found - last tried ${RPP_R_SRC_DIR}"
+		CURDIR=`pwd`
+		echo "Current directory (pwd) is $CURDIR"	       
+		exit 1
+	fi
+fi
+
+WINMAKE_FILE=$RPP_R_SRC_DIR/Makefile.win
+MAKEVARS_FILE=$RPP_R_SRC_DIR/Makevars.win
+
+if [ -e $MAKEVARS_FILE ] 
+then
+	echo "note: removing existing $MAKEVARS_FILE"
+	rm $MAKEVARS_FILE
+fi
+
+if [ -e $WINMAKE_FILE ] 
+then
+	echo "note: removing existing $WINMAKE_FILE"
+	rm $WINMAKE_FILE
+fi

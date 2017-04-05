@@ -1,0 +1,25 @@
+Package: uchronia
+Type: Package
+Title: Rainfall Post Processor
+Version: 0.1-1
+Date: 2017-04-04
+Authors@R: c( person("Jean-Michel", "Perraud", email =
+    "jean-michel.perraud@csiro.au", role = c("aut", "cre")))
+Author: Jean-Michel Perraud [aut, cre]
+Maintainer: Jean-Michel Perraud <per202@csiro.au>
+Description: uchronia is a package to access a C++ library for managing multidimensional time series, notably ensemble forecasting time series.
+URL: https://stash.csiro.au/projects/SF/
+License: LGPL-3
+Imports:
+    methods,
+    stringr
+LinkingTo: Rcpp
+Depends:
+    R (>= 3.1),
+    msvs (>= 0.1.1),
+    Rcpp (>= 0.12.4)
+Suggests:
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1
