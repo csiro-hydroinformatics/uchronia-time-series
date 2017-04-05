@@ -117,6 +117,8 @@ extern "C" {
 
 	DATATYPES_API void DeleteAnsiString(const char* value);
 
+	DATATYPES_API void DeleteDoubleArray(double* value);
+
 	////////////////////////////////
 	// Global settings for the C SWIFT API
 	////////////////////////////////

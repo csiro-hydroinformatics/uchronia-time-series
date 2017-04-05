@@ -220,6 +220,28 @@ void DisposeMultiTimeSeriesData(multi_regular_time_series_data* data)
 	INTERCEPT_STD_EXCEPTION
 }
 
+void SetTimeSeriesMissingValueValue(double missingValueValue)
+{
+	MissingValueHandling::TimeSeriesMissingValueValue = missingValueValue;
+}
+
+void DeleteDoubleArray(double* values)
+{
+	TRY_START
+		if (values == nullptr)
+			throw std::logic_error("DeleteDoubleArray: value cannot be a nullptr");
+	delete[] values;
+	INTERCEPT_STD_EXCEPTION
+}
+
+void GetEnsembleForecastTimeSeriesGeometry(ENSEMBLE_FORECAST_TIME_SERIES_PTR timeSeries, TS_GEOMETRY_PTR geom)
+{
+	TRY_START
+		auto t = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(timeSeries);
+	FillTsGeometry(t, nullptr, geom);
+	INTERCEPT_STD_EXCEPTION
+}
+
 ENSEMBLE_FORECAST_TIME_SERIES_PTR GetDatasetEnsembleForecastTimeSeries(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataId)
 {
 	TRY_START

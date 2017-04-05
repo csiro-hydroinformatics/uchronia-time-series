@@ -347,8 +347,6 @@ namespace datatypes
 			using namespace boost::gregorian;
 			return T(date(year, month, day), hours(hour) + minutes(minute) + seconds(second));
 		}
-
-
 	}
 
 	namespace interop
