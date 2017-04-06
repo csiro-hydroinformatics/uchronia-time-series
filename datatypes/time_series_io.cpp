@@ -1670,12 +1670,12 @@ namespace datatypes
 				}
 			}
 
-			const string ConfigFileHelper::FileKey = NetCdfSourceInfo::FileKey;
-			const string ConfigFileHelper::VarKey = NetCdfSourceInfo::VarKey;
-			const string ConfigFileHelper::IdDataKey = TimeSeriesSourceInfo::IdDataKey;
-			const string ConfigFileHelper::IdentifierKey = NetCdfSourceInfo::IdentifierKey;
-			const string ConfigFileHelper::IndexKey = NetCdfSourceInfo::IndexKey;
-			const string ConfigFileHelper::TypeKey = NetCdfSourceInfo::TypeKey;
+			const string ConfigFileHelper::FileKey = FILE_KEY;
+			const string ConfigFileHelper::VarKey = VAR_KEY;
+			const string ConfigFileHelper::IdDataKey = ID_DATA_KEY;
+			const string ConfigFileHelper::IdentifierKey = IDENTIFIER_KEY;
+			const string ConfigFileHelper::IndexKey = INDEX_KEY;
+			const string ConfigFileHelper::TypeKey = TYPE_KEY;
 			const string ConfigFileHelper::TimeStepKey = "TimeStep";
 			const string ConfigFileHelper::StartKey = "Start";
 			const string ConfigFileHelper::LengthKey = "Length";
@@ -1688,13 +1688,13 @@ namespace datatypes
 
 			const string ConfigFileHelper::StorageKey = "Storage";
 
-			const string ConfigFileHelper::SingleSeriesCollectionTypeId = TimeSeriesSourceInfo::SingleSeriesCollectionTypeId;
-			const string ConfigFileHelper::SingleSeriesTypeId = TimeSeriesSourceInfo::SingleSeriesTypeId;
-			const string ConfigFileHelper::EnsembleSeriesTypeId = TimeSeriesSourceInfo::EnsembleSeriesTypeId;
-			const string ConfigFileHelper::TimeSeriesEnsemblesTypeId = TimeSeriesSourceInfo::TimeSeriesEnsemblesTypeId;
+			const string ConfigFileHelper::SingleSeriesCollectionTypeId = SINGLE_SERIES_COLLECTION_TYPE_ID;
+			const string ConfigFileHelper::SingleSeriesTypeId = SINGLE_SERIES_TYPE_ID;
+			const string ConfigFileHelper::EnsembleSeriesTypeId = ENSEMBLE_SERIES_TYPE_ID;
+			const string ConfigFileHelper::TimeSeriesEnsemblesTypeId = TIME_SERIES_ENSEMBLE_SERIES_TYPE_ID;
 
-			const string ConfigFileHelper::StorageTypeSingleNetcdfFile = NetCdfSourceInfo::StorageTypeSingleNetcdfFile;
-			const string ConfigFileHelper::StorageTypeMultipleNetcdfFiles = NetCdfSourceInfo::StorageTypeMultipleNetcdfFiles;
+			const string ConfigFileHelper::StorageTypeSingleNetcdfFile = STORAGE_TYPE_SINGLE_NETCDF_FILE;
+			const string ConfigFileHelper::StorageTypeMultipleNetcdfFiles = STORAGE_TYPE_MULTIPLE_NETCDF_FILES;
 
 			string ConfigFileHelper::FileName(const YAML::Node& storage)
 			{

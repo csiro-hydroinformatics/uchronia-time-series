@@ -45,6 +45,23 @@ using std::pair;
 #define SWIFT_TIME_UNIT_DAY string("day")
 #define SWIFT_TIME_UNIT_MONTH string("month")
 
+// macros for strings used as structuring identifiers or keys in std::map
+
+#define FILE_KEY       "File"
+#define ID_DATA_KEY       "Id"
+#define VAR_KEY        "Var"
+#define IDENTIFIER_KEY "Identifier"
+#define INDEX_KEY      "Index"
+#define TYPE_KEY       "Type"
+
+#define SINGLE_SERIES_COLLECTION_TYPE_ID       "single_collection"
+#define SINGLE_SERIES_TYPE_ID                  "single"
+#define ENSEMBLE_SERIES_TYPE_ID                "ensemble_ts"
+#define TIME_SERIES_ENSEMBLE_SERIES_TYPE_ID          "ts_ensemble_ts"
+#define STORAGE_TYPE_SINGLE_NETCDF_FILE        "single_nc_file"
+#define STORAGE_TYPE_MULTIPLE_NETCDF_FILES     "multiple_nc_files_filename_date_pattern"
+
+
 namespace datatypes
 {
 	namespace utils

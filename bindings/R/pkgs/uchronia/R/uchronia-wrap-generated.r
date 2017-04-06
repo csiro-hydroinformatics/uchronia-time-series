@@ -12,7 +12,7 @@
 #' @export
 GetLastStdExceptionMessage_R <- function() {
   result <- GetLastStdExceptionMessage_Rcpp()
-  return(mkSwiftObjRef(result, 'char*'))
+  return(cinterop::mkExternalObjRef(result, 'char*'))
 }
 
 #' RegisterExceptionCallback_R
@@ -22,7 +22,7 @@ GetLastStdExceptionMessage_R <- function() {
 #' @param callback R type equivalent for C++ type const void*
 #' @export
 RegisterExceptionCallback_R <- function(callback) {
-  callback <- getSwiftXptr(callback)
+  callback <- cinterop::getExternalXptr(callback)
   RegisterExceptionCallback_Rcpp(callback)
 }
 
@@ -33,7 +33,7 @@ RegisterExceptionCallback_R <- function(callback) {
 #' @param ptr R type equivalent for C++ type VOID_PTR_PROVIDER_PTR
 #' @export
 DisposeSharedPointer_R <- function(ptr) {
-  ptr <- getSwiftXptr(ptr)
+  ptr <- cinterop::getExternalXptr(ptr)
   DisposeSharedPointer_Rcpp(ptr)
 }
 
@@ -44,7 +44,7 @@ DisposeSharedPointer_R <- function(ptr) {
 #' @param value R type equivalent for C++ type double*
 #' @export
 DeleteDoubleArray_R <- function(value) {
-  value <- getSwiftXptr(value)
+  value <- cinterop::getExternalXptr(value)
   DeleteDoubleArray_Rcpp(value)
 }
 
@@ -55,7 +55,7 @@ DeleteDoubleArray_R <- function(value) {
 #' @param missingValueValue R type equivalent for C++ type double
 #' @export
 SetTimeSeriesMissingValueValue_R <- function(missingValueValue) {
-  missingValueValue <- getSwiftXptr(missingValueValue)
+  missingValueValue <- cinterop::getExternalXptr(missingValueValue)
   SetTimeSeriesMissingValueValue_Rcpp(missingValueValue)
 }
 
@@ -67,10 +67,10 @@ SetTimeSeriesMissingValueValue_R <- function(missingValueValue) {
 #' @param dataPath R type equivalent for C++ type const char*
 #' @export
 LoadEnsembleDataset_R <- function(filename, dataPath) {
-  filename <- getSwiftXptr(filename)
-  dataPath <- getSwiftXptr(dataPath)
+  filename <- cinterop::getExternalXptr(filename)
+  dataPath <- cinterop::getExternalXptr(dataPath)
   result <- LoadEnsembleDataset_Rcpp(filename, dataPath)
-  return(mkSwiftObjRef(result, 'ENSEMBLE_DATA_SET_PTR'))
+  return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_DATA_SET_PTR'))
 }
 
 #' CreateEnsembleDataset_R
@@ -80,9 +80,9 @@ LoadEnsembleDataset_R <- function(filename, dataPath) {
 #' @param type R type equivalent for C++ type const char*
 #' @export
 CreateEnsembleDataset_R <- function(type) {
-  type <- getSwiftXptr(type)
+  type <- cinterop::getExternalXptr(type)
   result <- CreateEnsembleDataset_Rcpp(type)
-  return(mkSwiftObjRef(result, 'ENSEMBLE_DATA_SET_PTR'))
+  return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_DATA_SET_PTR'))
 }
 
 
@@ -94,10 +94,10 @@ CreateEnsembleDataset_R <- function(type) {
 
 GetEnsembleDatasetDataIdentifiers_R <- function(dataLibrary)
 {
-    dataLibrary <- getSwiftXptr(dataLibrary)
+    dataLibrary <- cinterop::getExternalXptr(dataLibrary)
 
     result <- GetEnsembleDatasetDataIdentifiers_Rcpp(dataLibrary);
-    return(mkSwiftObjRef(result,'dummytype'))
+    return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
 
 
@@ -109,11 +109,11 @@ GetEnsembleDatasetDataIdentifiers_R <- function(dataLibrary)
 
 GetEnsembleDatasetDataSubIdentifiers_R <- function(dataLibrary, dataCollectionId)
 {
-    dataLibrary <- getSwiftXptr(dataLibrary)
-dataCollectionId <- getSwiftXptr(dataCollectionId)
+    dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+dataCollectionId <- cinterop::getExternalXptr(dataCollectionId)
 
     result <- GetEnsembleDatasetDataSubIdentifiers_Rcpp(dataLibrary, dataCollectionId);
-    return(mkSwiftObjRef(result,'dummytype'))
+    return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
 
 
@@ -125,10 +125,10 @@ dataCollectionId <- getSwiftXptr(dataCollectionId)
 
 GetEnsembleDatasetDataSummaries_R <- function(dataLibrary)
 {
-    dataLibrary <- getSwiftXptr(dataLibrary)
+    dataLibrary <- cinterop::getExternalXptr(dataLibrary)
 
     result <- GetEnsembleDatasetDataSummaries_Rcpp(dataLibrary);
-    return(mkSwiftObjRef(result,'dummytype'))
+    return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
 
 #' CreateEnsembleForecastTimeSeries_R
@@ -140,11 +140,11 @@ GetEnsembleDatasetDataSummaries_R <- function(dataLibrary)
 #' @param timeStepName R type equivalent for C++ type const char*
 #' @export
 CreateEnsembleForecastTimeSeries_R <- function(start, length, timeStepName) {
-  start <- getSwiftXptr(start)
-  length <- getSwiftXptr(length)
-  timeStepName <- getSwiftXptr(timeStepName)
+  start <- cinterop::getExternalXptr(start)
+  length <- cinterop::getExternalXptr(length)
+  timeStepName <- cinterop::getExternalXptr(timeStepName)
   result <- CreateEnsembleForecastTimeSeries_Rcpp(start, length, timeStepName)
-  return(mkSwiftObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
+  return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
 }
 
 #' GetDatasetSingleTimeSeries_R
@@ -155,10 +155,10 @@ CreateEnsembleForecastTimeSeries_R <- function(start, length, timeStepName) {
 #' @param dataId R type equivalent for C++ type const char*
 #' @export
 GetDatasetSingleTimeSeries_R <- function(dataLibrary, dataId) {
-  dataLibrary <- getSwiftXptr(dataLibrary)
-  dataId <- getSwiftXptr(dataId)
+  dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+  dataId <- cinterop::getExternalXptr(dataId)
   result <- GetDatasetSingleTimeSeries_Rcpp(dataLibrary, dataId)
-  return(mkSwiftObjRef(result, 'TIME_SERIES_PTR'))
+  return(cinterop::mkExternalObjRef(result, 'TIME_SERIES_PTR'))
 }
 
 #' GetDatasetEnsembleTimeSeries_R
@@ -169,10 +169,10 @@ GetDatasetSingleTimeSeries_R <- function(dataLibrary, dataId) {
 #' @param dataEnsembleId R type equivalent for C++ type const char*
 #' @export
 GetDatasetEnsembleTimeSeries_R <- function(dataLibrary, dataEnsembleId) {
-  dataLibrary <- getSwiftXptr(dataLibrary)
-  dataEnsembleId <- getSwiftXptr(dataEnsembleId)
+  dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+  dataEnsembleId <- cinterop::getExternalXptr(dataEnsembleId)
   result <- GetDatasetEnsembleTimeSeries_Rcpp(dataLibrary, dataEnsembleId)
-  return(mkSwiftObjRef(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR'))
+  return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR'))
 }
 
 #' GetEnsembleTimeSeriesData_R
@@ -182,9 +182,9 @@ GetDatasetEnsembleTimeSeries_R <- function(dataLibrary, dataEnsembleId) {
 #' @param ensSeries R type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
 #' @export
 GetEnsembleTimeSeriesData_R <- function(ensSeries) {
-  ensSeries <- getSwiftXptr(ensSeries)
+  ensSeries <- cinterop::getExternalXptr(ensSeries)
   result <- GetEnsembleTimeSeriesData_Rcpp(ensSeries)
-  return(mkSwiftObjRef(result, 'multi_regular_time_series_data*'))
+  return(cinterop::mkExternalObjRef(result, 'multi_regular_time_series_data*'))
 }
 
 #' GetDatasetEnsembleForecastTimeSeries_R
@@ -195,10 +195,10 @@ GetEnsembleTimeSeriesData_R <- function(ensSeries) {
 #' @param dataId R type equivalent for C++ type const char*
 #' @export
 GetDatasetEnsembleForecastTimeSeries_R <- function(dataLibrary, dataId) {
-  dataLibrary <- getSwiftXptr(dataLibrary)
-  dataId <- getSwiftXptr(dataId)
+  dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+  dataId <- cinterop::getExternalXptr(dataId)
   result <- GetDatasetEnsembleForecastTimeSeries_Rcpp(dataLibrary, dataId)
-  return(mkSwiftObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
+  return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
 }
 
 #' GetTimeSeriesGeometry_R
@@ -209,8 +209,8 @@ GetDatasetEnsembleForecastTimeSeries_R <- function(dataLibrary, dataId) {
 #' @param geom R type equivalent for C++ type TS_GEOMETRY_PTR
 #' @export
 GetTimeSeriesGeometry_R <- function(timeSeries, geom) {
-  timeSeries <- getSwiftXptr(timeSeries)
-  geom <- getSwiftXptr(geom)
+  timeSeries <- cinterop::getExternalXptr(timeSeries)
+  geom <- cinterop::getExternalXptr(geom)
   GetTimeSeriesGeometry_Rcpp(timeSeries, geom)
 }
 
@@ -222,8 +222,8 @@ GetTimeSeriesGeometry_R <- function(timeSeries, geom) {
 #' @param geom R type equivalent for C++ type TS_GEOMETRY_PTR
 #' @export
 GetEnsembleForecastTimeSeriesGeometry_R <- function(timeSeries, geom) {
-  timeSeries <- getSwiftXptr(timeSeries)
-  geom <- getSwiftXptr(geom)
+  timeSeries <- cinterop::getExternalXptr(timeSeries)
+  geom <- cinterop::getExternalXptr(geom)
   GetEnsembleForecastTimeSeriesGeometry_Rcpp(timeSeries, geom)
 }
 
@@ -236,9 +236,9 @@ GetEnsembleForecastTimeSeriesGeometry_R <- function(timeSeries, geom) {
 #' @param arrayLength R type equivalent for C++ type int
 #' @export
 GetTimeSeriesValues_R <- function(timeSeries, values, arrayLength) {
-  timeSeries <- getSwiftXptr(timeSeries)
-  values <- getSwiftXptr(values)
-  arrayLength <- getSwiftXptr(arrayLength)
+  timeSeries <- cinterop::getExternalXptr(timeSeries)
+  values <- cinterop::getExternalXptr(values)
+  arrayLength <- cinterop::getExternalXptr(arrayLength)
   GetTimeSeriesValues_Rcpp(timeSeries, values, arrayLength)
 }
 
@@ -249,7 +249,7 @@ GetTimeSeriesValues_R <- function(timeSeries, values, arrayLength) {
 #' @export
 GetNumTimeSeries_R <- function() {
   result <- GetNumTimeSeries_Rcpp()
-  return(mkSwiftObjRef(result, 'int'))
+  return(cinterop::mkExternalObjRef(result, 'int'))
 }
 
 #' GetProviderTsGeometry_R
@@ -261,9 +261,9 @@ GetNumTimeSeries_R <- function() {
 #' @param geom R type equivalent for C++ type TS_GEOMETRY_PTR
 #' @export
 GetProviderTsGeometry_R <- function(dataLibrary, variableIdentifier, geom) {
-  dataLibrary <- getSwiftXptr(dataLibrary)
-  variableIdentifier <- getSwiftXptr(variableIdentifier)
-  geom <- getSwiftXptr(geom)
+  dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+  variableIdentifier <- cinterop::getExternalXptr(variableIdentifier)
+  geom <- cinterop::getExternalXptr(geom)
   GetProviderTsGeometry_Rcpp(dataLibrary, variableIdentifier, geom)
 }
 
@@ -277,10 +277,10 @@ GetProviderTsGeometry_R <- function(dataLibrary, variableIdentifier, geom) {
 #' @param arrayLength R type equivalent for C++ type int
 #' @export
 GetProviderTimeSeriesValues_R <- function(dataLibrary, variableIdentifier, values, arrayLength) {
-  dataLibrary <- getSwiftXptr(dataLibrary)
-  variableIdentifier <- getSwiftXptr(variableIdentifier)
-  values <- getSwiftXptr(values)
-  arrayLength <- getSwiftXptr(arrayLength)
+  dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+  variableIdentifier <- cinterop::getExternalXptr(variableIdentifier)
+  values <- cinterop::getExternalXptr(values)
+  arrayLength <- cinterop::getExternalXptr(arrayLength)
   GetProviderTimeSeriesValues_Rcpp(dataLibrary, variableIdentifier, values, arrayLength)
 }
 
@@ -293,9 +293,9 @@ GetProviderTimeSeriesValues_R <- function(dataLibrary, variableIdentifier, value
 
 GetProviderTimeSeriesIdentifiers_R <- function(dataLibrary)
 {
-    dataLibrary <- getSwiftXptr(dataLibrary)
+    dataLibrary <- cinterop::getExternalXptr(dataLibrary)
 
     result <- GetProviderTimeSeriesIdentifiers_Rcpp(dataLibrary);
-    return(mkSwiftObjRef(result,'dummytype'))
+    return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
 

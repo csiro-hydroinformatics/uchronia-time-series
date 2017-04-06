@@ -222,31 +222,20 @@ namespace datatypes
 			}
 		}
 
-		const string TimeSeriesSourceInfo::SingleSeriesCollectionTypeId = "single_collection";
-		const string TimeSeriesSourceInfo::SingleSeriesTypeId = "single";
-		const string TimeSeriesSourceInfo::EnsembleSeriesTypeId = "ensemble_ts";
-		const string TimeSeriesSourceInfo::TimeSeriesEnsemblesTypeId = "ts_ensemble_ts";
-		const string TimeSeriesSourceInfo::IdDataKey = "Id";
 
-		const string NetCdfSourceInfo::FileKey = "File";
-		const string NetCdfSourceInfo::VarKey = "Var";
-		const string NetCdfSourceInfo::IdentifierKey = "Identifier";
-		const string NetCdfSourceInfo::IndexKey = "Index";
-		const string NetCdfSourceInfo::TypeKey = "Type";
-		//const string NetCdfSourceInfo::TimeStepKey = "TimeStep";
-		//const string NetCdfSourceInfo::StartKey = "Start";
-		//const string NetCdfSourceInfo::LengthKey = "Length";
+		const string TimeSeriesSourceInfo::SingleSeriesCollectionTypeId = SINGLE_SERIES_COLLECTION_TYPE_ID;
+		const string TimeSeriesSourceInfo::SingleSeriesTypeId = SINGLE_SERIES_TYPE_ID;
+		const string TimeSeriesSourceInfo::EnsembleSeriesTypeId = ENSEMBLE_SERIES_TYPE_ID;
+		const string TimeSeriesSourceInfo::TimeSeriesEnsemblesTypeId = TIME_SERIES_ENSEMBLE_SERIES_TYPE_ID;
+		const string NetCdfSourceInfo::StorageTypeSingleNetcdfFile = STORAGE_TYPE_SINGLE_NETCDF_FILE;
+		const string NetCdfSourceInfo::StorageTypeMultipleNetcdfFiles = STORAGE_TYPE_MULTIPLE_NETCDF_FILES;
 
-		//const string NetCdfSourceInfo::EnsembleSizeKey = "EnsembleSize";
-		//const string NetCdfSourceInfo::EnsembleLengthKey = "EnsembleLength";
-		//const string NetCdfSourceInfo::EnsembleTimeStepKey = "EnsembleTimeStep";
-		//const string NetCdfSourceInfo::FilePatternKey = "FilePattern";
-		//const string NetCdfSourceInfo::MappingKey = "Mapping";
-
-		//const string NetCdfSourceInfo::StorageKey = "Storage";
-
-		const string NetCdfSourceInfo::StorageTypeSingleNetcdfFile = "single_nc_file";
-		const string NetCdfSourceInfo::StorageTypeMultipleNetcdfFiles = "multiple_nc_files_filename_date_pattern";
+		const string TimeSeriesSourceInfo::IdDataKey = ID_DATA_KEY;
+		const string NetCdfSourceInfo::FileKey       = FILE_KEY      ;
+		const string NetCdfSourceInfo::VarKey        = VAR_KEY       ;
+		const string NetCdfSourceInfo::IdentifierKey = IDENTIFIER_KEY;
+		const string NetCdfSourceInfo::IndexKey      = INDEX_KEY     ;
+		const string NetCdfSourceInfo::TypeKey       = TYPE_KEY      ;
 
 
 		std::map<string, string> NetCdfSourceInfo::GetSerializableConfiguration() const
