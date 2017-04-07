@@ -18,43 +18,20 @@
 
 #include "interop_struct.h"
 
-// see http://msdn.microsoft.com/en-us/library/as6wyhwt.aspx, best practice
-#define DATATYPES_API  DATATYPES_DLL_LIB 
-
-
 #if defined(DATATYPES_USE_CPP_POINTERS)
 
-#include "extern_c_api_transparent_pointers.h"
-#include "moirai/reference_handle.h"
-#include "datatypes/time_series_store.hpp"
-
-
-#define TIME_SERIES_PTR                         TIME_SERIES_TRANSPARENT_PTR
-#define ENSEMBLE_DATA_SET_PTR                   ENSEMBLE_DATA_SET_TRANSPARENT_PTR 
-#define ENSEMBLE_FORECAST_TIME_SERIES_PTR       ENSEMBLE_FORECAST_TIME_SERIES_TRANSPARENT_PTR             
-#define ENSEMBLE_TIME_SERIES_PTR                ENSEMBLE_TIME_SERIES_TRANSPARENT_PTR    
-#define ENSEMBLE_PTR_TIME_SERIES_PTR            ENSEMBLE_PTR_TIME_SERIES_TRANSPARENT_PTR    
-#define TIME_SERIES_PROVIDER_PTR                TIME_SERIES_PROVIDER_TRANSPARENT_PTR    
+#include "datatypes/extern_c_api_as_transparent.h"
 
 #elif defined(DATATYPES_USE_OPAQUE_POINTERS)
 
-#define DATATYPES_TIME_SERIES_DOUBLE_PTR void*
-#define DATATYPES_ENSEMBLE_TIME_SERIES_DOUBLE_PTR void*
-#define TS_GEOMETRY_PTR void*
-#define DATE_TIME_INFO_PTR void*
-#define ENSEMBLE_DATA_SET_PTR void*
-#define ENSEMBLE_FORECAST_TIME_SERIES_PTR  void*
-#define TIME_SERIES_PTR  void*
-#define ENSEMBLE_TIME_SERIES_PTR  void*
-#define ENSEMBLE_PTR_TIME_SERIES_PTR  void*
-#define TIME_SERIES_PROVIDER_PTR void*
-
-#define VOID_PTR_PROVIDER_PTR void*
-#define VOID_PTR_PROVIDER_PTR_PTR void*
+#include "datatypes/extern_c_api_as_opaque.h"
 
 #else
 #error macro DATATYPES_USE_OPAQUE_POINTERS or DATATYPES_USE_CPP_POINTERS must be defined
 #endif
+
+// see http://msdn.microsoft.com/en-us/library/as6wyhwt.aspx, best practice
+#define DATATYPES_API  DATATYPES_DLL_LIB 
 
 #ifdef __cplusplus
 extern "C" {

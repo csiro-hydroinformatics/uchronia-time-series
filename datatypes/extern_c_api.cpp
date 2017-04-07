@@ -1,18 +1,15 @@
-#include "moirai/error_reporting.h"
-#include "cinterop/c_cpp_interop.hpp"
 #include "datatypes/extern_c_api.h"
+#include "moirai/error_reporting.h"
+
+#include "cinterop/c_cpp_interop.hpp"
 #include "datatypes/internals_c_api.hpp"
 #include "datatypes/shared_pointer_conversions.hpp"
 #include "datatypes/time_series_io.hpp"
 #include "datatypes/interop_conversions.h"
 #include "datatypes/interop_conversions.hpp"
 
-string error_log::last_exception_message = string("");
-std::recursive_mutex error_log::mutex;
-error_log::exception_callback error_log::callback = nullptr;
-
 #define TRY_START try {
-#define INTERCEPT_STD_EXCEPTION } catch (std::exception& e) { error_log::handle_std_exception(e); }
+#define INTERCEPT_STD_EXCEPTION } catch (std::exception& e) { moirai::error_handling::error_log::handle_std_exception(e); }
 
 /***********************
 * FUNCTIONS NOT EXPORTED
@@ -51,14 +48,9 @@ void CopyTimeSeriesValues(DATATYPES_TIME_SERIES_DOUBLE_PTR timeSeries, double * 
 
 void RegisterExceptionCallback(const void* callback)
 {
-	if (callback == nullptr)
-		error_log::callback = nullptr;
-	else
-	{
-		error_log::callback = (error_log::exception_callback) callback;
-	}
+	using moirai::error_handling::error_log;
+	error_log::register_exception_callback(callback);
 }
-
 
 void DisposeSharedPointer(VOID_PTR_PROVIDER_PTR ptr)
 {
@@ -106,7 +98,7 @@ void DeleteAnsiString(const char* value)
 char* GetLastStdExceptionMessage()
 {
 	TRY_START
-		char* res = STRDUP(error_log::last_exception_message.c_str());
+		char* res = STRDUP(moirai::error_handling::error_log::get_last_exception_message().c_str());
 	return res;
 	INTERCEPT_STD_EXCEPTION
 }

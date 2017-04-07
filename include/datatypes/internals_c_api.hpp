@@ -3,15 +3,6 @@
 #include "moirai/reference_handle.hpp"
 #include "datatypes/extern_c_api_transparent_pointers.h"
 
-using namespace moirai;
-#ifndef FORCE_OPAQUE_PTR_TYPECAST
-#define CHECKED_RETRIEVE_PTR(T, x)    (as_raw_pointer<T>(x))
-#else
-#define CHECKED_RETRIEVE_PTR(T, x)    (as_raw_pointer<T>((opaque_ptr_provider*)x))
-#endif
-
-#if defined(DATATYPES_USE_CPP_POINTERS)
-
 #define TIME_SERIES_DYNCAST(x) CHECKED_RETRIEVE_PTR(DATATYPES_TIME_SERIES_DOUBLE, x)
 #define TIME_SERIES_PROVIDER_DYNCAST CHECKED_RETRIEVE_PTR(TimeSeriesProvider<double>, x)
 #define ENSEMBLE_DATA_SET_DYNCAST(x) CHECKED_RETRIEVE_PTR(TimeSeriesLibrary, x)
@@ -21,7 +12,6 @@ using namespace moirai;
 #define DATE_TIME_INFO_DYNCAST(x) (date_time_to_second*)x
 #define TS_GEOMETRY_DYNCAST(x) x
 
-#define RETRIEVE_POINTERS_FROM_SHPTR(T, sharedPtrs, n) moirai::as_raw_pointers<T>(sharedPtrs, n)
 #define FREE_ARRAY(x) delete[] x
 
 #define WRAP_DATE_TIME_INFO_PTR(x)  new reference_handle<date_time_to_second>(x)
@@ -30,18 +20,3 @@ using namespace moirai;
 #define WRAP_TIME_SERIES_PTR(x)   new reference_handle<DATATYPES_TIME_SERIES_DOUBLE>(x)
 #define WRAP_ENSEMBLE_FORECAST_TIME_SERIES_PTR(x)  new reference_handle<EnsembleForecastTimeSeries<DATATYPES_TIME_SERIES_DOUBLE>>(x)
 #define WRAP_ENSEMBLE_TIME_SERIES_PTR(x)  new reference_handle<DATATYPES_ENSEMBLE_PTR_TIME_SERIES_DOUBLE>(x)
-
-#else
-
-// if not defined DATATYPES_USE_CPP_POINTERS
-// there used to be in here declarations such as the following.
-// As of 2016-01 this is not maintained anymore - the 
-// reference counting via reference_handle is now a proven approach
-// The following is deprecated and only kept as a reminder for fallback options, should an issue arise.
-// #define MODEL_SIMULATION_DYNCAST(x) dynamic_cast<ModelRunner*>(x)
-// #define HYPERCUBE_DYNCAST(x) dynamic_cast<HyperCubeParameterizer*>(x)
-
-// #define MODEL_SIMULATION_DYNCAST(x) ((ModelRunner*)(x))
-// #define HYPERCUBE_DYNCAST(x) ((HyperCubeParameterizer*)(x))
-
-#endif

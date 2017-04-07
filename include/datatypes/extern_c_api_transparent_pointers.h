@@ -1,6 +1,6 @@
 // This file deliberately does not have a #pragma once directive
 
-#include "setup_exports.h"
+#include "datatypes/setup_exports.h"
 #include "datatypes/interop_struct.h"
 #include "datatypes/time_series_store.hpp"
 #include "moirai/reference_handle.hpp"
@@ -13,8 +13,6 @@ using namespace datatypes::timeseries;
 #define DATATYPES_ENSEMBLE_PTR_TIME_SERIES_DOUBLE MultiTimeSeries<DATATYPES_TIME_SERIES_DOUBLE_PTR>
 #define ENSEMBLE_FORECAST_TIME_SERIES_DOUBLE EnsembleForecastTimeSeries<DATATYPES_TIME_SERIES_DOUBLE>
 
-#define VOID_PTR_PROVIDER_PTR moirai::opaque_ptr_provider*
-#define VOID_PTR_PROVIDER_PTR_PTR VOID_PTR_PROVIDER_PTR*
 #define TS_GEOMETRY_PTR  regular_time_series_geometry*
 #define DATE_TIME_INFO_PTR  date_time_to_second*
 
