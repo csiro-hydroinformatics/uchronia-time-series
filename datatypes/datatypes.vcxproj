@@ -43,7 +43,7 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>$(LocalLibraryPaths);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>netcdf.lib;yaml-cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>netcdf.lib;yaml-cpp.lib;moirai.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!--AdditionalDependencies>vld.lib;%(AdditionalDependencies)</AdditionalDependencies-->
     </Link>
   </ItemDefinitionGroup>
@@ -63,8 +63,6 @@
     <ClInclude Include="../include/datatypes/extern_c_api_transparent_pointers.h" />
     <ClInclude Include="../include/datatypes/extern_c_api.h" />
     <ClInclude Include="../include/datatypes/setup_exports.h" />
-    <ClInclude Include="internals_c_api.hpp" />
-    <ClInclude Include="shared_pointer_conversions.hpp" />
     <!--<ClInclude Include="c_cpp_interop.hpp" />-->
     <ClInclude Include="../include/datatypes/exception_utilities.h" />
   </ItemGroup>
@@ -73,7 +71,6 @@
     <ClCompile Include="extern_c_api.cpp" />
     <ClCompile Include="interop_conversions.cpp" />
     <ClCompile Include="io_helper.cpp" />
-    <ClCompile Include="reference_handle.cpp" />
     <ClCompile Include="tests/datatypes_test_helpers.cpp" />
     <ClCompile Include="time_series.cpp" />
     <ClCompile Include="time_series_io.cpp" />

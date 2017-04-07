@@ -1,6 +1,12 @@
 #pragma once
 
-//#define USING_SOMETHING
+#define USING_MOIRAI
+#include "moirai/setup_modifiers.h"
+
+// Defining the macro following guidelines in e.g. https://msdn.microsoft.com/en-us/library/8fskxacy.aspx
+
+// The declaration modifiers can be overriden by the user by defining DATATYPES_DLL_LIB_MODIFIERS
+#ifndef DATATYPES_DLL_LIB_MODIFIERS
 
 #ifdef _WIN32
 #ifdef USING_DATATYPES
@@ -29,3 +35,6 @@
 #include<vld.h>
 #endif
 
+#else  //  DATATYPES_DLL_LIB_MODIFIERS is defined
+#define DATATYPES_DLL_LIB DATATYPES_DLL_LIB_MODIFIERS 
+#endif 

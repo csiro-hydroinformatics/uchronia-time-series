@@ -54,16 +54,13 @@
     <ClInclude Include="../include/datatypes/setup_exports.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="internals_c_api.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared_pointer_conversions.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="../include/datatypes/exception_utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="interop_conversions.h">
+    <ClInclude Include="../include/datatypes/interop_conversions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../include/datatypes/interop_conversions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
