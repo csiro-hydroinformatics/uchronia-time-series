@@ -6,13 +6,14 @@ PROJECT(${this_target})
 
 find_package(Boost 1.48.0 COMPONENTS system date_time regex filesystem REQUIRED)
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../../../cmake_modules")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../cmake_modules")
 find_package (NetCDF REQUIRED)
 
 ## section: include directory
 INCLUDE_DIRECTORIES(
     ${Boost_INCLUDE_DIRS}
     ${NETCDF_INCLUDE_DIRS}
+	../include
 )
 
 
@@ -37,15 +38,14 @@ SET (${this_target}_SOURCE_FILES
 ## section: header files
 # Add your header files here(one file per line), please SORT in alphabetical order for future maintenance!
 SET(${this_target}_HEADER_FILES
-    exception_utilities.h
-	common.h
-	io_helper.h
-	time_series.hpp
-	time_series_store.hpp
-	time_series_io.hpp
-	time_step.h
-	time_step_implementation.h
-	exception_utilities.h
+    ../include/datatypes/exception_utilities.h
+	../include/datatypes/common.h
+	../include/datatypes/io_helper.h
+	../include/datatypes/time_series.hpp
+	../include/datatypes/time_series_store.hpp
+	../include/datatypes/time_series_io.hpp
+	../include/datatypes/time_step.h
+	../include/datatypes/time_step_implementation.h
 	tests/datatypes_test_helpers.h
 	tests/datatypes_test_helpers.hpp
     )
