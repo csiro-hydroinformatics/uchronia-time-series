@@ -6,6 +6,8 @@
 #include <map> 
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <datatypes/setup_exports.h>
 
@@ -17,7 +19,7 @@
 //#define DATATYPES_USE_VLD
 
 #ifdef DATATYPES_USE_VLD
-  #include<vld.h>
+  #include <vld.h>
 #endif
 
 #ifdef _WIN32
@@ -32,6 +34,9 @@ using std::string;
 using std::vector;
 using std::map;
 using std::pair;
+
+using namespace boost::posix_time;
+using namespace boost::gregorian;
 
 #define DATATYPES_DOUBLE_PRECISION_ID "double"
 #define DATATYPES_SINGLE_PRECISION_ID "single"
@@ -358,7 +363,7 @@ namespace datatypes
 			static bool funEquals(const string& toTest, const string& toMatch);
 		};
 
-		template<typename T=ptime>
+		template<typename T=boost::posix_time::ptime>
 		T CreateTime(int year, int month, int day, int hour = 0, int minute = 0, int second = 0)
 		{
 			using namespace boost::gregorian;

@@ -26,29 +26,41 @@ LINK_DIRECTORIES(
 # Add your source files here (one file per line), please SORT in alphabetical order for future maintenance
 SET (${this_target}_SOURCE_FILES
 	common.cpp
+	extern_c_api.cpp
+	interop_conversions.cpp
 	io_helper.cpp
+	tests/datatypes_test_helpers.cpp
 	time_series.cpp
-	time_series_store.cpp
 	time_series_io.cpp
+	time_series_store.cpp
 	time_step.cpp
 	time_step_implementation.cpp
-	tests/datatypes_test_helpers.cpp
+
     )
 
 ## section: header files
 # Add your header files here(one file per line), please SORT in alphabetical order for future maintenance!
 SET(${this_target}_HEADER_FILES
-    ../include/datatypes/exception_utilities.h
 	../include/datatypes/common.h
+	../include/datatypes/datatypes_test_helpers.h
+	../include/datatypes/datatypes_test_helpers.hpp
+	../include/datatypes/exception_utilities.h
+	../include/datatypes/extern_c_api.h
+	../include/datatypes/extern_c_api_transparent_pointers.h
+	../include/datatypes/internals_c_api.hpp
+	../include/datatypes/interop_conversions.h
+	../include/datatypes/interop_conversions.hpp
+	../include/datatypes/interop_struct.h
 	../include/datatypes/io_helper.h
+	../include/datatypes/setup_exports.h
+	../include/datatypes/shared_pointer_conversions.hpp
 	../include/datatypes/time_series.hpp
-	../include/datatypes/time_series_store.hpp
 	../include/datatypes/time_series_io.hpp
+	../include/datatypes/time_series_store.hpp
+	../include/datatypes/time_series_strategies.hpp
 	../include/datatypes/time_step.h
 	../include/datatypes/time_step_implementation.h
-	tests/datatypes_test_helpers.h
-	tests/datatypes_test_helpers.hpp
-    )
+)
 
 IF (ENABLE_CODECOVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
@@ -84,7 +96,17 @@ TARGET_LINK_LIBRARIES( ${this_target}
 
 # Files to be installed - used by packaging stuff below
 INSTALL(FILES ${${this_target}_HEADER_FILES} DESTINATION include/datatypes)
-INSTALL(FILES tests/datatypes_test_helpers.hpp DESTINATION include/datatypes/tests)
+
+########### Add uninstall target ###############
+# uninstall target
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+########### End uninstall target ###############
 
 if(WIN32)
   INSTALL(TARGETS ${this_target}
