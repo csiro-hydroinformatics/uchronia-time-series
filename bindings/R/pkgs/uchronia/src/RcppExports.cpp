@@ -32,21 +32,21 @@ BEGIN_RCPP
 END_RCPP
 }
 // RegisterExceptionCallback_Rcpp
-void RegisterExceptionCallback_Rcpp(XPtr<OpaquePointer> callback);
+void RegisterExceptionCallback_Rcpp(XPtr<opaque_pointer_handle> callback);
 RcppExport SEXP uchronia_RegisterExceptionCallback_Rcpp(SEXP callbackSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type callback(callbackSEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type callback(callbackSEXP);
     RegisterExceptionCallback_Rcpp(callback);
     return R_NilValue;
 END_RCPP
 }
 // DisposeSharedPointer_Rcpp
-void DisposeSharedPointer_Rcpp(XPtr<OpaquePointer> ptr);
+void DisposeSharedPointer_Rcpp(XPtr<opaque_pointer_handle> ptr);
 RcppExport SEXP uchronia_DisposeSharedPointer_Rcpp(SEXP ptrSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type ptr(ptrSEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type ptr(ptrSEXP);
     DisposeSharedPointer_Rcpp(ptr);
     return R_NilValue;
 END_RCPP
@@ -72,7 +72,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // LoadEnsembleDataset_Rcpp
-XPtr<OpaquePointer> LoadEnsembleDataset_Rcpp(CharacterVector filename, CharacterVector dataPath);
+XPtr<opaque_pointer_handle> LoadEnsembleDataset_Rcpp(CharacterVector filename, CharacterVector dataPath);
 RcppExport SEXP uchronia_LoadEnsembleDataset_Rcpp(SEXP filenameSEXP, SEXP dataPathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -84,7 +84,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // CreateEnsembleDataset_Rcpp
-XPtr<OpaquePointer> CreateEnsembleDataset_Rcpp(CharacterVector type);
+XPtr<opaque_pointer_handle> CreateEnsembleDataset_Rcpp(CharacterVector type);
 RcppExport SEXP uchronia_CreateEnsembleDataset_Rcpp(SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -95,41 +95,41 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetEnsembleDatasetDataIdentifiers_Rcpp
-CharacterVector GetEnsembleDatasetDataIdentifiers_Rcpp(XPtr<OpaquePointer> dataLibrary);
+CharacterVector GetEnsembleDatasetDataIdentifiers_Rcpp(XPtr<opaque_pointer_handle> dataLibrary);
 RcppExport SEXP uchronia_GetEnsembleDatasetDataIdentifiers_Rcpp(SEXP dataLibrarySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     rcpp_result_gen = Rcpp::wrap(GetEnsembleDatasetDataIdentifiers_Rcpp(dataLibrary));
     return rcpp_result_gen;
 END_RCPP
 }
 // GetEnsembleDatasetDataSubIdentifiers_Rcpp
-CharacterVector GetEnsembleDatasetDataSubIdentifiers_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector dataCollectionId);
+CharacterVector GetEnsembleDatasetDataSubIdentifiers_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataCollectionId);
 RcppExport SEXP uchronia_GetEnsembleDatasetDataSubIdentifiers_Rcpp(SEXP dataLibrarySEXP, SEXP dataCollectionIdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type dataCollectionId(dataCollectionIdSEXP);
     rcpp_result_gen = Rcpp::wrap(GetEnsembleDatasetDataSubIdentifiers_Rcpp(dataLibrary, dataCollectionId));
     return rcpp_result_gen;
 END_RCPP
 }
 // GetEnsembleDatasetDataSummaries_Rcpp
-CharacterVector GetEnsembleDatasetDataSummaries_Rcpp(XPtr<OpaquePointer> dataLibrary);
+CharacterVector GetEnsembleDatasetDataSummaries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary);
 RcppExport SEXP uchronia_GetEnsembleDatasetDataSummaries_Rcpp(SEXP dataLibrarySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     rcpp_result_gen = Rcpp::wrap(GetEnsembleDatasetDataSummaries_Rcpp(dataLibrary));
     return rcpp_result_gen;
 END_RCPP
 }
 // CreateEnsembleForecastTimeSeries_Rcpp
-XPtr<OpaquePointer> CreateEnsembleForecastTimeSeries_Rcpp(Rcpp::Datetime start, IntegerVector length, CharacterVector timeStepName);
+XPtr<opaque_pointer_handle> CreateEnsembleForecastTimeSeries_Rcpp(Rcpp::Datetime start, IntegerVector length, CharacterVector timeStepName);
 RcppExport SEXP uchronia_CreateEnsembleForecastTimeSeries_Rcpp(SEXP startSEXP, SEXP lengthSEXP, SEXP timeStepNameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -142,80 +142,80 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetDatasetSingleTimeSeries_Rcpp
-XPtr<OpaquePointer> GetDatasetSingleTimeSeries_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector dataId);
+XPtr<opaque_pointer_handle> GetDatasetSingleTimeSeries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataId);
 RcppExport SEXP uchronia_GetDatasetSingleTimeSeries_Rcpp(SEXP dataLibrarySEXP, SEXP dataIdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type dataId(dataIdSEXP);
     rcpp_result_gen = Rcpp::wrap(GetDatasetSingleTimeSeries_Rcpp(dataLibrary, dataId));
     return rcpp_result_gen;
 END_RCPP
 }
 // GetDatasetEnsembleTimeSeries_Rcpp
-XPtr<OpaquePointer> GetDatasetEnsembleTimeSeries_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector dataEnsembleId);
+XPtr<opaque_pointer_handle> GetDatasetEnsembleTimeSeries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataEnsembleId);
 RcppExport SEXP uchronia_GetDatasetEnsembleTimeSeries_Rcpp(SEXP dataLibrarySEXP, SEXP dataEnsembleIdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type dataEnsembleId(dataEnsembleIdSEXP);
     rcpp_result_gen = Rcpp::wrap(GetDatasetEnsembleTimeSeries_Rcpp(dataLibrary, dataEnsembleId));
     return rcpp_result_gen;
 END_RCPP
 }
 // GetEnsembleTimeSeriesData_Rcpp
-XPtr<OpaquePointer> GetEnsembleTimeSeriesData_Rcpp(XPtr<OpaquePointer> ensSeries);
+XPtr<opaque_pointer_handle> GetEnsembleTimeSeriesData_Rcpp(XPtr<opaque_pointer_handle> ensSeries);
 RcppExport SEXP uchronia_GetEnsembleTimeSeriesData_Rcpp(SEXP ensSeriesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type ensSeries(ensSeriesSEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type ensSeries(ensSeriesSEXP);
     rcpp_result_gen = Rcpp::wrap(GetEnsembleTimeSeriesData_Rcpp(ensSeries));
     return rcpp_result_gen;
 END_RCPP
 }
 // GetDatasetEnsembleForecastTimeSeries_Rcpp
-XPtr<OpaquePointer> GetDatasetEnsembleForecastTimeSeries_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector dataId);
+XPtr<opaque_pointer_handle> GetDatasetEnsembleForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataId);
 RcppExport SEXP uchronia_GetDatasetEnsembleForecastTimeSeries_Rcpp(SEXP dataLibrarySEXP, SEXP dataIdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type dataId(dataIdSEXP);
     rcpp_result_gen = Rcpp::wrap(GetDatasetEnsembleForecastTimeSeries_Rcpp(dataLibrary, dataId));
     return rcpp_result_gen;
 END_RCPP
 }
 // GetTimeSeriesGeometry_Rcpp
-void GetTimeSeriesGeometry_Rcpp(XPtr<OpaquePointer> timeSeries, const Rcpp::S4& geom);
+void GetTimeSeriesGeometry_Rcpp(XPtr<opaque_pointer_handle> timeSeries, const Rcpp::S4& geom);
 RcppExport SEXP uchronia_GetTimeSeriesGeometry_Rcpp(SEXP timeSeriesSEXP, SEXP geomSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type timeSeries(timeSeriesSEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type timeSeries(timeSeriesSEXP);
     Rcpp::traits::input_parameter< const Rcpp::S4& >::type geom(geomSEXP);
     GetTimeSeriesGeometry_Rcpp(timeSeries, geom);
     return R_NilValue;
 END_RCPP
 }
 // GetEnsembleForecastTimeSeriesGeometry_Rcpp
-void GetEnsembleForecastTimeSeriesGeometry_Rcpp(XPtr<OpaquePointer> timeSeries, const Rcpp::S4& geom);
+void GetEnsembleForecastTimeSeriesGeometry_Rcpp(XPtr<opaque_pointer_handle> timeSeries, const Rcpp::S4& geom);
 RcppExport SEXP uchronia_GetEnsembleForecastTimeSeriesGeometry_Rcpp(SEXP timeSeriesSEXP, SEXP geomSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type timeSeries(timeSeriesSEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type timeSeries(timeSeriesSEXP);
     Rcpp::traits::input_parameter< const Rcpp::S4& >::type geom(geomSEXP);
     GetEnsembleForecastTimeSeriesGeometry_Rcpp(timeSeries, geom);
     return R_NilValue;
 END_RCPP
 }
 // GetTimeSeriesValues_Rcpp
-void GetTimeSeriesValues_Rcpp(XPtr<OpaquePointer> timeSeries, NumericVector values, IntegerVector arrayLength);
+void GetTimeSeriesValues_Rcpp(XPtr<opaque_pointer_handle> timeSeries, NumericVector values, IntegerVector arrayLength);
 RcppExport SEXP uchronia_GetTimeSeriesValues_Rcpp(SEXP timeSeriesSEXP, SEXP valuesSEXP, SEXP arrayLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type timeSeries(timeSeriesSEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type timeSeries(timeSeriesSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type values(valuesSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type arrayLength(arrayLengthSEXP);
     GetTimeSeriesValues_Rcpp(timeSeries, values, arrayLength);
@@ -233,11 +233,11 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetProviderTsGeometry_Rcpp
-void GetProviderTsGeometry_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector variableIdentifier, const Rcpp::S4& geom);
+void GetProviderTsGeometry_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector variableIdentifier, const Rcpp::S4& geom);
 RcppExport SEXP uchronia_GetProviderTsGeometry_Rcpp(SEXP dataLibrarySEXP, SEXP variableIdentifierSEXP, SEXP geomSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type variableIdentifier(variableIdentifierSEXP);
     Rcpp::traits::input_parameter< const Rcpp::S4& >::type geom(geomSEXP);
     GetProviderTsGeometry_Rcpp(dataLibrary, variableIdentifier, geom);
@@ -245,11 +245,11 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetProviderTimeSeriesValues_Rcpp
-void GetProviderTimeSeriesValues_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector variableIdentifier, NumericVector values, IntegerVector arrayLength);
+void GetProviderTimeSeriesValues_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector variableIdentifier, NumericVector values, IntegerVector arrayLength);
 RcppExport SEXP uchronia_GetProviderTimeSeriesValues_Rcpp(SEXP dataLibrarySEXP, SEXP variableIdentifierSEXP, SEXP valuesSEXP, SEXP arrayLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type variableIdentifier(variableIdentifierSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type values(valuesSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type arrayLength(arrayLengthSEXP);
@@ -258,12 +258,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetProviderTimeSeriesIdentifiers_Rcpp
-CharacterVector GetProviderTimeSeriesIdentifiers_Rcpp(XPtr<OpaquePointer> dataLibrary);
+CharacterVector GetProviderTimeSeriesIdentifiers_Rcpp(XPtr<opaque_pointer_handle> dataLibrary);
 RcppExport SEXP uchronia_GetProviderTimeSeriesIdentifiers_Rcpp(SEXP dataLibrarySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<OpaquePointer> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     rcpp_result_gen = Rcpp::wrap(GetProviderTimeSeriesIdentifiers_Rcpp(dataLibrary));
     return rcpp_result_gen;
 END_RCPP

@@ -12,6 +12,7 @@
 
 using namespace Rcpp;
 using namespace cinterop::utils;
+using moirai::opaque_pointer_handle;
 
 //////////// End of preamble ////////////
 // [[Rcpp::export]]
@@ -24,15 +25,15 @@ CharacterVector GetLastStdExceptionMessage_Rcpp()
 }
 
 // [[Rcpp::export]]
-void RegisterExceptionCallback_Rcpp(XPtr<OpaquePointer> callback)
+void RegisterExceptionCallback_Rcpp(XPtr<opaque_pointer_handle> callback)
 {
-    RegisterExceptionCallback(callback->Get());
+    RegisterExceptionCallback(callback->get());
 }
 
 // [[Rcpp::export]]
-void DisposeSharedPointer_Rcpp(XPtr<OpaquePointer> ptr)
+void DisposeSharedPointer_Rcpp(XPtr<opaque_pointer_handle> ptr)
 {
-    DisposeSharedPointer(ptr->Get());
+    DisposeSharedPointer(ptr->get());
 }
 
 // [[Rcpp::export]]
@@ -48,110 +49,110 @@ void SetTimeSeriesMissingValueValue_Rcpp(NumericVector missingValueValue)
 }
 
 // [[Rcpp::export]]
-XPtr<OpaquePointer> LoadEnsembleDataset_Rcpp(CharacterVector filename, CharacterVector dataPath)
+XPtr<opaque_pointer_handle> LoadEnsembleDataset_Rcpp(CharacterVector filename, CharacterVector dataPath)
 {
     auto result = LoadEnsembleDataset(filename[0], dataPath[0]);
-    auto x = XPtr<OpaquePointer>(new OpaquePointer(result));
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }
 
 // [[Rcpp::export]]
-XPtr<OpaquePointer> CreateEnsembleDataset_Rcpp(CharacterVector type)
+XPtr<opaque_pointer_handle> CreateEnsembleDataset_Rcpp(CharacterVector type)
 {
     auto result = CreateEnsembleDataset(type[0]);
-    auto x = XPtr<OpaquePointer>(new OpaquePointer(result));
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }
 
 
 // [[Rcpp::export]]
-CharacterVector GetEnsembleDatasetDataIdentifiers_Rcpp(XPtr<OpaquePointer> dataLibrary)
+CharacterVector GetEnsembleDatasetDataIdentifiers_Rcpp(XPtr<opaque_pointer_handle> dataLibrary)
 {
 	int size; 
-        char** values = GetEnsembleDatasetDataIdentifiers(dataLibrary->Get(),  &size);
+        char** values = GetEnsembleDatasetDataIdentifiers(dataLibrary->get(),  &size);
         return to_custom_character_vector<CharacterVector>(values, size, true);
 }
 
 
 // [[Rcpp::export]]
-CharacterVector GetEnsembleDatasetDataSubIdentifiers_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector dataCollectionId)
+CharacterVector GetEnsembleDatasetDataSubIdentifiers_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataCollectionId)
 {
 	int size; 
-        char** values = GetEnsembleDatasetDataSubIdentifiers(dataLibrary->Get(), dataCollectionId[0],  &size);
+        char** values = GetEnsembleDatasetDataSubIdentifiers(dataLibrary->get(), dataCollectionId[0],  &size);
         return to_custom_character_vector<CharacterVector>(values, size, true);
 }
 
 
 // [[Rcpp::export]]
-CharacterVector GetEnsembleDatasetDataSummaries_Rcpp(XPtr<OpaquePointer> dataLibrary)
+CharacterVector GetEnsembleDatasetDataSummaries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary)
 {
 	int size; 
-        char** values = GetEnsembleDatasetDataSummaries(dataLibrary->Get(),  &size);
+        char** values = GetEnsembleDatasetDataSummaries(dataLibrary->get(),  &size);
         return to_custom_character_vector<CharacterVector>(values, size, true);
 }
 
 // [[Rcpp::export]]
-XPtr<OpaquePointer> CreateEnsembleForecastTimeSeries_Rcpp(Rcpp::Datetime start, IntegerVector length, CharacterVector timeStepName)
+XPtr<opaque_pointer_handle> CreateEnsembleForecastTimeSeries_Rcpp(Rcpp::Datetime start, IntegerVector length, CharacterVector timeStepName)
 {
     date_time_to_second start_datetime = to_date_time_to_second<Rcpp::Datetime>(start);
     auto result = CreateEnsembleForecastTimeSeries(start_datetime, as<int>(length), timeStepName[0]);
     // start_datetime - no cleanup needed
-    auto x = XPtr<OpaquePointer>(new OpaquePointer(result));
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }
 
 // [[Rcpp::export]]
-XPtr<OpaquePointer> GetDatasetSingleTimeSeries_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector dataId)
+XPtr<opaque_pointer_handle> GetDatasetSingleTimeSeries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataId)
 {
-    auto result = GetDatasetSingleTimeSeries(dataLibrary->Get(), dataId[0]);
-    auto x = XPtr<OpaquePointer>(new OpaquePointer(result));
+    auto result = GetDatasetSingleTimeSeries(dataLibrary->get(), dataId[0]);
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }
 
 // [[Rcpp::export]]
-XPtr<OpaquePointer> GetDatasetEnsembleTimeSeries_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector dataEnsembleId)
+XPtr<opaque_pointer_handle> GetDatasetEnsembleTimeSeries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataEnsembleId)
 {
-    auto result = GetDatasetEnsembleTimeSeries(dataLibrary->Get(), dataEnsembleId[0]);
-    auto x = XPtr<OpaquePointer>(new OpaquePointer(result));
+    auto result = GetDatasetEnsembleTimeSeries(dataLibrary->get(), dataEnsembleId[0]);
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }
 
 // [[Rcpp::export]]
-XPtr<OpaquePointer> GetEnsembleTimeSeriesData_Rcpp(XPtr<OpaquePointer> ensSeries)
+XPtr<opaque_pointer_handle> GetEnsembleTimeSeriesData_Rcpp(XPtr<opaque_pointer_handle> ensSeries)
 {
-    auto result = GetEnsembleTimeSeriesData(ensSeries->Get());
-    auto x = XPtr<OpaquePointer>(new OpaquePointer(result));
+    auto result = GetEnsembleTimeSeriesData(ensSeries->get());
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }
 
 // [[Rcpp::export]]
-XPtr<OpaquePointer> GetDatasetEnsembleForecastTimeSeries_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector dataId)
+XPtr<opaque_pointer_handle> GetDatasetEnsembleForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataId)
 {
-    auto result = GetDatasetEnsembleForecastTimeSeries(dataLibrary->Get(), dataId[0]);
-    auto x = XPtr<OpaquePointer>(new OpaquePointer(result));
+    auto result = GetDatasetEnsembleForecastTimeSeries(dataLibrary->get(), dataId[0]);
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }
 
 // [[Rcpp::export]]
-void GetTimeSeriesGeometry_Rcpp(XPtr<OpaquePointer> timeSeries, const Rcpp::S4& geom)
+void GetTimeSeriesGeometry_Rcpp(XPtr<opaque_pointer_handle> timeSeries, const Rcpp::S4& geom)
 {
     regular_time_series_geometry* geom_tsgeom = toMarshalledTsinfoPtr(geom);
-    GetTimeSeriesGeometry(timeSeries->Get(), geom_tsgeom);
+    GetTimeSeriesGeometry(timeSeries->get(), geom_tsgeom);
     delete geom_tsgeom;
 }
 
 // [[Rcpp::export]]
-void GetEnsembleForecastTimeSeriesGeometry_Rcpp(XPtr<OpaquePointer> timeSeries, const Rcpp::S4& geom)
+void GetEnsembleForecastTimeSeriesGeometry_Rcpp(XPtr<opaque_pointer_handle> timeSeries, const Rcpp::S4& geom)
 {
     regular_time_series_geometry* geom_tsgeom = toMarshalledTsinfoPtr(geom);
-    GetEnsembleForecastTimeSeriesGeometry(timeSeries->Get(), geom_tsgeom);
+    GetEnsembleForecastTimeSeriesGeometry(timeSeries->get(), geom_tsgeom);
     delete geom_tsgeom;
 }
 
 // [[Rcpp::export]]
-void GetTimeSeriesValues_Rcpp(XPtr<OpaquePointer> timeSeries, NumericVector values, IntegerVector arrayLength)
+void GetTimeSeriesValues_Rcpp(XPtr<opaque_pointer_handle> timeSeries, NumericVector values, IntegerVector arrayLength)
 {
-    GetTimeSeriesValues(timeSeries->Get(), &(values[0]), as<int>(arrayLength));
+    GetTimeSeriesValues(timeSeries->get(), &(values[0]), as<int>(arrayLength));
 }
 
 // [[Rcpp::export]]
@@ -163,25 +164,25 @@ IntegerVector GetNumTimeSeries_Rcpp()
 }
 
 // [[Rcpp::export]]
-void GetProviderTsGeometry_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector variableIdentifier, const Rcpp::S4& geom)
+void GetProviderTsGeometry_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector variableIdentifier, const Rcpp::S4& geom)
 {
     regular_time_series_geometry* geom_tsgeom = toMarshalledTsinfoPtr(geom);
-    GetProviderTsGeometry(dataLibrary->Get(), variableIdentifier[0], geom_tsgeom);
+    GetProviderTsGeometry(dataLibrary->get(), variableIdentifier[0], geom_tsgeom);
     delete geom_tsgeom;
 }
 
 // [[Rcpp::export]]
-void GetProviderTimeSeriesValues_Rcpp(XPtr<OpaquePointer> dataLibrary, CharacterVector variableIdentifier, NumericVector values, IntegerVector arrayLength)
+void GetProviderTimeSeriesValues_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector variableIdentifier, NumericVector values, IntegerVector arrayLength)
 {
-    GetProviderTimeSeriesValues(dataLibrary->Get(), variableIdentifier[0], &(values[0]), as<int>(arrayLength));
+    GetProviderTimeSeriesValues(dataLibrary->get(), variableIdentifier[0], &(values[0]), as<int>(arrayLength));
 }
 
 
 // [[Rcpp::export]]
-CharacterVector GetProviderTimeSeriesIdentifiers_Rcpp(XPtr<OpaquePointer> dataLibrary)
+CharacterVector GetProviderTimeSeriesIdentifiers_Rcpp(XPtr<opaque_pointer_handle> dataLibrary)
 {
 	int size; 
-        char** values = GetProviderTimeSeriesIdentifiers(dataLibrary->Get(),  &size);
+        char** values = GetProviderTimeSeriesIdentifiers(dataLibrary->get(),  &size);
         return to_custom_character_vector<CharacterVector>(values, size, true);
 }
 

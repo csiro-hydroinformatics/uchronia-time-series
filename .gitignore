@@ -122,3 +122,4 @@ datatypes/lib_paths.props
 *.exp
 *.rda
 *.opendb
+*.o

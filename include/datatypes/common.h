@@ -11,6 +11,12 @@
 
 #include <datatypes/setup_exports.h>
 
+#ifdef _MSC_VER
+#  pragma warning(push)
+// class blah needs to have dll-interface to be used by clients of class blah
+#  pragma warning(disable : 4251 4231 4660 4275)
+#endif
+
 #define DEFAULT_MISSING_DATA_VALUE -9999.0
 #define DEFAULT_STATION_IDENTIFIER { "0" }
 
