@@ -1,4 +1,5 @@
 .*\.opensdf
+.*\.opendb
 .*\.gitignore
 .*\.git
 .*\.tlog
@@ -12,6 +13,7 @@
 .*\.lastbuildstate
 .*\.intermediate\..*
 .*/Debug/.*
+.*/\.vs/.*
 .*/Release/.*
 .*/bin/.*
 .*/obj/.*

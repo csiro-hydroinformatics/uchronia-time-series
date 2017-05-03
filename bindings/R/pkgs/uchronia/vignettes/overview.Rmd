@@ -35,7 +35,7 @@ This document was generated from an R markdown file on `r as.character(Sys.time(
 
 ```{r}
 prepend_path() ; devmode() ; prepend_rlibpath() ; library(uchronia)
-docDataPath <- swift::sampleDataDir()
+docDataPath <- Sys.getenv('SWIFT_SAMPLE_DATA_DIR') # swift::sampleDataDir()
 ```
 
 SWIFT includes facilities to access time series from a "library", akin to what you would do to manage books.

@@ -1,6 +1,6 @@
 # library(roxygen2) ; roxygenize('F:/src/path/to/uchronia')
 
-#' A package to access features in RPP C++
+#' A package to handle multidimensional time series and ensemble thereof
 #' 
 #' \tabular{ll}{
 #' Package: \tab uchronia \cr
@@ -15,10 +15,15 @@
 #' Version \tab Date \tab Notes \cr
 #' }
 #'
+#' @import xts
+#' @import lubridate
+#' @import msvs
+#' @import cinterop
+#'
 #' @name uchronia-package
 #' @aliases uchronia
 #' @docType package
-#' @title A package to access features in datatypes C++
+#' @title A package to handle multidimensional time series and ensemble thereof
 #' @author Jean-Michel Perraud \email{jean-michel.perraud_at_csiro.au}
-#' @keywords RPP
+#' @keywords datatypes
 NULL

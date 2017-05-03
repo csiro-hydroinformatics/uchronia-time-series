@@ -47,7 +47,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>$(UseDebugLibraries)</GenerateDebugInformation>
-      <AdditionalDependencies>Rdll.lib;datatypes.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Rdll.lib;datatypes.lib;moirai.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>uchronia_r.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>

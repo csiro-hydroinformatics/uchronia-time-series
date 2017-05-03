@@ -4,7 +4,6 @@
 # set COMPILE_WITH_VCPP=YES
 
 RSCRIPT="${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe"
-# echo "if [ ! -e ${RSCRIPT} ]" 
 
 if [ ! -e "${RSCRIPT}" ] 
 then
@@ -14,10 +13,13 @@ then
 	exit 1
 fi
 
-# export RSCRIPT
+HAS_MSVS=`${RSCRIPT} -e "msvs_available <- require('msvs', quietly=TRUE) ; cat(msvs_available)"`
 
-# SRC_DIR=./src
-# RSCRIPT=C:/PROGRA~1/R/R-33~1.3/bin/x64/Rscript.exe
+if [ "$HAS_MSVS" = "FALSE" ]
+then
+	echo "ERROR: package uchronia requires R package msvs"
+	exit 1
+fi
 
 CONFIGURE_WIN_PART=`${RSCRIPT} -e "msvs:::get_configure_win_part()"`
 # echo CONFIGURE_WIN_PART=${CONFIGURE_WIN_PART}
@@ -33,9 +35,12 @@ fi
 
 ./cleanup.win
 
+# if creating a Makefile.win
 solution_filename="uchronia_r.sln"
 from_dll_filenoext="uchronia_r"
 to_dll_filenoext="uchronia_r"
+# if creating a Makevars.win
+dependency_lib_names="datatypes moirai"
 
 . ${CONFIGURE_WIN_PART}
 

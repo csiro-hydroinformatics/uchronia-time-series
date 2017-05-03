@@ -5,7 +5,10 @@
 
 ## We largely use the default behavior of shlib_install
 
-if(Sys.getenv('COMPILE_WITH_VCPP') != '') {
+if(WINDOWS && (Sys.getenv('COMPILE_WITH_VCPP') != '')) {
+    message("Compiling with MS VC++ - expecting Makefile.win to have already copied DLL", domain = NA)
+# nothing
+} else {
 	files <- Sys.glob(paste0("*", SHLIB_EXT))
 	msvs:::custom_install_shlib(files, srclibname='uchronia_r', shlib_ext=SHLIB_EXT, r_arch=R_ARCH, r_package_dir=R_PACKAGE_DIR, windows=WINDOWS, group.writable=FALSE)
 }

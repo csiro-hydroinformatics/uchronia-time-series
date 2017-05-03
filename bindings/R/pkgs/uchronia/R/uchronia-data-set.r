@@ -3,7 +3,7 @@
 #' Gets an object, a library to access a set of time series
 #'
 #' @param dataSetId currently only a path to a file in YAML is supported.
-#' @return an S4 object 'SwiftRef' [package "swift"] with external pointer type ENSEMBLE_DATA_SET_PTR
+#' @return an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
 #' @examples
 #' \dontrun{
 #' yamlFn <- file.path(system.file(package='swift', 'data'), 'time_series_library.yaml')

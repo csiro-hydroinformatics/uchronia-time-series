@@ -34,7 +34,7 @@ appendStartupMsg <- function(msg) {
   # to foster binary compatibility in case we have different compilers/c++ runtimes at play
   RegisterExceptionCallback_Pkg()
   
-  # SetTimeSeriesMissingValueValue_R(as.numeric(NA))
+  SetTimeSeriesMissingValueValue_R(as.numeric(NA))
   
 }
 

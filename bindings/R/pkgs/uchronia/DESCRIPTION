@@ -12,12 +12,13 @@ URL: https://stash.csiro.au/projects/SF/
 License: LGPL-3
 Imports:
     methods,
+    lubridate,
+    msvs (>= 0.1.1),
     stringr
 LinkingTo: Rcpp
 Depends:
     R (>= 3.1),
     cinterop,
-    msvs (>= 0.1.1),
     Rcpp (>= 0.12.4)
 Suggests:
     knitr,
