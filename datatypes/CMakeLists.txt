@@ -44,6 +44,7 @@ SET(${this_target}_HEADER_FILES
 	../include/datatypes/time_series.hpp
 	../include/datatypes/time_series_store.hpp
 	../include/datatypes/time_series_io.hpp
+	../include/datatypes/time_series_strategies.hpp
 	../include/datatypes/time_step.h
 	../include/datatypes/time_step_implementation.h
 	tests/datatypes_test_helpers.h
@@ -85,9 +86,12 @@ TARGET_LINK_LIBRARIES( ${this_target}
 # Files to be installed - used by packaging stuff below
 INSTALL(FILES ${${this_target}_HEADER_FILES} DESTINATION include/datatypes)
 INSTALL(FILES tests/datatypes_test_helpers.hpp DESTINATION include/datatypes/tests)
+INSTALL(FILES tests/datatypes_test_helpers.h DESTINATION include/datatypes/tests)
 
 if(WIN32)
   INSTALL(TARGETS ${this_target}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
   )
 else()

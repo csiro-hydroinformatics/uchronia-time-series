@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+
 SET (this_target datatypes_tests)
 PROJECT(${this_target})
 
@@ -23,11 +25,12 @@ SET_SOURCE_FILES_PROPERTIES(${this_target}_HEADER_FILES
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 
-target_include_directories(
-    datatypes PUBLIC
+INCLUDE_DIRECTORIES(
     ${datatypes_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
 )
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 TARGET_LINK_LIBRARIES( ${this_target}
