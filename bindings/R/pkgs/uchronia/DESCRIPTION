@@ -14,6 +14,7 @@ Imports:
     methods,
     lubridate,
     msvs (>= 0.1.1),
+    xts,
     stringr
 LinkingTo: Rcpp
 Depends:

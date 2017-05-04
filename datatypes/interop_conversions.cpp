@@ -21,7 +21,7 @@ TimeSeries CreateTimeSeries(double * values, const regular_time_series_geometry&
 TimeSeries CreateTimeSeries(double * values, TS_GEOMETRY_PTR geom)
 {
 	auto g = TS_GEOMETRY_DYNCAST(geom);
-	return CreateTimeSeries(values, g);
+	return CreateTimeSeries(values, *g);
 }
 
 TimeSeriesEnsemble<TimeSeries> ToTimeSeriesEnsemble(const multi_regular_time_series_data& rawData)
