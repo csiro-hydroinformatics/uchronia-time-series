@@ -1,3 +1,19 @@
+#' Creates a POSIXct date/time object
+#'
+#' Creates a POSIXct date/time object, with a default UTC time zone and zeroes as default time arguments (i.e. midnight)
+#'
+#' @param year   integer
+#' @param month  integer
+#' @param day	   integer
+#' @param hour   integer
+#' @param min    integer
+#' @param sec	   numeric
+#' @param tz     character, A time zone specification to be used for the conversion. Defaults to UTC.
+#' @export
+mkDate <- function (year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC")  { 
+  ISOdate(year, month, day, hour, min, sec, tz=tz) 
+}
+
 #' @export
 createEnsembleForecastTimeSeries <- function (tsStartEns, n, timeStep) {
   if(is.numeric(timeStep)) {

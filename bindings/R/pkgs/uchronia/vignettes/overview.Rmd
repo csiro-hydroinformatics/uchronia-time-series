@@ -45,7 +45,7 @@ dataLibraryFile <- file.path(system.file('data', package='swift'), 'time_series_
 upperMurrayDataPath <- file.path(docDataPath, 'UpperMurray')
 stopifnot(dir.exists(upperMurrayDataPath))
 
-dataLibrary <- getEnsembleDataSet(dataLibraryFile, upperMurrayDataPath)
+dataLibrary <- uchronia::getEnsembleDataSet(dataLibraryFile, upperMurrayDataPath)
 dataIds <- GetEnsembleDatasetDataIdentifiers_R(dataLibrary)
 print(GetEnsembleDatasetDataSummaries_R(dataLibrary))
 ```

@@ -41,7 +41,9 @@ from_dll_filenoext="uchronia_r"
 to_dll_filenoext="uchronia_r"
 # if creating a Makevars.win
 dependency_lib_names="datatypes moirai"
-
+additional_pkg_cppflags=" -g -O0 "
+additional_pkg_libsflags=" -g -O0 "
+ 
 . ${CONFIGURE_WIN_PART}
 
 exit 0

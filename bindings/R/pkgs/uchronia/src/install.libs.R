@@ -5,7 +5,7 @@
 
 ## We largely use the default behavior of shlib_install
 
-if(WINDOWS && (Sys.getenv('COMPILE_WITH_VCPP') != '')) {
+if((Sys.getenv('COMPILE_WITH_VCPP') != '')) {
     message("Compiling with MS VC++ - expecting Makefile.win to have already copied DLL", domain = NA)
 # nothing
 } else {

@@ -1182,6 +1182,7 @@ namespace datatypes
 
 			private:
 				static bool PreCheckStorageType(const string& storageType, TimeSeriesSourceInfoBuilder* srcBuilder = nullptr);
+
 			};
 
 		}
@@ -2782,6 +2783,13 @@ namespace datatypes
 
 			static const string kTestRecorderKey;
 			static const string kTimeSeriesEnsemblesKey;
+
+			static bool HasTimeSeriesSourceInfoBuilderRegistered();
+			static void RegisterTimeSeriesSourceInfoBuilder(TimeSeriesSourceInfoBuilder* srcBuilder);
+		private:
+			static TimeSeriesSourceInfoBuilder* GetBuilder();
+			static TimeSeriesSourceInfoBuilder* infoBuilder;
+
 
 		};
 

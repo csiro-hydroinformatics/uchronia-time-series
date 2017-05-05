@@ -1,3 +1,19 @@
+#' Gets one or more time series from a time series provider
+#'
+#' Gets one or more time series from a time series provider
+#'
+#' @param tsProvider R wrapper around an object coercible to a TIME_SERIES_PROVIDER_PTR
+#' @param varIds character vector, IDs of the time series to retrieve from the provider
+#' @param apiGetTsFunc an R function that takes as arguments 'tsProvider' and a character.
+#' @return an xts time series
+#' @examples
+#' \dontrun{
+#' }
+#' @export
+getMultipleTimeSeriesFromProvider <- function(tsProvider, varIds, apiGetTsFunc) {
+  internalGetMultipleTimeSeries(tsProvider, varIds, apiGetTsFunc)
+}
+
 #' Gets an object, a library to access a set of time series
 #'
 #' Gets an object, a library to access a set of time series
@@ -9,8 +25,8 @@
 #' yamlFn <- file.path(system.file(package='swift', 'data'), 'time_series_library.yaml')
 #' if(file.exists(yamlFn)) {stop(paste0('sample YAML file ', yamlFn, ' not found')) }
 #' file.show(yamlFn)
-#' dataSet <- getEnsembleDataSet(yamlFn)
-#' # dataIds <- getDataSetIds(dataSet)
+#' dataSet <- uchronia::getEnsembleDataSet(yamlFn)
+#' # dataIds <- uchronia::getDataSetIds(dataSet)
 #' precipIds <- paste( 'subarea', getSubareaIds(simulation), 'P', sep='.')
 #' evapIds <- paste( 'subarea', getSubareaIds(simulation), 'E', sep='.')
 #' playInputs(simulation, dataSet, precipIds, rep('rain_obs', length(precipIds)))
@@ -66,7 +82,7 @@ getDatasetSingleTimeSeries <- function(dataLibrary, dataId)
 #' @export
 getTimeSeriesFromProvider <- function(provider, dataId) {
   if(missing(dataId)) {
-    dataId <- getDataIdentifiers(provider)
+    dataId <- uchronia::getDataIdentifiers(provider)
   }
   return(internalGetTimeSeriesFromProvider(provider, dataId))
 }

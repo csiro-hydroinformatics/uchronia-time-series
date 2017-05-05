@@ -2045,15 +2045,37 @@ namespace datatypes
 			return result;
 		}
 
+		TimeSeriesSourceInfoBuilder* TimeSeriesLibraryFactory::infoBuilder = nullptr;
+
+		void TimeSeriesLibraryFactory::RegisterTimeSeriesSourceInfoBuilder(TimeSeriesSourceInfoBuilder* srcBuilder)
+		{
+			if (infoBuilder == nullptr)
+				infoBuilder = srcBuilder;
+			else
+				throw std::logic_error("An optional TimeSeriesSourceInfoBuilder can only be registered once - it appears already set");
+		}
+
+		bool TimeSeriesLibraryFactory::HasTimeSeriesSourceInfoBuilderRegistered()
+		{
+			return infoBuilder != nullptr;
+		}
+
+		TimeSeriesSourceInfoBuilder* TimeSeriesLibraryFactory::GetBuilder()
+		{
+			return infoBuilder;
+		}
+
 		TimeSeriesLibrary TimeSeriesLibraryFactory::LoadTimeSeriesLibrary(const string& filepath, const string& dataPath)
 		{
-			auto tsd = datatypes::timeseries::io::ConfigFileHelper::LoadTimeSeriesLibraryDescription(filepath, dataPath);
+			TimeSeriesSourceInfoBuilder* builder = GetBuilder();
+			auto tsd = datatypes::timeseries::io::ConfigFileHelper::LoadTimeSeriesLibraryDescription(filepath, dataPath, builder);
 			return TimeSeriesLibraryFactory::CreateLibrary(tsd);
 		}
 
 		TimeSeriesLibrary* TimeSeriesLibraryFactory::LoadTimeSeriesLibraryPtr(const string& filepath, const string& dataPath)
 		{
-			auto tsd = datatypes::timeseries::io::ConfigFileHelper::LoadTimeSeriesLibraryDescription(filepath, dataPath);
+			TimeSeriesSourceInfoBuilder* builder = GetBuilder();
+			auto tsd = datatypes::timeseries::io::ConfigFileHelper::LoadTimeSeriesLibraryDescription(filepath, dataPath, builder);
 			return TimeSeriesLibraryFactory::CreateLibraryPtr(tsd);
 		}
 

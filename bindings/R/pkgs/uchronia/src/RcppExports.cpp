@@ -21,6 +21,64 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// GetTimeSeriesGeometry_Pkg
+Rcpp::S4 GetTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries, CharacterVector variableIdentifier);
+RcppExport SEXP uchronia_GetTimeSeriesGeometry_Pkg(SEXP timeSeriesSEXP, SEXP variableIdentifierSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type timeSeries(timeSeriesSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type variableIdentifier(variableIdentifierSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetTimeSeriesGeometry_Pkg(timeSeries, variableIdentifier));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GetItemEnsembleForecastTimeSeries_Pkg
+Rcpp::S4 GetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i);
+RcppExport SEXP uchronia_GetItemEnsembleForecastTimeSeries_Pkg(SEXP seriesSEXP, SEXP iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetItemEnsembleForecastTimeSeries_Pkg(series, i));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SetItemEnsembleForecastTimeSeries_Pkg
+void SetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i, Rcpp::S4& timeSeriesEnsemble);
+RcppExport SEXP uchronia_SetItemEnsembleForecastTimeSeries_Pkg(SEXP seriesSEXP, SEXP iSEXP, SEXP timeSeriesEnsembleSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type i(iSEXP);
+    Rcpp::traits::input_parameter< Rcpp::S4& >::type timeSeriesEnsemble(timeSeriesEnsembleSEXP);
+    SetItemEnsembleForecastTimeSeries_Pkg(series, i, timeSeriesEnsemble);
+    return R_NilValue;
+END_RCPP
+}
+// GetEnsembleTimeSeries_Pkg
+Rcpp::S4 GetEnsembleTimeSeries_Pkg(XPtr<opaque_pointer_handle> series);
+RcppExport SEXP uchronia_GetEnsembleTimeSeries_Pkg(SEXP seriesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type series(seriesSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetEnsembleTimeSeries_Pkg(series));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GetEnsembleForecastTimeSeriesGeometry_Pkg
+Rcpp::S4 GetEnsembleForecastTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries);
+RcppExport SEXP uchronia_GetEnsembleForecastTimeSeriesGeometry_Pkg(SEXP timeSeriesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type timeSeries(timeSeriesSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetEnsembleForecastTimeSeriesGeometry_Pkg(timeSeries));
+    return rcpp_result_gen;
+END_RCPP
+}
 // GetLastStdExceptionMessage_Rcpp
 CharacterVector GetLastStdExceptionMessage_Rcpp();
 RcppExport SEXP uchronia_GetLastStdExceptionMessage_Rcpp() {

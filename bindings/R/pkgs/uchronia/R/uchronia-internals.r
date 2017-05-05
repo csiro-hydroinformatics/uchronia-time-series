@@ -35,6 +35,7 @@ internalGetMultipleTimeSeries <- function(simulation, varIds, apiGetTsFunc) {
   result
 }
 
+
 #' Perform an action on a SWIFT object that is expected to return a time series
 #'
 #' Perform an action on a SWIFT object that is expected to return a time series. 
@@ -52,3 +53,30 @@ internalGetSingleModelTts <- function(tsProvider, varId, apiGetTsFunc) {
   return(marshaledTimeSeriesToXts(tsInfo))
 }
 
+#' @import joki
+#' @import lubridate
+basicTimeSeriesInfo <- function(header='SWIFT time series:', spanInfo, bnbt = '\n\t', newline = '\n') {
+  return(paste0(header, 
+  bnbt, joki::makeTextDate(spanInfo@Start, tz=lubridate::tz(spanInfo@Start)) , 
+  bnbt, 'time step ', lubridate::seconds(spanInfo@TimeStepSeconds), 
+  bnbt, 'size ', spanInfo@Length, 
+  newline 
+  ))
+}
+
+#' @export
+strDatatypeRef <- function(x, ...) {
+  bnbt <- '\n\t'
+  newline <- '\n'
+  if (isSingularTimeSeries(x)) {
+    s <- GetTimeSeriesGeometry_Pkg(x)
+    cat(basicTimeSeriesInfo(header='time series:', spanInfo=s, bnbt=bnbt, newline=newline))
+  } else if (isEnsembleForecastTimeSeries(x)) {
+    s <- GetEnsembleForecastTimeSeriesGeometry_Pkg_R(x) 
+    cat(basicTimeSeriesInfo(header='ensemble forecast time series:', spanInfo=s, bnbt=bnbt, newline=newline))
+  # } else if (isDatatypeRef(x)) {
+  #   cat(paste0('SWIFT object of type "', x@type ,'"\n'))
+  } else {
+    cinterop::strExternalObjRef(x)
+  }
+}

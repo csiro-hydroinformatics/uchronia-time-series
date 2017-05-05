@@ -5,6 +5,26 @@ RegisterExceptionCallback_Pkg <- function() {
     invisible(.Call('uchronia_RegisterExceptionCallback_Pkg', PACKAGE = 'uchronia_r'))
 }
 
+GetTimeSeriesGeometry_Pkg <- function(timeSeries, variableIdentifier) {
+    .Call('uchronia_GetTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries, variableIdentifier)
+}
+
+GetItemEnsembleForecastTimeSeries_Pkg <- function(series, i) {
+    .Call('uchronia_GetItemEnsembleForecastTimeSeries_Pkg', PACKAGE = 'uchronia_r', series, i)
+}
+
+SetItemEnsembleForecastTimeSeries_Pkg <- function(series, i, timeSeriesEnsemble) {
+    invisible(.Call('uchronia_SetItemEnsembleForecastTimeSeries_Pkg', PACKAGE = 'uchronia_r', series, i, timeSeriesEnsemble))
+}
+
+GetEnsembleTimeSeries_Pkg <- function(series) {
+    .Call('uchronia_GetEnsembleTimeSeries_Pkg', PACKAGE = 'uchronia_r', series)
+}
+
+GetEnsembleForecastTimeSeriesGeometry_Pkg <- function(timeSeries) {
+    .Call('uchronia_GetEnsembleForecastTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
+}
+
 GetLastStdExceptionMessage_Rcpp <- function() {
     .Call('uchronia_GetLastStdExceptionMessage_Rcpp', PACKAGE = 'uchronia_r')
 }

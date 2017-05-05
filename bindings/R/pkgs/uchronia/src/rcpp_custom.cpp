@@ -45,37 +45,52 @@ NumericMatrix toNumericMatrix(const multi_regular_time_series_data& mts)
 	return cinterop::rcpp::to_r_numeric_matrix(mts);
 }
 
-/**
-* \fn	multi_regular_time_series_data toMultiTimeSeriesData(const Rcpp::S4& timeSeriesEnsemble)
-*
-* \brief	Converts a timeSeriesEnsemble to a multi time series data.
-*
-* \param	timeSeriesEnsemble	The time series ensemble, as an S4 object of type SwiftMultiTimeSeriesData
-*
-* \return	timeSeriesEnsemble as a multi_regular_time_series_data.
-*/
-
-multi_regular_time_series_data toMultiTimeSeriesData(const Rcpp::S4& timeSeriesEnsemble)
-{
-	return cinterop::timeseries::to_multi_regular_time_series_data(timeSeriesEnsemble);
-}
-
-Rcpp::S4 toRMultiTimeSeriesData(const multi_regular_time_series_data& mts)
-{
-	return cinterop::timeseries::from_multi_regular_time_series_data<Rcpp::S4>(mts);
-}
-
 Rcpp::S4 fromMarshalledTsinfo(const regular_time_series_geometry& mts)
 {
 	return cinterop::timeseries::from_regular_time_series_geometry<Rcpp::S4>(mts);
 }
 
-void PkgDisposeMultiTimeSeriesData(multi_regular_time_series_data& d)
+//cinterop::disposal::dispose_of<multi_regular_time_series_data>(d);
+
+// [[Rcpp::export]]
+Rcpp::S4 GetTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries, CharacterVector variableIdentifier)
 {
-	cinterop::disposal::dispose_of<multi_regular_time_series_data>(d);
+	regular_time_series_geometry mtsg;
+	GetTimeSeriesGeometry(timeSeries->get(), &mtsg);
+	return fromMarshalledTsinfo(mtsg);
 }
 
+// [[Rcpp::export]]
+Rcpp::S4 GetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i)
+{
+	multi_regular_time_series_data* mts = GetItemEnsembleForecastTimeSeries(series->get(), as<int>(i));
+	auto res = cinterop::timeseries::from_multi_regular_time_series_data<Rcpp::S4>(*mts);
+	// mts created by the swift library - we need to use its API to dispose of it, not this present R package's version
+	cinterop::disposal::dispose_of<multi_regular_time_series_data>(*mts);
+	return res;
+}
 
+// [[Rcpp::export]]
+void SetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i, Rcpp::S4& timeSeriesEnsemble)
+{
+	multi_regular_time_series_data mts = cinterop::timeseries::to_multi_regular_time_series_data(timeSeriesEnsemble);
+	SetItemEnsembleForecastTimeSeries(series->get(), as<int>(i), &mts);
+}
 
+// [[Rcpp::export]]
+Rcpp::S4 GetEnsembleTimeSeries_Pkg(XPtr<opaque_pointer_handle> series)
+{
+	multi_regular_time_series_data* mts = GetEnsembleTimeSeriesData(series->get());
+	auto res = cinterop::timeseries::from_multi_regular_time_series_data<Rcpp::S4>(*mts);
+	cinterop::disposal::dispose_of<multi_regular_time_series_data>(*mts);
+	return res;
+}
 
+// [[Rcpp::export]]
+Rcpp::S4 GetEnsembleForecastTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries)
+{
+	regular_time_series_geometry mtsg;
+	GetEnsembleForecastTimeSeriesGeometry(timeSeries->get(), &mtsg);
+	return fromMarshalledTsinfo(mtsg);
+}
 
