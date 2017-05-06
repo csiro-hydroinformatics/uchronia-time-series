@@ -45,6 +45,8 @@ SET(${this_target}_HEADER_FILES
 	../include/datatypes/datatypes_test_helpers.h
 	../include/datatypes/datatypes_test_helpers.hpp
 	../include/datatypes/exception_utilities.h
+	../include/datatypes/extern_c_api_as_opaque.h
+	../include/datatypes/extern_c_api_as_transparent.h
 	../include/datatypes/extern_c_api.h
 	../include/datatypes/extern_c_api_transparent_pointers.h
 	../include/datatypes/internals_c_api.hpp
