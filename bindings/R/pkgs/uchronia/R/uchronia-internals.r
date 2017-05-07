@@ -53,11 +53,35 @@ internalGetSingleModelTts <- function(tsProvider, varId, apiGetTsFunc) {
   return(marshaledTimeSeriesToXts(tsInfo))
 }
 
-#' @import joki
+
+# KLUDGE: date time fcts are duplicated with joki:: but to avoid dependency on too much for now:
+makeTextDate <- function(instant, tz='UTC', txtformat=dateTimeIso8601Format()) {
+##  #' @examples See \code{\link{makeTextTimeInterval}} for sample code.
+  instant <- as.POSIXct(instant)
+  format(instant,format=txtformat, tz = tz, usetz = TRUE)
+}
+
+#' @export
+dateIso8601Format <- function() {
+  "%Y-%m-%d"
+}
+
+#' @export
+dateTimeIso8601Format <- function(toSeconds=TRUE, toMinutes=TRUE, toHours=TRUE) {
+  if(all(c(toSeconds, toMinutes, toHours))) { 
+    return("%Y-%m-%d %H:%M:%S")
+  } else {
+    if (toSeconds) return("%Y-%m-%d %H:%M:%S")
+    if (toMinutes) return("%Y-%m-%d %H:%M")
+    if (toHours)   return("%Y-%m-%d %H")
+  }
+  return(dateIso8601Format())
+}
+
 #' @import lubridate
 basicTimeSeriesInfo <- function(header='SWIFT time series:', spanInfo, bnbt = '\n\t', newline = '\n') {
   return(paste0(header, 
-  bnbt, joki::makeTextDate(spanInfo@Start, tz=lubridate::tz(spanInfo@Start)) , 
+  bnbt, makeTextDate(spanInfo@Start, tz=lubridate::tz(spanInfo@Start)) , 
   bnbt, 'time step ', lubridate::seconds(spanInfo@TimeStepSeconds), 
   bnbt, 'size ', spanInfo@Length, 
   newline 

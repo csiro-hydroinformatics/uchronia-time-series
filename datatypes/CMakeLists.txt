@@ -6,13 +6,17 @@ PROJECT(${this_target})
 
 find_package(Boost 1.48.0 COMPONENTS system date_time regex filesystem REQUIRED)
 
+list(APPEND CMAKE_MODULE_PATH "/usr/local/share/cmake/Modules")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../cmake_modules")
+
 find_package (NetCDF REQUIRED)
+find_package (YAMLCPP REQUIRED)
 
 ## section: include directory
 INCLUDE_DIRECTORIES(
     ${Boost_INCLUDE_DIRS}
     ${NETCDF_INCLUDE_DIRS}
+	${YAMLCPP_INCLUDE_DIRS}
 	../include
 )
 
@@ -94,6 +98,8 @@ ADD_LIBRARY(${this_target} SHARED ${${this_target}_SOURCE_FILES} )
 TARGET_LINK_LIBRARIES( ${this_target}
     ${NETCDF_LIBRARIES}
     ${Boost_LIBRARIES}
+	yaml-cpp
+	moirai
 )
 
 # Files to be installed - used by packaging stuff below

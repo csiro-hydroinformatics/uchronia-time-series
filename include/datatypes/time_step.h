@@ -250,6 +250,7 @@ namespace datatypes
 		class DATATYPES_DLL_LIB TimeSeriesInfoProvider
 		{
 		public:
+			virtual ~TimeSeriesInfoProvider();
 			virtual size_t GetLength() const = 0;
 			virtual TimeStep GetTimeStep() const = 0;
 			virtual ptime GetStart() const = 0;

@@ -1,0 +1,5 @@
+
+INSTDIR=../inst
+PKG_CPPFLAGS = -I$(INSTDIR)/include 
+PKG_LIBS = -ldatatypes -lmoirai 
+
