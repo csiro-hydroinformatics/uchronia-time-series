@@ -1,6 +1,11 @@
 SET (this_target datatypes_tests)
 PROJECT(${this_target})
 
+if (WIN32)
+    set(BOOST_INCLUDEDIR "c:/local/include")
+    set(BOOST_LIBRARYDIR "c:/local/libs/64")
+endif()
+
 find_package(Boost 1.48.0 COMPONENTS filesystem system date_time REQUIRED)
 
 find_path (datatypes_INCLUDE_DIRS NAMES datatypes/time_series.hpp PATHS ".." )

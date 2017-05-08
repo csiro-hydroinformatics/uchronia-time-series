@@ -210,6 +210,7 @@ void DisposeMultiTimeSeriesData(multi_regular_time_series_data* data)
 {
 	TRY_START
 	DisposeMultiTimeSeriesData(*data);
+	delete data;
 	INTERCEPT_STD_EXCEPTION
 }
 

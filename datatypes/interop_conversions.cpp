@@ -1,4 +1,5 @@
 #include "cinterop/c_cpp_interop.hpp"
+#include "cinterop/timeseries_interop.hpp"
 #include "datatypes/time_series.hpp"
 #include "datatypes/time_series_io.hpp"
 #include "datatypes/interop_struct.h"
@@ -67,14 +68,9 @@ double** ToRawData(TimeSeriesEnsemble<TimeSeries>& mts)
 	return result;
 }
 
-void DisposeMultiTimeSeriesData(double** d, size_t n)
-{
-	cinterop::utils::free_c_ptr_array<double>(d, n);
-}
-
 void DisposeMultiTimeSeriesData(multi_regular_time_series_data& d)
 {
-	DisposeMultiTimeSeriesData(d.numeric_data, d.ensemble_size);
+	cinterop::disposal::dispose_of<multi_regular_time_series_data>(d);
 }
 
 

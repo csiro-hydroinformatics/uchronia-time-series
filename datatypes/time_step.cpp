@@ -282,7 +282,7 @@ namespace datatypes
 			return !tsImpl->Equals(rhs.tsImpl);
 		}
 
-		~TimeSeriesInfoProvider::TimeSeriesInfoProvider()
+		TimeSeriesInfoProvider::~TimeSeriesInfoProvider()
 		{
 		}
 	}
