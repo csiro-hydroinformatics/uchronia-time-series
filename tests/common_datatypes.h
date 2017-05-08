@@ -15,7 +15,7 @@
 #include "datatypes/time_series.hpp"
 #include "datatypes/time_series_store.hpp"
 #include "datatypes/time_series_io.hpp"
-#include "catch_macros.hpp"
+#include "catch/catch_macros.hpp"
 
 using namespace datatypes::tests;
 //using DTH = datatypes::tests::DataTestHelper<double>;

@@ -1,14 +1,22 @@
+cmake_minimum_required(VERSION 2.8)
 SET (this_target datatypes_tests)
 PROJECT(${this_target})
 
 if (WIN32)
     set(BOOST_INCLUDEDIR "c:/local/include")
     set(BOOST_LIBRARYDIR "c:/local/libs/64")
+else()
+    list(APPEND CMAKE_MODULE_PATH "/usr/local/share/cmake/Modules")
 endif()
+
+find_package (NetCDF REQUIRED)
 
 find_package(Boost 1.48.0 COMPONENTS filesystem system date_time REQUIRED)
 
-find_path (datatypes_INCLUDE_DIRS NAMES datatypes/time_series.hpp PATHS ".." )
+find_path (datatypes_INCLUDE_DIRS NAMES datatypes/time_series.hpp)
+# Find catch.hpp
+find_path (catch_INCLUDE_DIRS NAMES catch.hpp PATHS )
+find_path (MOIRAI_INCLUDE_DIRS moirai/reference_handle.hpp)
 
 SET (${this_target}_SOURCE_FILES
     main.cpp
@@ -18,26 +26,25 @@ SET (${this_target}_SOURCE_FILES
 	ensemble_timeseries.cpp
 )
 
-SET(${this_target}_HEADER_FILES
-    catch.hpp
-    catch_macros.hpp
-	common_datatypes.h
-)
-
 SET_SOURCE_FILES_PROPERTIES(${this_target}_HEADER_FILES
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 
-target_include_directories(
-    datatypes PUBLIC
-    ${datatypes_INCLUDE_DIRS}
+include_directories(
     ${Boost_INCLUDE_DIRS}
+    ${datatypes_INCLUDE_DIRS}
+    ${catch_INCLUDE_DIRS}
+    ${MOIRAI_INCLUDE_DIRS}
+    ${NETCDF_INCLUDE_DIRS}
 )
 
 ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 TARGET_LINK_LIBRARIES( ${this_target}
     ${Boost_LIBRARIES}
     datatypes
+    ${NETCDF_LIBRARIES}
+    yaml-cpp
+    moirai
 )
 
 # Files to be installed
