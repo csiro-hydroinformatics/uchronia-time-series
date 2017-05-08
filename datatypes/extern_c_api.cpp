@@ -49,7 +49,9 @@ void CopyTimeSeriesValues(DATATYPES_TIME_SERIES_DOUBLE_PTR timeSeries, double * 
 void RegisterExceptionCallback(const void* callback)
 {
 	using moirai::error_handling::error_log;
-	if(!error_log::has_callback_registered())
+	if(callback == nullptr) // Allow the deregistration, at least for unit test purposes.
+		error_log::register_exception_callback(callback);
+	else if(!error_log::has_callback_registered())
 		error_log::register_exception_callback(callback);
 }
 
