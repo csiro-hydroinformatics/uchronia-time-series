@@ -75,8 +75,12 @@ TEST_CASE("Eager writer back end storage for time series of ensembles")
 
 	writableTs = ensTs;
 
-	REQUIRE(datatypes::timeseries::TimeSeriesOperations<>::AreTimeSeriesEnsembleTimeSeriesEqual(writableTs, ensTs));
+	REQUIRE(s->Size() == tsEtsLength);
+	auto p = s->GetProxy(0);
+	auto blah = writableTs.GetValue(0);
 	REQUIRE(datatypes::timeseries::TimeSeriesOperations<>::AreTimeSeriesEnsembleTimeSeriesEqual(*backEndEnsTs, ensTs));
+
+	REQUIRE(datatypes::timeseries::TimeSeriesOperations<>::AreTimeSeriesEnsembleTimeSeriesEqual(writableTs, ensTs));
 
 	delete tsensts;
 

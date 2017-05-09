@@ -337,11 +337,11 @@ namespace datatypes
 			const vector<PtrType>& AsReadonlyVector() const
 			{
 				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
-				vector<PtrType> res;
-				return res;
+				return dummy; // required for compilation.
 			}
 
 		private:
+			vector<PtrType> dummy;
 
 			void DeepCopyFrom(const EnsembleStoragePolicy<TsType>& src)
 			{

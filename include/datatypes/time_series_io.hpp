@@ -1900,28 +1900,8 @@ namespace datatypes
 			using TsType = EnsemblePtrType::ItemType;
 		private:
 
-			//class MtsRef : public EnsemblePtrType
-			//{
-			//private:
-			//	WritableTimeSeriesEnsembleTimeSeriesStore<T> * store;
-			//	size_t index;
-			//protected:
-			//	void OperatorEqualImpl(const EnsemblePtrType& src) override
-			//	{
-			//		store->SetItem("", index, src);
-			//	}
-			//public:
-			//	MtsRef(WritableTimeSeriesEnsembleTimeSeriesStore<T> * store, size_t index)
-			//	{
-			//		this->store = store;
-			//		this->index = index;
-			//	}
-
-			//};
 			vector<PtrEnsemblePtrType> ensemblesProxies;
 			WritableTimeSeriesEnsembleTimeSeriesStore<ElementType> * store;
-
-			// bool StoreInitialized() { return store->HasNcAccess(); }
 
 			void resetProxies()
 			{
@@ -2000,13 +1980,6 @@ namespace datatypes
 				datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(i, 0, store->GetLength(), "index");
 			}
 
-			//TimeStep timeStep;
-			//ptime start;
-			//size_t length = 0;
-			//size_t ensembleSize = 0;
-			//size_t ensembleLength = 0;
-			//TimeStep ensembleTimeStep;
-
 		public:
 
 			PtrEnsemblePtrType& GetProxy(const size_t i) {
@@ -2018,9 +1991,7 @@ namespace datatypes
 					proxy = new EnsemblePtrType(s);
 					ensemblesProxies[i] = proxy;
 				}
-				return proxy;
-				//const PtrEnsemblePtrType& blah = currentItem;
-				//return const_cast<EnsemblePtrType&>(blah);
+				return ensemblesProxies[i];
 			}
 
 			PtrEnsemblePtrType& operator[](const size_t i) {
