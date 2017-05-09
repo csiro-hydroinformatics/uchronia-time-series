@@ -58,12 +58,12 @@ TEST_CASE("Eager writer back end storage for time series of ensembles")
 	TimeStep fcastTstep = hourly / 4;
 
 
-	TestTimeSeriesEnsembleTimeSeriesStore tsensts;
+	TestTimeSeriesEnsembleTimeSeriesStore* tsensts = new TestTimeSeriesEnsembleTimeSeriesStore();
 	EagerWriter<TimeSeriesEnsembleTimeSeriesStore<double>::PtrEnsemblePtrType>* s =
-		new EagerWriter<TimeSeriesEnsembleTimeSeriesStore<double>::PtrEnsemblePtrType>(&tsensts);
+		new EagerWriter<TimeSeriesEnsembleTimeSeriesStore<double>::PtrEnsemblePtrType>(tsensts);
 	EnsembleForecastTimeSeries<> writableTs(s);
 
-	EnsembleForecastTimeSeries<>* backEndEnsTs = tsensts.GetBackendSeries("");
+	EnsembleForecastTimeSeries<>* backEndEnsTs = tsensts->GetBackendSeries("");
 
 	EnsembleForecastTimeSeries<> ensTs = DTH::CreateTsEnsembleTs(
 		tsEtsLength,
@@ -77,6 +77,8 @@ TEST_CASE("Eager writer back end storage for time series of ensembles")
 
 	REQUIRE(datatypes::timeseries::TimeSeriesOperations<>::AreTimeSeriesEnsembleTimeSeriesEqual(writableTs, ensTs));
 	REQUIRE(datatypes::timeseries::TimeSeriesOperations<>::AreTimeSeriesEnsembleTimeSeriesEqual(*backEndEnsTs, ensTs));
+
+	delete tsensts;
 
 }
 
