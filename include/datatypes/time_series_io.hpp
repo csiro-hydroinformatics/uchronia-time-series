@@ -1997,9 +1997,13 @@ namespace datatypes
 			PtrEnsemblePtrType& operator[](const size_t i) {
 				return GetProxy(i);
 			}
+
+private:
+			PtrEnsemblePtrType dummy; // to compile...
+public:
 			const PtrEnsemblePtrType& operator[](const size_t i) const {
 				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Not sure how to implement this, if at all possible, sorry");
-				return new EnsemblePtrType(); // to compile...
+				return dummy; // to compile...
 			}
 
 			StoragePolicy<PtrEnsemblePtrType>* Clone() const

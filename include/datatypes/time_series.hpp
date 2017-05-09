@@ -214,27 +214,42 @@ namespace datatypes
 				instances--;
 			}
 
-			T GetValue(size_t index)
+			T GetValueNoConst(const size_t& index)
 			{
 				if (index < 0 || index >= GetLength())
 					datatypes::exceptions::ExceptionUtilities::ThrowOutOfRange("Trying to access a time series value with an index outside of its bounds");
 				return storage->operator[](index);
 			}
 
-			const T& GetValue(const size_t index) const {
+			const T& GetValueConst(const size_t& index) const {
 				if (index < 0 || index >= GetLength())
 					datatypes::exceptions::ExceptionUtilities::ThrowOutOfRange("Trying to access a time series value with an index outside of its bounds");
 				return storage->operator[](index);
 			}
 
-			T GetValue(ptime& instant)
+			T GetValue(const size_t& index)
 			{
-				return GetValue(IndexForTime(instant));
+				return GetValueNoConst(index);
 			}
 
-			const T& GetValue(const ptime& instant)
+			const T& GetValue(const size_t& index) const {
+				return GetValueConst(index);
+			}
+
+			T GetValueNoConst(const ptime& instant)
 			{
-				return GetValue(IndexForTime(instant));
+				return GetValueNoConst(IndexForTime(instant));
+			}
+
+			T GetValue(const ptime& instant)
+			{
+				return GetValueNoConst(IndexForTime(instant));
+			}
+
+			const T& GetValue(const ptime& instant) const
+			{
+				const size_t index = IndexForTime(instant);
+				return GetValue(index);
 			}
 
 			T GetLastValue()
