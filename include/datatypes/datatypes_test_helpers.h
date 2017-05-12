@@ -79,6 +79,12 @@ namespace datatypes {
 
 		};
 
+		/**
+		 * \class	TestTimeSeriesEnsembleTimeSeriesStore
+		 *
+		 * \brief	A time series store for unit tests.
+		 */
+
 		class DATATYPES_DLL_LIB TestTimeSeriesEnsembleTimeSeriesStore : public WritableTimeSeriesEnsembleTimeSeriesStore<double>
 		{
 		public:
@@ -95,7 +101,6 @@ namespace datatypes {
 			TestTimeSeriesEnsembleTimeSeriesStore(const string& id = "");
 			TestTimeSeriesEnsembleTimeSeriesStore(const TSeriesEnsemblePtrType& ensFts, const string& id = "");
 			PtrTSeriesEnsemblePtrType GetSeries(const string& dataId);
-			PtrTSeriesEnsemblePtrType GetBackendSeries(const string& dataId);
 			PtrEnsemblePtrType Read(const std::string& ensembleIdentifier);
 			size_t GetLength() const;
 			ptime GetStart() const;
@@ -122,8 +127,10 @@ namespace datatypes {
 			size_t GetEnsembleSize(const string& dataId, size_t fcastIndex) const override;
 
 		private:
-			PtrTSeriesEnsemblePtrType ensFts;
-			string id;
+			PtrTSeriesEnsemblePtrType CreateNewSeries();
+			std::map<string, PtrTSeriesEnsemblePtrType> ensFcastsSeries;
+			//PtrTSeriesEnsemblePtrType ensFts;
+			//string id;
 		};
 
 		class DATATYPES_DLL_LIB TestEnsembleTimeSeriesStore : public EnsembleTimeSeriesStore<double>

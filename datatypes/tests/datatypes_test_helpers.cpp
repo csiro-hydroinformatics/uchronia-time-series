@@ -296,7 +296,10 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 			return new MultiTimeSeries<TTimeSeries<double>*>(vector<TimeSeries>({ innerTs }), innerTs.GetStartDate(), innerTs.GetTimeStep());
 		}
 
-		TestTimeSeriesEnsembleTimeSeriesStore::~TestTimeSeriesEnsembleTimeSeriesStore() { delete ensFts; }
+		TestTimeSeriesEnsembleTimeSeriesStore::~TestTimeSeriesEnsembleTimeSeriesStore() 
+		{
+			auto tsensts = STLHelper::GetValues(ensFcastsSeries);
+		}
 		TestTimeSeriesEnsembleTimeSeriesStore::TestTimeSeriesEnsembleTimeSeriesStore(const TSeriesEnsemblePtrType& ensFts, const string& id) {
 			this->ensFts = new TSeriesEnsemblePtrType(ensFts, new SharedVectorStorage<EnsembleForecastTimeSeries<>::ElementType>());
 			this->id = id;
@@ -307,19 +310,23 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 			this->id = id;
 		};
 
-		TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::GetSeries(const string& dataId)
+
+		TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::CreateNewSeries()
 		{
-			return new EnsembleForecastTimeSeries<>(this->ensFts);
+			return new EnsembleForecastTimeSeries<>(new SharedVectorStorage<EnsembleForecastTimeSeries<>::ElementType>());
 		}
 
-		TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::GetBackendSeries(const string& dataId)
+
+		TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::GetSeries(const string& dataId)
 		{
-			return ensFts;
+			if (!STLHelper::HasKey(ensFcastsSeries, dataId))
+				ensFcastsSeries[dataId] = CreateNewSeries();
+			return ensFcastsSeries[dataId];
 		}
 
 		bool TestTimeSeriesEnsembleTimeSeriesStore::IsActive()
 		{
-			return (ensFts != nullptr);
+			return (ensFcastsSeries.size() > 0);
 		}
 
 		TestTimeSeriesEnsembleTimeSeriesStore::PtrEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::Read(const std::string& ensembleIdentifier)
