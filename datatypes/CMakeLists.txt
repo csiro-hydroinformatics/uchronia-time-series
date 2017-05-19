@@ -8,6 +8,8 @@ find_package(Boost 1.48.0 COMPONENTS system date_time regex filesystem REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "/usr/local/share/cmake/Modules")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../cmake_modules")
+list(APPEND CMAKE_MODULE_PATH "~/share/cmake/Modules") # Pearcey
+list(APPEND CMAKE_MODULE_PATH "/data/projects/hydroforecast/usr/local/share/cmake/Modules") # Pearcey
 
 find_package (NetCDF REQUIRED)
 find_package (YAMLCPP REQUIRED)
