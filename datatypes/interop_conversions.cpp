@@ -68,9 +68,34 @@ double** ToRawData(TimeSeriesEnsemble<TimeSeries>& mts)
 	return result;
 }
 
-void DisposeMultiTimeSeriesData(multi_regular_time_series_data& d)
+time_series_dimensions_description* ToTimeSeriesDimensionDescriptions(vector<DataDimensionDescriptor>& mts)
 {
-	cinterop::disposal::dispose_of<multi_regular_time_series_data>(d);
+	time_series_dimensions_description* res = new time_series_dimensions_description();
+	res->dimensions = new time_series_dimension_description[mts.size()];
+	for (size_t i = 0; i < mts.size(); i++)
+	{
+		res->dimensions[i].dimension_name = STRDUP(mts[i].DimensionName.c_str());
+		res->dimensions[i].size = mts[i].Size;
+	}
+	return res;
+}
+
+void DisposeMultiTimeSeriesData(multi_regular_time_series_data* d)
+{
+	if (d != nullptr)
+	{
+		cinterop::disposal::dispose_of<multi_regular_time_series_data>(*d);
+		delete d;
+	}
+}
+
+void DisposeTimeSeriesDimensionDescriptions(time_series_dimensions_description* d)
+{
+	if (d != nullptr)
+	{
+		cinterop::disposal::dispose_of<time_series_dimensions_description>(*d);
+		delete d;
+	}
 }
 
 

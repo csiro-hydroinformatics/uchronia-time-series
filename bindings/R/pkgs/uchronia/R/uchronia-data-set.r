@@ -1,6 +1,6 @@
 #' Gets one or more time series from a time series provider
 #'
-#' Gets one or more time series from a time series provider
+#' Gets one or more time series from a time series provider. This function is exported for use by R packages rather than for end users. 
 #'
 #' @param tsProvider R wrapper around an object coercible to a TIME_SERIES_PROVIDER_PTR
 #' @param varIds character vector, IDs of the time series to retrieve from the provider
@@ -8,6 +8,9 @@
 #' @return an xts time series
 #' @examples
 #' \dontrun{
+#' internalGetRecordedTts <- function(simulation, varIds) {
+#'   uchronia::getMultipleTimeSeriesFromProvider(simulation, varIds, GetRecorded_Pkg_R)
+#' }
 #' }
 #' @export
 getMultipleTimeSeriesFromProvider <- function(tsProvider, varIds, apiGetTsFunc) {
@@ -58,6 +61,19 @@ getDataSetIds <- function(dataLibrary) {
 function(x, ...) {
   return(asXts(x))
 }
+
+queryDataGeometry <- function(dataLibrary, dataId)
+{
+    dimensions <- 
+}
+
+getDataSet <- function(dataLibrary, dataId)
+{
+    geom <- queryDataGeometry(dataLibrary, dataId)
+    result <- GetDatasetSingleTimeSeries_R(dataLibrary, dataId);
+    return(result)
+}
+
 
 #' getDatasetSingleTimeSeries
 #' 
@@ -129,17 +145,23 @@ getDataIdentifiers <- function(provider) {
 # }
 
 
+#' Coerce an object to an xts object
+#'
+#' Coerce an object to an xts object
+#'
+#' @param tsInfo A representation of a time series. Supported types are external pointers as data from uchronia C API, or an R list returned by some of the *_R functions.
+#' @return an xts object
 #' @export
 asXts <- function(tsInfo) {
   if(is.list(tsInfo)) {
     return(marshaledTimeSeriesToXts(tsInfo))
-  } else if(isSwiftRef(tsInfo)) {
+  } else if(cinterop::isExternalObjRef(tsInfo)) {
     if(isSingularTimeSeries(tsInfo)) {
       return(marshaledTimeSeriesToXts(TimeSeriesToTsInfo_Pkg_R(tsInfo)))
     } else if(isEnsembleTimeSeries(tsInfo)) {
       return(ensTsToXts(GetEnsembleTimeSeries_Pkg_R(tsInfo)))
     } else {
-      stop(paste0('asXts: does not know how to convert to xts an object of SWIFT type "', tsInfo@type, '"'))
+      stop(paste0('asXts: does not know how to convert to xts an object of external type "', tsInfo@type, '"'))
     }
   } else {
     k <- class(tsInfo)

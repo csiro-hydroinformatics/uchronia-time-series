@@ -1762,6 +1762,14 @@ namespace datatypes
 				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
 
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			{
+				return{
+					DataDimensionDescriptor(COLLECTION_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+				};
+			}
+
 			TTimeSeries<T>* Read()
 			{
 				return Read(this->GetIdentifier());
@@ -1863,6 +1871,14 @@ namespace datatypes
 			string GetDataSummary() const
 			{
 				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
+			}
+
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			{
+				return{
+					DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+				};
 			}
 
 			vector<string> GetIdentifiers() const 
@@ -2253,6 +2269,16 @@ public:
 			{
 				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
+
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			{
+				return{
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+				};
+			}
+
 
 			using WritableTimeSeriesEnsembleTimeSeriesStore < T >::GetEnsembleSize;
 			using SingleNetCdfFileStore<T>::GetEnsembleSize;
@@ -2656,6 +2682,15 @@ public:
 					string(", time length: ") + boost::lexical_cast<string>(GetLength()) +
 					string(", time step: <not yet supported>");
 				return result;
+			}
+
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			{
+				return{
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+				};
 			}
 
 		private:

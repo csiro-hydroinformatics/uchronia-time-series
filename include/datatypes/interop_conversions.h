@@ -13,7 +13,8 @@ DATATYPES_DLL_LIB TimeSeries CreateTimeSeries(double * values, TS_GEOMETRY_PTR g
 DATATYPES_DLL_LIB TimeSeriesEnsemble<TimeSeries> ToTimeSeriesEnsemble(const multi_regular_time_series_data& rawData);
 DATATYPES_DLL_LIB TimeSeriesEnsemble<TimeSeries>* ToTimeSeriesEnsemblePtr(const multi_regular_time_series_data& rawData);
 DATATYPES_DLL_LIB multi_regular_time_series_data* ToMultiTimeSeriesDataPtr(TimeSeriesEnsemble<TimeSeries>& mts);
+DATATYPES_DLL_LIB time_series_dimensions_description* ToTimeSeriesDimensionDescriptions(vector<DataDimensionDescriptor>& mts);
 DATATYPES_DLL_LIB void CopyToMultiTimeSeriesData(TimeSeriesEnsemble<TimeSeries>& mts, multi_regular_time_series_data& result);
 DATATYPES_DLL_LIB double** ToRawData(TimeSeriesEnsemble<TimeSeries>& mts);
-DATATYPES_DLL_LIB void DisposeMultiTimeSeriesData(double** d, size_t n);
-DATATYPES_DLL_LIB void DisposeMultiTimeSeriesData(multi_regular_time_series_data& d);
+DATATYPES_DLL_LIB void DisposeMultiTimeSeriesData(multi_regular_time_series_data* d);
+DATATYPES_DLL_LIB void DisposeTimeSeriesDimensionDescriptions(time_series_dimensions_description* d);

@@ -14,12 +14,37 @@ mkDate <- function (year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC")  {
   ISOdate(year, month, day, hour, min, sec, tz=tz) 
 }
 
+#' Creates an ensemble time series 
+#'
+#' Creates an ensemble time series 
+#'
+#' @param tsStartEns  data coercible to a POSIXct start date of the ensemble time series.
+#' @param n	   integer. length of the ensemble time series
+#' @param timeStep  a character vector (numeric integers are 'tolerated' as seconds). Examples are '24:00:00', 'hourly', 'daily'.
+#' @examples
+#' \dontrun{
+#' n_days <- 10  
+#' tsStartDate <- lubridate::origin
+#' ensFcTs <- createEnsembleForecastTimeSeries(tsStartDate, n_days, 'daily')
+#' fcastsOffset <- lubridate::hours(1)
+#' nLead <- 5
+#' nEns <- 4
+#' set.seed(465)
+#' x <- matrix(rnorm(n=nEns*nLead), ncol=nEns)
+#' for (i in as.integer(1:n_days)) {
+#'   multiTimeSeriesIn <- mkHourlySeries(tsStartDate+ lubridate::hours(i) + fcastsOffset, (x+i-1), is.na)
+#'   uchronia::setItem(ensFcTs, i, multiTimeSeriesIn)
+#' }
+#' print(x)
+#' print(uchronia::getItem(ensFcTs, 1))
+#' }
 #' @export
-createEnsembleForecastTimeSeries <- function (tsStartEns, n, timeStep) {
+createEnsembleForecastTimeSeries <- function (tsStartEns, n, timeStep='daily') {
+  tsStartEns <- as.POSIXct(tsStartEns)
   if(is.numeric(timeStep)) {
     timeStep <- as.integer(timeStep)
-    if(timeStep==3600) {timeStep <- 'daily'
-    } else if(timeStep==86400) {timeStep <- 'hourly'
+    if(timeStep==3600) {timeStep <- 'hourly'
+    } else if(timeStep==86400) {timeStep <- 'daily'
     }  else {stop(paste('unhandled time step: ', timeStep))}
   } else if (!is.character(timeStep)) {
     stop(paste('unhandled type for time step information: ', typeof(timeStep)))
@@ -27,11 +52,31 @@ createEnsembleForecastTimeSeries <- function (tsStartEns, n, timeStep) {
   CreateEnsembleForecastTimeSeries_R(tsStartEns, n, timeStep)
 }
 
+#' Sets an item of an ensemble time series 
+#'
+#' Sets an item of an ensemble time series 
+#'
+#' @param ensFcTs  R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+#' @param i	   integer. One-based index in the ensemble forecast.
+#' @param multiTimeSeries an xts object to put the the specified index
+#' @examples
+#' \dontrun{
+#' ensFcTs <- createEnsembleForecastTimeSeries(lubridate::origin, 3, 'daily')
+#' fcastsOffset <- lubridate::hours(1)
+#' nLead <- 5
+#' nEns <- 4
+#' set.seed(465)
+#' x <- matrix(rnorm(n=nEns*nLead), ncol=nEns)
+#' multiTimeSeriesIn <- mkHourlySeries(lubridate::origin + fcastsOffset, x, is.na)
+#' uchronia::setItem(ensFcTs, 1, multiTimeSeriesIn)
+#' print(x)
+#' print(uchronia::getItem(ensFcTs, 1))
+#' }
 #' @export
 setItem <- function(ensFcTs, i, multiTimeSeries) {
   stopifnot(is.xts(multiTimeSeries))
   mts <- cinterop::asInteropRegularTimeSeries(multiTimeSeries)
-  SetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs, i, mts)
+  SetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs, as.integer(i-1), mts)
 }
 
 ensTsToXts <- function(ensTs) {  # RegularTimeSeries in cinterop
@@ -39,9 +84,28 @@ ensTsToXts <- function(ensTs) {  # RegularTimeSeries in cinterop
   return(mkSeriesRegularTstep(ensTs@TsGeom@Start, x, isMissingFunc=is.na, ensTs@TsGeom@TimeStepSeconds))
 }
 
+#' Gets an item of an ensemble time series 
+#'
+#' Gets an item of an ensemble time series 
+#'
+#' @param ensFcTs  R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+#' @param i	   integer. One-based index in the ensemble forecast.
+#' @examples
+#' \dontrun{
+#' ensFcTs <- createEnsembleForecastTimeSeries(lubridate::origin, 3, 'daily')
+#' fcastsOffset <- lubridate::hours(1)
+#' nLead <- 5
+#' nEns <- 4
+#' set.seed(465)
+#' x <- matrix(rnorm(n=nEns*nLead), ncol=nEns)
+#' multiTimeSeriesIn <- mkHourlySeries(lubridate::origin + fcastsOffset, x, is.na)
+#' uchronia::setItem(ensFcTs, 1, multiTimeSeriesIn)
+#' print(x)
+#' print(uchronia::getItem(ensFcTs, 1))
+#' }
 #' @export
 getItem <- function(ensFcTs, i) {
-  return(ensTsToXts(GetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs, i)))
+  return(ensTsToXts(GetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs, as.integer(i-1))))
 }
 
 #' Make an hourly time series

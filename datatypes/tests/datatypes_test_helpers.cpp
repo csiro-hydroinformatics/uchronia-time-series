@@ -280,6 +280,11 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 			return result;
 		}
 
+		vector<DataDimensionDescriptor> TestSingleTimeSeriesStore::GetDataDimensionsDescription() const
+		{
+			return{ DataDimensionDescriptor (TIME_DIM_TYPE_DATA_DIMENSION)};
+		}
+
 		TTimeSeries<double>* TestSingleTimeSeriesStore::Read()
 		{
 			return new TTimeSeries<double>(innerTs);
@@ -349,6 +354,16 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 		{
 			return "";
 		}
+
+		vector<DataDimensionDescriptor> TestTimeSeriesEnsembleTimeSeriesStore::GetDataDimensionsDescription() const
+		{
+			return{ 
+				DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION) ,
+				DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION) ,
+				DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+			};
+		}
+
 		TimeStep TestTimeSeriesEnsembleTimeSeriesStore::GetTimeStep() const
 		{
 			return ensFts->GetTimeStep();
@@ -425,6 +440,14 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 		string TestEnsembleTimeSeriesStore::GetDataSummary() const
 		{
 			return "";
+		}
+
+		vector<DataDimensionDescriptor> TestEnsembleTimeSeriesStore::GetDataDimensionsDescription() const
+		{
+			return{
+				DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION) ,
+				DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+			};
 		}
 
 		TestTimeSeriesStoreFactory::TestTimeSeriesStoreFactory() {}

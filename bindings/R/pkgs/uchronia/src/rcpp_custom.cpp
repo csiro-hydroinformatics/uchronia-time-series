@@ -92,3 +92,15 @@ Rcpp::S4 GetEnsembleForecastTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> t
 	return fromMarshalledTsinfo(mtsg);
 }
 
+// [[Rcpp::export]]
+List TimeSeriesToTsInfo_Pkg(XPtr<opaque_pointer_handle> timeSeries)
+{
+	regular_time_series_geometry mtsg;
+	void* ts = timeSeries->get();
+	GetTimeSeriesGeometry(ts, &mtsg);
+	double * values = new double[mtsg.length];
+	GetTimeSeriesValues(ts, values, mtsg.length);
+	NumericVector data = to_custom_numeric_vector<NumericVector>(values, mtsg.length, false);
+	delete[] values;
+	return cinterop::timeseries::make_time_series_info<List>(data, mtsg);
+}

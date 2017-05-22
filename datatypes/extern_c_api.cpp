@@ -199,6 +199,25 @@ void SetItemEnsembleForecastTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_PTR series,
 	INTERCEPT_STD_EXCEPTION
 }
 
+time_series_dimensions_description* GetDataDimensionsDescription(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataId)
+{
+	TRY_START
+		auto d = ENSEMBLE_DATA_SET_DYNCAST(dataLibrary);
+	auto dims = d->GetDataDimensionsDescription(string(dataId));
+	auto res = ToTimeSeriesDimensionDescriptions(dims);
+	return res;
+	INTERCEPT_STD_EXCEPTION
+}
+
+void DisposeDataDimensionsDescriptions(time_series_dimensions_description* data)
+{
+	TRY_START
+		if (data == nullptr)
+			throw std::logic_error("DisposeDataDimensionsDescriptions: data cannot be a nullptr");
+	DisposeTimeSeriesDimensionDescriptions(data);
+	INTERCEPT_STD_EXCEPTION
+}
+
 multi_regular_time_series_data* GetItemEnsembleForecastTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i)
 {
 	TRY_START
@@ -211,8 +230,7 @@ multi_regular_time_series_data* GetItemEnsembleForecastTimeSeries(ENSEMBLE_FOREC
 void DisposeMultiTimeSeriesData(multi_regular_time_series_data* data)
 {
 	TRY_START
-	DisposeMultiTimeSeriesData(*data);
-	delete data;
+	DisposeMultiTimeSeriesData(data);
 	INTERCEPT_STD_EXCEPTION
 }
 

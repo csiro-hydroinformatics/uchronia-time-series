@@ -70,6 +70,7 @@ namespace datatypes {
 			TestSingleTimeSeriesStore(const vector<double>& values, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly());
 			TestSingleTimeSeriesStore(const TimeSeries& series);
 			string GetDataSummary() const;
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const;
 			TTimeSeries<double>* Read();
 			TTimeSeries<double>* Read(const string& blah);
 			MultiTimeSeries<TTimeSeries<double>*>* ReadAllCollection();
@@ -101,6 +102,7 @@ namespace datatypes {
 			ptime GetStart() const;
 			//vector<string> GetItemIdentifiers() const;
 			string GetDataSummary() const;
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const;
 			TimeStep GetTimeStep() const;
 
 			bool IsActive();
@@ -132,6 +134,7 @@ namespace datatypes {
 			TestEnsembleTimeSeriesStore(const MultiTimeSeries<>& data);
 			MultiTimeSeries<TTimeSeries<double>*>* Read();
 			string GetDataSummary() const;
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const;
 		private:
 			MultiTimeSeries<> data;
 		};
