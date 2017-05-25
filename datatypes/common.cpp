@@ -190,14 +190,25 @@ namespace datatypes
 
 }
 
+namespace datatypes
+{
+	namespace utils
+	{
+
+		void datatypes_delete_ansi_string_array(char** values, int arrayLength)
+		{
+			if (values == nullptr)
+				throw std::logic_error("delete_ansi_string_array: values cannot be a nullptr");
+			for (int i = 0; i < arrayLength; i++)
+				delete[] values[i];
+			delete[] values;
+		}
+	}
+}
 // Provide an implementation for c_cpp_interop.cpp
 void delete_ansi_string_array(char** values, int arrayLength)
 {
-	if (values == nullptr)
-		throw std::logic_error("delete_ansi_string_array: values cannot be a nullptr");
-	for (int i = 0; i < arrayLength; i++)
-		delete[] values[i];
-	delete[] values;
+	datatypes::utils::datatypes_delete_ansi_string_array(values, arrayLength);
 }
 
 void delete_array(double* values) {

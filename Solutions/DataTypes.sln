@@ -10,6 +10,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdatatypes", "..\tests\t
 		{D0FF7544-4149-4A72-8843-EAB66C94D1D1} = {D0FF7544-4149-4A72-8843-EAB66C94D1D1}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{96F9BC26-8EDB-407B-AFFE-4985BB7E3CC4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdatatypesapi", "..\tests\api\testdatatypesapi.vcxproj", "{CECFFBC4-84B1-49D1-BEDF-A78ABC8EB60C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D0FF7544-4149-4A72-8843-EAB66C94D1D1} = {D0FF7544-4149-4A72-8843-EAB66C94D1D1}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -34,6 +41,14 @@ Global
 		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Release|Win32.Build.0 = Release|Win32
 		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Release|x64.ActiveCfg = Release|x64
 		{A2B27D42-7718-481F-A6A0-BEA4EA117658}.Release|x64.Build.0 = Release|x64
+		{CECFFBC4-84B1-49D1-BEDF-A78ABC8EB60C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CECFFBC4-84B1-49D1-BEDF-A78ABC8EB60C}.Debug|Win32.Build.0 = Debug|Win32
+		{CECFFBC4-84B1-49D1-BEDF-A78ABC8EB60C}.Debug|x64.ActiveCfg = Debug|x64
+		{CECFFBC4-84B1-49D1-BEDF-A78ABC8EB60C}.Debug|x64.Build.0 = Debug|x64
+		{CECFFBC4-84B1-49D1-BEDF-A78ABC8EB60C}.Release|Win32.ActiveCfg = Release|Win32
+		{CECFFBC4-84B1-49D1-BEDF-A78ABC8EB60C}.Release|Win32.Build.0 = Release|Win32
+		{CECFFBC4-84B1-49D1-BEDF-A78ABC8EB60C}.Release|x64.ActiveCfg = Release|x64
+		{CECFFBC4-84B1-49D1-BEDF-A78ABC8EB60C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

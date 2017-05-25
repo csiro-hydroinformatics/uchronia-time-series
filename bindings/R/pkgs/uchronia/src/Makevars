@@ -1,5 +1,12 @@
 
 INSTDIR=../inst
-PKG_CPPFLAGS = -I$(INSTDIR)/include 
+
+CPP_LANG_FLAGS = --std=c++0x 
+# an intel compiler still requires 'future' flag for 5yrs old stuff.
+ifeq "$(CXX)" "icpc"
+CPP_LANG_FLAGS = -std=c++0x 
+endif
+
+PKG_CPPFLAGS = $(CPP_LANG_FLAGS) -I$(INSTDIR)/include $(PKG_CPPFLAGS_SITE)
 PKG_LIBS = -ldatatypes -lmoirai 
 

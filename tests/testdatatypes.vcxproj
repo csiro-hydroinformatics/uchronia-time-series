@@ -60,8 +60,6 @@
     <None Include="create_swift_netcdf_ens_data.R" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="catch.hpp" />
-    <ClInclude Include="catch_macros.hpp" />
     <ClInclude Include="common_datatypes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

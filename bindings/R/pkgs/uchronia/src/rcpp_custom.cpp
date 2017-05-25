@@ -1,4 +1,5 @@
-#include "uchronia_wrapper_setup.h"
+#include <string>
+#include "rcpp_custom.h"
 #include "uchronia_r_exports.h"
 #include "uchronia_struct_interop.h"
 
@@ -51,7 +52,7 @@ Rcpp::S4 fromMarshalledTsinfo(const regular_time_series_geometry& mts)
 }
 
 // [[Rcpp::export]]
-Rcpp::S4 GetTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries, CharacterVector variableIdentifier)
+Rcpp::S4 GetTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries)
 {
 	regular_time_series_geometry mtsg;
 	GetTimeSeriesGeometry(timeSeries->get(), &mtsg);
@@ -90,5 +91,44 @@ Rcpp::S4 GetEnsembleForecastTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> t
 	regular_time_series_geometry mtsg;
 	GetEnsembleForecastTimeSeriesGeometry(timeSeries->get(), &mtsg);
 	return fromMarshalledTsinfo(mtsg);
+}
+
+// [[Rcpp::export]]
+List TimeSeriesToTsInfo_Pkg(XPtr<opaque_pointer_handle> timeSeries)
+{
+	regular_time_series_geometry mtsg;
+	void* ts = timeSeries->get();
+	GetTimeSeriesGeometry(ts, &mtsg);
+	double * values = new double[mtsg.length];
+	GetTimeSeriesValues(ts, values, mtsg.length);
+	NumericVector data = to_custom_numeric_vector<NumericVector>(values, mtsg.length, false);
+	delete[] values;
+	return cinterop::timeseries::make_time_series_info<List>(data, mtsg);
+}
+
+
+Rcpp::S4 wrap_xptr(const XPtr<opaque_pointer_handle>& xptr, const string& type = "")
+{
+	return cinterop::create_rcpp_xptr_wrapper<opaque_pointer_handle>(xptr, type);
+}
+
+// [[Rcpp::export]]
+Rcpp::S4 GetDatasetFromLibrary_Pkg(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataIdentifier)
+{
+	time_series_dimensions_description* desc = GetDataDimensionsDescription(dataLibrary->get(), dataIdentifier[0]);
+	size_t dimensions = desc->num_dimensions;
+	DisposeDataDimensionsDescriptions(desc);
+	switch (dimensions)
+	{
+	case 1:
+		return wrap_xptr(GetDatasetSingleTimeSeries_Rcpp(dataLibrary, dataIdentifier), "TIME_SERIES_PTR");
+	case 2:
+		return wrap_xptr(GetDatasetEnsembleTimeSeries_Rcpp(dataLibrary, dataIdentifier), "ENSEMBLE_PTR_TIME_SERIES_PTR");
+	case 3:
+		return wrap_xptr(GetDatasetEnsembleForecastTimeSeries_Rcpp(dataLibrary, dataIdentifier), "ENSEMBLE_FORECAST_TIME_SERIES_PTR");
+	default:
+		std::logic_error("Number of dimensions for a data set is not supported: " + std::to_string(dimensions));
+		return S4();
+	}
 }
 

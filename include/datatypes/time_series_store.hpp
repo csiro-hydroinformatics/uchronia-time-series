@@ -72,6 +72,34 @@ namespace datatypes
 			virtual TTimeSeries<T>* GetSingle(const string& dataId) = 0;
 		};
 
+#define TIME_DIM_TYPE_DATA_DIMENSION "time"
+
+		// Collection may not be a necessary distinction compared to ensemble. Reconsider.
+#define COLLECTION_DIM_TYPE_DATA_DIMENSION "collection"
+#define ENSEMBLE_DIM_TYPE_DATA_DIMENSION "ensemble"
+
+		class DATATYPES_DLL_LIB DataDimensionDescriptor
+		{
+		public:
+			DataDimensionDescriptor(const string& type, const string& dimname = "", size_t size = 0);
+			DataDimensionDescriptor(const DataDimensionDescriptor& src);
+			DataDimensionDescriptor(DataDimensionDescriptor&& src);
+			DataDimensionDescriptor& operator=(const DataDimensionDescriptor& src);
+			DataDimensionDescriptor& operator=(DataDimensionDescriptor&& src);
+			string DimensionType; // "collection", "ensemble", "time"
+			string DimensionName;
+			size_t Size = 0;
+		};
+
+
+		class DATATYPES_DLL_LIB DataDescriptor
+		{
+		public:
+			virtual string GetDataSummary() const = 0;
+			virtual vector<DataDimensionDescriptor> GetDataDimensionsDescription() const = 0;
+		};
+
+
 		/**
 		 * \class	SingleTimeSeriesStore
 		 *
@@ -82,14 +110,16 @@ namespace datatypes
 
 		template <typename T>
 		class DATATYPES_DLL_LIB SingleTimeSeriesStore :
-			public IdentifiersProvider 
+			public IdentifiersProvider, 
+			public DataDescriptor
 		{
 		public:
 			virtual ~SingleTimeSeriesStore() {};
 			virtual TTimeSeries<T>* Read() = 0;
 			virtual TTimeSeries<T>* Read(const string& collectionIdentifier) = 0;
 			virtual MultiTimeSeries<TTimeSeries<T>*>* ReadAllCollection() = 0;
-			virtual string GetDataSummary() const = 0;
+			//virtual string GetDataSummary() const = 0;
+			//virtual vector<DataDimensionDescriptor> GetDataDimensionsDescription() const = 0;
 		};
 
 		/**
@@ -102,12 +132,13 @@ namespace datatypes
 
 		template <typename T>
 		class DATATYPES_DLL_LIB EnsembleTimeSeriesStore :
-			public IdentifiersProvider
+			public IdentifiersProvider,
+			public DataDescriptor
 		{
 		public:
 			virtual ~EnsembleTimeSeriesStore() {};
 			virtual MultiTimeSeries<TTimeSeries<T>*>* Read() = 0;
-			virtual string GetDataSummary() const = 0;
+			//virtual string GetDataSummary() const = 0;
 			virtual vector<string> GetIdentifiers() const { datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();  vector<string> x; return x; }
 		};
 
@@ -122,7 +153,8 @@ namespace datatypes
 		template <typename T>
 		class DATATYPES_DLL_LIB TimeSeriesEnsembleTimeSeriesStore :
 			public IdentifiersProvider,
-			public TimeSeriesInfoProvider
+			public TimeSeriesInfoProvider,
+			public DataDescriptor
 		{
 		public:
 
@@ -153,7 +185,7 @@ namespace datatypes
 				return 0;
 			}
 
-			virtual string GetDataSummary() const = 0;
+			//virtual string GetDataSummary() const = 0;
 			// TODO: revise these. Now that the store has a GetSeries method, these should be hidden further. 
 			//protected:
 			virtual PtrEnsemblePtrType Read(const string& ensembleIdentifier) = 0;
@@ -651,6 +683,8 @@ namespace datatypes
 			vector<string> GetIdentifiers(const string& dataId) const;
 
 			string GetDataSummary(const string& dataId);
+
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription(const string& dataId);
 
 			/**
 			* \brief	Gets a single time series out of the library

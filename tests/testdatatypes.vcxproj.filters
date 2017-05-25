@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="catch.hpp" >
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="catch_macros.hpp" >
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="common_datatypes.h" >
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -44,8 +38,5 @@
     <ClCompile Include="time_series_libraries.cpp" >
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="datatypes.natvis" />
   </ItemGroup>
 </Project>

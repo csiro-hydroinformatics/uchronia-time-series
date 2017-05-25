@@ -48,11 +48,31 @@ namespace datatypes {
 			static string BuildPath(const vector<string>& folders);
 			static TimeSeriesLibrary CreateEnsembleTimeSeriesLibrary(string& rainObsId, string& petObsId, string& rainFcastId, string& petFcastId);
 			static TimeSeriesLibrary GetTestTimeSeriesLibrary();
+			static vector<string> TestTsLibraryIdentifiers();
+			static TimeSeriesLibrary* CreateTestTimeSeriesLibrary();
+			static void MakeTestTimeSeriesLibrary(TimeSeriesLibrary& dataLibrary);
 
 			const static string kVarSingleStation;
 			const static string kVarMultiStations;
 			const static string kFileSingleStation;
 			const static string kFileMultiStations;
+
+
+			const static string kFileAllDataCases;
+			const static string kVar1FcastEns;
+			const static string kVar2FcastEns;
+			const static string kVar1Obs;
+			const static string kVar2Obs;
+			const static string kVar1Ens;
+			const static string kVar2Ens;
+
+			const static string kIdentifier1FcastEns;
+			const static string kIdentifier2FcastEns;
+			const static string kIdentifier1Obs;
+			const static string kIdentifier2Obs;
+			const static string kIdentifier1Ens;
+			const static string kIdentifier2Ens;
+
 
 			const static string kSingleStationId;
 			const static string kStationIdOne;
@@ -70,6 +90,7 @@ namespace datatypes {
 			TestSingleTimeSeriesStore(const vector<double>& values, const ptime& startDate, const TimeStep& timeStep = TimeStep::GetHourly());
 			TestSingleTimeSeriesStore(const TimeSeries& series);
 			string GetDataSummary() const;
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const;
 			TTimeSeries<double>* Read();
 			TTimeSeries<double>* Read(const string& blah);
 			MultiTimeSeries<TTimeSeries<double>*>* ReadAllCollection();
@@ -106,6 +127,7 @@ namespace datatypes {
 			ptime GetStart() const;
 			//vector<string> GetItemIdentifiers() const;
 			string GetDataSummary() const;
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const;
 			TimeStep GetTimeStep() const;
 
 			bool IsActive();
@@ -139,6 +161,7 @@ namespace datatypes {
 			TestEnsembleTimeSeriesStore(const MultiTimeSeries<>& data);
 			MultiTimeSeries<TTimeSeries<double>*>* Read();
 			string GetDataSummary() const;
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const;
 		private:
 			MultiTimeSeries<> data;
 		};

@@ -140,3 +140,93 @@ TEST_CASE("Creation of a NetCdfTimeSeriesEnsembleTimeSeriesStore as a back-end t
 
 }
 
+TEST_CASE("Ensemble input provider")
+{
+	using namespace datatypes::timeseries::io;
+
+	string rainObsId("rain_obs");
+	string petObsId("pet_obs");
+
+	string rainNcVarname("rain_der");
+	string petNcVarname("pet_der");
+
+	string historicalSeriesNcIdentifier("1");
+
+	string rainFcastNcVarname("rain_fcast_ens");
+	string rainFcastId("rain_fcast_ens");
+
+	string petFcastNcVarname(petNcVarname);
+	string petFcastId("pet_fcast_ens");
+
+	std::string testDir = TestDataLocationHelper::ReadEnvironmentVariable("SWIFT_TEST_DIR");
+
+	TimeSeriesLibraryDescription tsld;
+	tsld.AddSingle(rainObsId, TimeSeriesLibraryFactory::CreateNetcdfSourceInfo(rainObsId, NetCdfSourceInfo::StorageTypeSingleNetcdfFile, TestDataLocationHelper::BuildPath({ testDir, "Obs_data", "Upper_Murray_rain_1hr.nc" }), rainNcVarname, historicalSeriesNcIdentifier));
+	tsld.AddSingle(petObsId, TimeSeriesLibraryFactory::CreateNetcdfSourceInfo(petObsId, NetCdfSourceInfo::StorageTypeSingleNetcdfFile, TestDataLocationHelper::BuildPath({ testDir, "Obs_data", "Upper_Murray_pet_24h_89_2012.nc" }), petNcVarname, historicalSeriesNcIdentifier));
+	tsld.AddSingle(petFcastId, TimeSeriesLibraryFactory::CreateNetcdfSourceInfo(petFcastId, NetCdfSourceInfo::StorageTypeSingleNetcdfFile, TestDataLocationHelper::BuildPath({ testDir, "Fct_Data", "Upper_Murray_pet_clim_1990_2010.nc" }), petNcVarname, historicalSeriesNcIdentifier));
+
+	string forecastDataFiles(TestDataLocationHelper::BuildPath({ testDir, "Fct_Data", "Upper_Murray_F1_1_{0}21_shuffle.nc" })); // where {0} is e.g. 20100801
+	tsld.AddTsEnsembleTs(rainFcastId, TimeSeriesLibraryFactory::CreateNetcdfSourceInfo(rainFcastId, NetCdfSourceInfo::StorageTypeMultipleNetcdfFiles, forecastDataFiles, rainFcastNcVarname, string("1"), 0,
+		"daily", "20100801T210000", 0, 0, 0, "hourly"));
+
+	boost::filesystem::path p = FileSystemHelper::GetTempFile();
+	ConfigFileHelper::SaveTimeSeriesLibraryDescription(tsld, p.generic_string());
+	auto loaded = ConfigFileHelper::LoadTimeSeriesLibraryDescription(p.generic_string());
+	FileSystemHelper::Remove(p);
+
+	auto skeys = loaded.GetDataIdSingle();
+	REQUIRE_EQUAL(3, skeys.size());
+	REQUIRE(datatypes::utils::StringProcessing::EqualsAny(rainObsId, skeys));
+	REQUIRE(datatypes::utils::StringProcessing::EqualsAny(petObsId, skeys));
+	REQUIRE(datatypes::utils::StringProcessing::EqualsAny(petFcastId, skeys));
+
+	//REQUIRE_EQUAL(TestDataLocationHelper::BuildPath({ testDir, "Obs_data", "Upper_Murray_rain_1hr.nc"} ), loaded.GetFilename(rainObsId));
+	//REQUIRE_EQUAL(-1, loaded.GetIndex(rainObsId));
+
+	auto ekeys = loaded.GetDataIdTsEnsembleTs();
+	REQUIRE_EQUAL(1, ekeys.size());
+	//REQUIRE_EQUAL(TestDataLocationHelper::BuildPath({ testDir, "Fct_Data", "Upper_Murray_F1_1_{0}21_shuffle.nc"} ), loaded.GetFilename(rainFcastId));
+	//REQUIRE_EQUAL(0, loaded.GetIndex(rainFcastId));
+
+	//datatypes::timeseries::io::ConfigFileHelper::SaveTimeSeriesLibraryDescription(tsld, string("f:\\tmp\\tsld.yaml"));
+
+	// Tease out an API for ensemble of inputs that may be on disk in a variety of forms.
+	// See usage of 		TimeSeriesLibrary dataLibrary in previous FACTs
+	// 
+	// MultifileNetCDFTimeSeriesStore<double> store(DataDirectory);
+
+	/*
+	PtrSeriesType obsPetTimeSeries = TsOps::TrimTimeSeries(fullHourlyObsPetTimeSeries, ptime(from_iso_string("19900101T000000")), ptime(from_iso_string("20100805T200000")));
+
+	Catchment* c = CatchmentTestHelper::CreateOneMegPerDayLineNetwork(1);
+	ModelRunner mr(c);
+	ptime historicStart = obsPetTimeSeries->GetStartDate();
+	int historicLength = obsPetTimeSeries->GetLength();
+	CatchmentTestHelper::SetHourlyTimeStepSpan(mr, historicStart, historicLength);
+
+	mr.Play(rainVarId, *obsRainTimeSeries);
+	mr.Play(petVarId, *obsPetTimeSeries);
+
+	mr.InitializeSimulation();
+
+	// Run from historic start to historic end minus 4 days (96 hours)
+
+	mr.RunTimeSteps(historicLength - (24 * 4));
+
+	EnsembleForecastModelRunner efmr = EnsembleForecastModelRunner(mr);
+
+	efmr.Setup(mr.GetSimulationTime(), TimeStep::GetHourly(), 5, 1000, 231, 24);
+
+	efmr.Play(rainfallEnsembles, rainVarId);
+	efmr.PlaySingle(petEnsembles, petVarId);
+
+	efmr.Record(runoffVarId);
+	efmr.Record(memoryStateVarId);
+
+	efmr.RunEnsembles();
+
+
+	*/
+
+
+}

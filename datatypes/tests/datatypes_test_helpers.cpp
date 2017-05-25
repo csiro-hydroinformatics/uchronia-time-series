@@ -224,11 +224,10 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 			return dataLibrary;
 		}
 
-		TimeSeriesLibrary TestDataLocationHelper::GetTestTimeSeriesLibrary()
+		void TestDataLocationHelper::MakeTestTimeSeriesLibrary(TimeSeriesLibrary& dataLibrary)
 		{
 			string testDir = TestDataLocationHelper::ReadEnvironmentVariable("SWIFT_TEST_DIR");
-			string d = TestDataLocationHelper::BuildPath({ testDir, "netcdf"});
-			TimeSeriesLibrary dataLibrary;
+			string d = TestDataLocationHelper::BuildPath({ testDir, "netcdf" });
 			string singleStationId("1");
 			vector<string> multiStationIds = TestStationIds();
 			string singleStationFile = TestDataLocationHelper::BuildPath({ d, TestDataLocationHelper::kFileSingleStation });
@@ -239,14 +238,58 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 			dataLibrary.AddSource(TestDataLocationHelper::kVarMultiStations,
 				TimeSeriesLibraryFactory::CreateTsSource(multiStationFile, TestDataLocationHelper::kVarMultiStations, multiStationIds[0]));
 
-			return dataLibrary;
+			string fileAllDataCases = TestDataLocationHelper::BuildPath({ d, TestDataLocationHelper::kFileAllDataCases });
 
+			auto tsSrc = TimeSeriesLibraryFactory::CreateTsSource(fileAllDataCases, TestDataLocationHelper::kVar1Obs, multiStationIds[0]);
+			dataLibrary.AddSource(TestDataLocationHelper::kIdentifier1Obs, tsSrc);
+
+			auto ensTsSrc = TimeSeriesLibraryFactory::CreateEnsTsSource(fileAllDataCases, TestDataLocationHelper::kVar1Ens, multiStationIds[0]);
+			dataLibrary.AddSource(TestDataLocationHelper::kIdentifier1Ens, ensTsSrc);
+
+			auto tsEnsTsSrc = TimeSeriesLibraryFactory::CreateTsEnsTsSource(fileAllDataCases, TestDataLocationHelper::kVar1FcastEns, multiStationIds[0]);
+			dataLibrary.AddSource(TestDataLocationHelper::kIdentifier1FcastEns, tsEnsTsSrc);
+		}
+
+		vector<string> TestDataLocationHelper::TestTsLibraryIdentifiers()
+		{
+			return{ kVarSingleStation, kVarMultiStations,
+				kIdentifier1Obs , kIdentifier1Ens, kIdentifier1FcastEns };
+		}
+
+		TimeSeriesLibrary TestDataLocationHelper::GetTestTimeSeriesLibrary()
+		{
+			TimeSeriesLibrary dataLibrary;
+			MakeTestTimeSeriesLibrary(dataLibrary);
+			return dataLibrary;
+		}
+
+		TimeSeriesLibrary* TestDataLocationHelper::CreateTestTimeSeriesLibrary()
+		{
+			TimeSeriesLibrary* dataLibrary = new TimeSeriesLibrary();
+			MakeTestTimeSeriesLibrary(*dataLibrary);
+			return dataLibrary;
 		}
 
 		const string TestDataLocationHelper::kVarSingleStation("var_single");
 		const string TestDataLocationHelper::kVarMultiStations("var_multi_stations");
 		const string TestDataLocationHelper::kFileSingleStation("testswift_w417_1.nc");
 		const string TestDataLocationHelper::kFileMultiStations("testswift_w417_2.nc");
+
+
+		const string TestDataLocationHelper::kFileAllDataCases("testswift_2015.nc");
+		const string TestDataLocationHelper::kVar1FcastEns("var1_fcast_ens");
+		const string TestDataLocationHelper::kVar2FcastEns("var2_fcast_ens");
+		const string TestDataLocationHelper::kVar1Obs("var1_obs");
+		const string TestDataLocationHelper::kVar2Obs("var2_obs");
+		const string TestDataLocationHelper::kVar1Ens("var1_ens");
+		const string TestDataLocationHelper::kVar2Ens("var2_ens");
+
+		const string TestDataLocationHelper::kIdentifier1FcastEns("id1_fcast_ens");
+		const string TestDataLocationHelper::kIdentifier2FcastEns("id2_fcast_ens");
+		const string TestDataLocationHelper::kIdentifier1Obs("id1_obs");
+		const string TestDataLocationHelper::kIdentifier2Obs("id2_obs");
+		const string TestDataLocationHelper::kIdentifier1Ens("id1_ens");
+		const string TestDataLocationHelper::kIdentifier2Ens("id2_ens");
 
 		const string TestDataLocationHelper::kSingleStationId("1");
 		const string TestDataLocationHelper::kStationIdOne("123");
@@ -278,6 +321,11 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 				string(", end: ") + to_iso_extended_string(end) +
 				string(", time step: ") + innerTs.GetTimeStep().GetName();
 			return result;
+		}
+
+		vector<DataDimensionDescriptor> TestSingleTimeSeriesStore::GetDataDimensionsDescription() const
+		{
+			return{ DataDimensionDescriptor (TIME_DIM_TYPE_DATA_DIMENSION)};
 		}
 
 		TTimeSeries<double>* TestSingleTimeSeriesStore::Read()
@@ -356,6 +404,16 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 		{
 			return "";
 		}
+
+		vector<DataDimensionDescriptor> TestTimeSeriesEnsembleTimeSeriesStore::GetDataDimensionsDescription() const
+		{
+			return{ 
+				DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION) ,
+				DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION) ,
+				DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+			};
+		}
+
 		TimeStep TestTimeSeriesEnsembleTimeSeriesStore::GetTimeStep() const
 		{
 			return ensFts->GetTimeStep();
@@ -432,6 +490,14 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 		string TestEnsembleTimeSeriesStore::GetDataSummary() const
 		{
 			return "";
+		}
+
+		vector<DataDimensionDescriptor> TestEnsembleTimeSeriesStore::GetDataDimensionsDescription() const
+		{
+			return{
+				DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION) ,
+				DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+			};
 		}
 
 		TestTimeSeriesStoreFactory::TestTimeSeriesStoreFactory() {}

@@ -462,6 +462,54 @@ namespace datatypes
 				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data identifier ") + dataId + "not found");
 		}
 
+		DataDimensionDescriptor::DataDimensionDescriptor(const string& type, const string& dimname, size_t size)
+		{
+			DimensionType = type;
+			DimensionName = dimname;
+			Size = size;
+		}
+
+		DataDimensionDescriptor::DataDimensionDescriptor(const DataDimensionDescriptor& src)
+		{
+			*this = src;
+		}
+		DataDimensionDescriptor::DataDimensionDescriptor(DataDimensionDescriptor&& src)
+		{
+			*this = src;
+		}
+
+		DataDimensionDescriptor& DataDimensionDescriptor::operator=(const DataDimensionDescriptor& src)
+		{
+			if (&src == this) {
+				return *this;
+			}
+			DimensionType = src.DimensionType;
+			DimensionName = src.DimensionName;
+			Size = src.Size;
+			return *this;
+		}
+
+		DataDimensionDescriptor& DataDimensionDescriptor::operator=(DataDimensionDescriptor&& src)
+		{
+			if (&src == this) {
+				return *this;
+			}
+			std::swap(*this, src);
+			return *this;
+		}
+
+		vector<DataDimensionDescriptor> TimeSeriesLibrary::GetDataDimensionsDescription(const string& dataId)
+		{
+			if (hasKey(timeSeriesProviders, dataId))
+				return GetSeriesInformation(dataId)->GetDataDimensionsDescription();
+			if (hasKey(ensTimeSeriesProviders, dataId))
+				return GetEnsembleSeriesInformation(dataId)->GetDataDimensionsDescription();
+			else if (hasKey(tsEnsTimeSeriesProviders, dataId))
+				return GetTimeSeriesEnsembleSeriesInformation(dataId)->GetDataDimensionsDescription();
+			else
+				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data identifier ") + dataId + "not found");
+		}
+
 		TTimeSeries<double>* TimeSeriesLibrary::GetSingle(const string& dataId)
 		{
 			IdentifiersProvider::CheckNotEmpty(dataId);

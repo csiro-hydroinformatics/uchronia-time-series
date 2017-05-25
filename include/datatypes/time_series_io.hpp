@@ -1459,10 +1459,10 @@ namespace datatypes
 			/**
 			* \brief	Constructor to create a new SWIFT netCDF file
 			*
-			* \param	filename			 	name of the new file to create.
-			* \param	nEns				 	Size of the ensembles
-			* \param	nLead				 	Length of the lead time for each of the time series in the ensemble forecast for a given time.
-			* \param	timeUnits			 	Units of the temporal dimension(s).
+			* \param [in]	filename			 	name of the new file to create.
+			* \param [in]	nEns				 	Size of the ensembles
+			* \param [in]	nLead				 	Length of the lead time for each of the time series in the ensemble forecast for a given time.
+			* \param [in]	timeUnits			 	Units of the temporal dimension(s).
 			* \param [in]	timeVar		 	The values of the "main" time dimension, consistent with the temporal units given with the previous parameter
 			* \param [in]	stationIds   	List of identifiers for the stations.
 			* \param [in]	leadTimeUnits	Units of the lead time dimension (if applicable)
@@ -1561,6 +1561,11 @@ namespace datatypes
 						return 0;
 				}
 				return IndexForIdentifier(this->identifier);
+			}
+
+			virtual bool HasIdentifier() const
+			{
+				return (!identifier.empty());
 			}
 
 			virtual string GetIdentifier(bool strict = true) const
@@ -1762,6 +1767,15 @@ namespace datatypes
 				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
 
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			{
+				vector<DataDimensionDescriptor> d;
+				if (!this->HasIdentifier())
+					d.push_back(DataDimensionDescriptor(COLLECTION_DIM_TYPE_DATA_DIMENSION));
+				d.push_back(DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION));
+				return d;
+			}
+
 			TTimeSeries<T>* Read()
 			{
 				return Read(this->GetIdentifier());
@@ -1863,6 +1877,14 @@ namespace datatypes
 			string GetDataSummary() const
 			{
 				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
+			}
+
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			{
+				return{
+					DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+				};
 			}
 
 			vector<string> GetIdentifiers() const 
@@ -2253,6 +2275,16 @@ public:
 			{
 				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
+
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			{
+				return{
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+				};
+			}
+
 
 			using WritableTimeSeriesEnsembleTimeSeriesStore < T >::GetEnsembleSize;
 			using SingleNetCdfFileStore<T>::GetEnsembleSize;
@@ -2656,6 +2688,15 @@ public:
 					string(", time length: ") + boost::lexical_cast<string>(GetLength()) +
 					string(", time step: <not yet supported>");
 				return result;
+			}
+
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			{
+				return{
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(ENSEMBLE_DIM_TYPE_DATA_DIMENSION),
+					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION)
+				};
 			}
 
 		private:
