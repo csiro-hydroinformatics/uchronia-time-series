@@ -371,7 +371,13 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 		TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::GetSeries(const string& dataId)
 		{
 			if (!STLHelper::HasKey(ensFcastsSeries, dataId))
-				ensFcastsSeries[dataId] = CreateNewSeries();
+				if(allowDynamicCreation)
+					ensFcastsSeries[dataId] = CreateNewSeries();
+				else
+				{
+					datatypes::exceptions::ExceptionUtilities::ThrowNotSupported("TestTimeSeriesEnsembleTimeSeriesStore is not set to allow creation of new time series");
+					return nullptr;
+				}
 			return ensFcastsSeries[dataId];
 		}
 
@@ -389,15 +395,13 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 		}
 		size_t TestTimeSeriesEnsembleTimeSeriesStore::GetLength() const
 		{
-			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
-			return 0;
-//	return ensFts->GetLength();
+			auto ensFts = GetFirstTsEnsTs();
+			return ensFts->GetLength();
 		}
 		ptime TestTimeSeriesEnsembleTimeSeriesStore::GetStart() const
 		{
-			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
-			return not_a_date_time;
-			//return ensFts->GetStartDate();
+			auto ensFts = GetFirstTsEnsTs();
+			return ensFts->GetStartDate();
 		}
 		//vector<string> TestTimeSeriesEnsembleTimeSeriesStore::GetItemIdentifiers() const
 		//{

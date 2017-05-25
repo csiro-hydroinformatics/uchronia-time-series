@@ -63,7 +63,7 @@ TEST_CASE("Eager writer back end storage for time series of ensembles")
 		new EagerWriter<TimeSeriesEnsembleTimeSeriesStore<double>::PtrEnsemblePtrType>(tsensts);
 	EnsembleForecastTimeSeries<> writableTs(s);
 
-	EnsembleForecastTimeSeries<>* backEndEnsTs = tsensts->GetBackendSeries("");
+	EnsembleForecastTimeSeries<>* backEndEnsTs = tsensts->GetSeries("");
 
 	EnsembleForecastTimeSeries<> ensTs = DTH::CreateTsEnsembleTs(
 		tsEtsLength,

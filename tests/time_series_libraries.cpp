@@ -44,8 +44,9 @@ TEST_CASE("High level library of time series")
 		ensFts.SetValue(i, mkMts(addVec(values, i), ensSize, TimeStep::GetHourly()).AsPointerSeries());
 	}
 
-	TimeSeriesEnsembleTimeSeriesStore<double>* tsensts = new TestTimeSeriesEnsembleTimeSeriesStore(ensFts);
-	tsl.AddSource("ts_ensemble", tsensts);
+	string tsEnsTsId("ts_ensemble");
+	TimeSeriesEnsembleTimeSeriesStore<double>* tsensts = new TestTimeSeriesEnsembleTimeSeriesStore(ensFts, tsEnsTsId);
+	tsl.AddSource(tsEnsTsId, tsensts);
 
 	auto hasItem = [&](const string& s, const vector<string>& v)
 	{
@@ -69,7 +70,6 @@ TEST_CASE("High level library of time series")
 
 	auto entsActualPtr = tsl.GetTimeSeriesEnsembleTimeSeries("ts_ensemble");
 	REQUIRE_EQUAL_COMPARER(ensFts, *entsActualPtr, TimeSeriesOperations<TimeSeries>::AreTimeSeriesEnsembleTimeSeriesEqual);
-	delete entsActualPtr;
 
 }
 

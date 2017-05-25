@@ -152,6 +152,7 @@ namespace datatypes {
 			PtrTSeriesEnsemblePtrType GetFirstTsEnsTs() const;
 			PtrTSeriesEnsemblePtrType CreateNewSeries();
 			std::map<string, PtrTSeriesEnsemblePtrType> ensFcastsSeries;
+			bool allowDynamicCreation = false;
 			//PtrTSeriesEnsemblePtrType ensFts;
 			//string id;
 		};
