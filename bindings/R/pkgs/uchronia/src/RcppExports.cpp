@@ -22,14 +22,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // GetTimeSeriesGeometry_Pkg
-Rcpp::S4 GetTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries, CharacterVector variableIdentifier);
-RcppExport SEXP uchronia_GetTimeSeriesGeometry_Pkg(SEXP timeSeriesSEXP, SEXP variableIdentifierSEXP) {
+Rcpp::S4 GetTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries);
+RcppExport SEXP uchronia_GetTimeSeriesGeometry_Pkg(SEXP timeSeriesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type timeSeries(timeSeriesSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type variableIdentifier(variableIdentifierSEXP);
-    rcpp_result_gen = Rcpp::wrap(GetTimeSeriesGeometry_Pkg(timeSeries, variableIdentifier));
+    rcpp_result_gen = Rcpp::wrap(GetTimeSeriesGeometry_Pkg(timeSeries));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -76,6 +75,29 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type timeSeries(timeSeriesSEXP);
     rcpp_result_gen = Rcpp::wrap(GetEnsembleForecastTimeSeriesGeometry_Pkg(timeSeries));
+    return rcpp_result_gen;
+END_RCPP
+}
+// TimeSeriesToTsInfo_Pkg
+List TimeSeriesToTsInfo_Pkg(XPtr<opaque_pointer_handle> timeSeries);
+RcppExport SEXP uchronia_TimeSeriesToTsInfo_Pkg(SEXP timeSeriesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type timeSeries(timeSeriesSEXP);
+    rcpp_result_gen = Rcpp::wrap(TimeSeriesToTsInfo_Pkg(timeSeries));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GetDatasetFromLibrary_Pkg
+Rcpp::S4 GetDatasetFromLibrary_Pkg(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataIdentifier);
+RcppExport SEXP uchronia_GetDatasetFromLibrary_Pkg(SEXP dataLibrarySEXP, SEXP dataIdentifierSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type dataIdentifier(dataIdentifierSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetDatasetFromLibrary_Pkg(dataLibrary, dataIdentifier));
     return rcpp_result_gen;
 END_RCPP
 }

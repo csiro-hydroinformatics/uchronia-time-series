@@ -5,8 +5,8 @@ RegisterExceptionCallback_Pkg <- function() {
     invisible(.Call('uchronia_RegisterExceptionCallback_Pkg', PACKAGE = 'uchronia_r'))
 }
 
-GetTimeSeriesGeometry_Pkg <- function(timeSeries, variableIdentifier) {
-    .Call('uchronia_GetTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries, variableIdentifier)
+GetTimeSeriesGeometry_Pkg <- function(timeSeries) {
+    .Call('uchronia_GetTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
 }
 
 GetItemEnsembleForecastTimeSeries_Pkg <- function(series, i) {
@@ -23,6 +23,14 @@ GetEnsembleTimeSeries_Pkg <- function(series) {
 
 GetEnsembleForecastTimeSeriesGeometry_Pkg <- function(timeSeries) {
     .Call('uchronia_GetEnsembleForecastTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
+}
+
+TimeSeriesToTsInfo_Pkg <- function(timeSeries) {
+    .Call('uchronia_TimeSeriesToTsInfo_Pkg', PACKAGE = 'uchronia_r', timeSeries)
+}
+
+GetDatasetFromLibrary_Pkg <- function(dataLibrary, dataIdentifier) {
+    .Call('uchronia_GetDatasetFromLibrary_Pkg', PACKAGE = 'uchronia_r', dataLibrary, dataIdentifier)
 }
 
 GetLastStdExceptionMessage_Rcpp <- function() {

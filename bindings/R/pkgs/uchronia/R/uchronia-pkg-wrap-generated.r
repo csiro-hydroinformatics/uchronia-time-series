@@ -19,12 +19,10 @@ RegisterExceptionCallback_Pkg_R <- function() {
 #' GetTimeSeriesGeometry_Pkg_R Wrapper function for GetTimeSeriesGeometry_Pkg
 #'
 #' @param timeSeries R type equivalent for C++ type XPtr<opaque_pointer_handle>
-#' @param variableIdentifier R type equivalent for C++ type CharacterVector
 #' @export
-GetTimeSeriesGeometry_Pkg_R <- function(timeSeries, variableIdentifier) {
+GetTimeSeriesGeometry_Pkg_R <- function(timeSeries) {
   timeSeries <- cinterop::getExternalXptr(timeSeries)
-  variableIdentifier <- cinterop::getExternalXptr(variableIdentifier)
-  result <- GetTimeSeriesGeometry_Pkg(timeSeries, variableIdentifier)
+  result <- GetTimeSeriesGeometry_Pkg(timeSeries)
   return(cinterop::mkExternalObjRef(result, 'Rcpp::S4'))
 }
 
@@ -78,6 +76,32 @@ GetEnsembleTimeSeries_Pkg_R <- function(series) {
 GetEnsembleForecastTimeSeriesGeometry_Pkg_R <- function(timeSeries) {
   timeSeries <- cinterop::getExternalXptr(timeSeries)
   result <- GetEnsembleForecastTimeSeriesGeometry_Pkg(timeSeries)
+  return(cinterop::mkExternalObjRef(result, 'Rcpp::S4'))
+}
+
+#' TimeSeriesToTsInfo_Pkg_R
+#'
+#' TimeSeriesToTsInfo_Pkg_R Wrapper function for TimeSeriesToTsInfo_Pkg
+#'
+#' @param timeSeries R type equivalent for C++ type XPtr<opaque_pointer_handle>
+#' @export
+TimeSeriesToTsInfo_Pkg_R <- function(timeSeries) {
+  timeSeries <- cinterop::getExternalXptr(timeSeries)
+  result <- TimeSeriesToTsInfo_Pkg(timeSeries)
+  return(cinterop::mkExternalObjRef(result, 'List'))
+}
+
+#' GetDatasetFromLibrary_Pkg_R
+#'
+#' GetDatasetFromLibrary_Pkg_R Wrapper function for GetDatasetFromLibrary_Pkg
+#'
+#' @param dataLibrary R type equivalent for C++ type XPtr<opaque_pointer_handle>
+#' @param dataIdentifier R type equivalent for C++ type CharacterVector
+#' @export
+GetDatasetFromLibrary_Pkg_R <- function(dataLibrary, dataIdentifier) {
+  dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+  dataIdentifier <- cinterop::getExternalXptr(dataIdentifier)
+  result <- GetDatasetFromLibrary_Pkg(dataLibrary, dataIdentifier)
   return(cinterop::mkExternalObjRef(result, 'Rcpp::S4'))
 }
 

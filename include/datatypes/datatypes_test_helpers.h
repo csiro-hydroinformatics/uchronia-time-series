@@ -48,11 +48,31 @@ namespace datatypes {
 			static string BuildPath(const vector<string>& folders);
 			static TimeSeriesLibrary CreateEnsembleTimeSeriesLibrary(string& rainObsId, string& petObsId, string& rainFcastId, string& petFcastId);
 			static TimeSeriesLibrary GetTestTimeSeriesLibrary();
+			static vector<string> TestTsLibraryIdentifiers();
+			static TimeSeriesLibrary* CreateTestTimeSeriesLibrary();
+			static void MakeTestTimeSeriesLibrary(TimeSeriesLibrary& dataLibrary);
 
 			const static string kVarSingleStation;
 			const static string kVarMultiStations;
 			const static string kFileSingleStation;
 			const static string kFileMultiStations;
+
+
+			const static string kFileAllDataCases;
+			const static string kVar1FcastEns;
+			const static string kVar2FcastEns;
+			const static string kVar1Obs;
+			const static string kVar2Obs;
+			const static string kVar1Ens;
+			const static string kVar2Ens;
+
+			const static string kIdentifier1FcastEns;
+			const static string kIdentifier2FcastEns;
+			const static string kIdentifier1Obs;
+			const static string kIdentifier2Obs;
+			const static string kIdentifier1Ens;
+			const static string kIdentifier2Ens;
+
 
 			const static string kSingleStationId;
 			const static string kStationIdOne;

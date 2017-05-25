@@ -2,6 +2,7 @@
 #include "moirai/error_reporting.h"
 
 #include "cinterop/c_cpp_interop.hpp"
+#include "cinterop/timeseries_interop.hpp"
 #include "datatypes/internals_c_api.hpp"
 #include "datatypes/shared_pointer_conversions.hpp"
 #include "datatypes/time_series_io.hpp"
@@ -87,7 +88,7 @@ void GetTimeSeriesValues(TIME_SERIES_PTR timeSeries, double * values, int arrayL
 void DeleteAnsiStringArray(char** values, int arrayLength)
 {
 	TRY_START
-		delete_ansi_string_array( values, arrayLength );
+		datatypes::utils::datatypes_delete_ansi_string_array(values, arrayLength);
 	INTERCEPT_STD_EXCEPTION
 }
 
@@ -230,7 +231,9 @@ multi_regular_time_series_data* GetItemEnsembleForecastTimeSeries(ENSEMBLE_FOREC
 void DisposeMultiTimeSeriesData(multi_regular_time_series_data* data)
 {
 	TRY_START
-	DisposeMultiTimeSeriesData(data);
+		if (data == nullptr) return;
+	cinterop::disposal::dispose_of<multi_regular_time_series_data>(*data);
+	delete data;
 	INTERCEPT_STD_EXCEPTION
 }
 

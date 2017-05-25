@@ -73,6 +73,8 @@ namespace datatypes
 		};
 
 #define TIME_DIM_TYPE_DATA_DIMENSION "time"
+
+		// Collection may not be a necessary distinction compared to ensemble. Reconsider.
 #define COLLECTION_DIM_TYPE_DATA_DIMENSION "collection"
 #define ENSEMBLE_DIM_TYPE_DATA_DIMENSION "ensemble"
 

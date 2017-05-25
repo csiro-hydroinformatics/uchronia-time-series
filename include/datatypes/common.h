@@ -77,6 +77,9 @@ namespace datatypes
 {
 	namespace utils
 	{
+
+		void datatypes_delete_ansi_string_array(char** values, int arrayLength);
+
 		class STLHelper
 		{
 		private:

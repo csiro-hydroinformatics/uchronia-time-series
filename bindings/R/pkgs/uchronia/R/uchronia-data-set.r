@@ -64,13 +64,19 @@ function(x, ...) {
 
 queryDataGeometry <- function(dataLibrary, dataId)
 {
-    dimensions <- 
 }
 
+#' Gets the data from a library
+#' 
+#' Gets the data from a library for a given identifier.
+#' 
+#' @param dataLibrary R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
+#' @param dataId character, one data identifier for the time series.
+#' @return R type equivalent for one of the C++ types TIME_SERIES_PTR, ENSEMBLE_PTR_TIME_SERIES_PTR, ENSEMBLE_FORECAST_TIME_SERIES_PTR
+#' @export
 getDataSet <- function(dataLibrary, dataId)
 {
-    geom <- queryDataGeometry(dataLibrary, dataId)
-    result <- GetDatasetSingleTimeSeries_R(dataLibrary, dataId);
+    result <- GetDatasetFromLibrary_Pkg_R(dataLibrary, dataId);
     return(result)
 }
 

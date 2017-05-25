@@ -72,9 +72,10 @@ time_series_dimensions_description* ToTimeSeriesDimensionDescriptions(vector<Dat
 {
 	time_series_dimensions_description* res = new time_series_dimensions_description();
 	res->dimensions = new time_series_dimension_description[mts.size()];
+	res->num_dimensions = mts.size();
 	for (size_t i = 0; i < mts.size(); i++)
 	{
-		res->dimensions[i].dimension_name = STRDUP(mts[i].DimensionName.c_str());
+		res->dimensions[i].dimension_type = STRDUP(mts[i].DimensionType.c_str());
 		res->dimensions[i].size = mts[i].Size;
 	}
 	return res;
