@@ -149,6 +149,7 @@ namespace datatypes {
 			size_t GetEnsembleSize(const string& dataId, size_t fcastIndex) const override;
 
 		private:
+			PtrTSeriesEnsemblePtrType GetFirstTsEnsTs() const;
 			PtrTSeriesEnsemblePtrType CreateNewSeries();
 			std::map<string, PtrTSeriesEnsemblePtrType> ensFcastsSeries;
 			//PtrTSeriesEnsemblePtrType ensFts;

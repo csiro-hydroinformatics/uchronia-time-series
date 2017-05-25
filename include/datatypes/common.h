@@ -143,7 +143,7 @@ namespace datatypes
 			}
 
 			template<typename K = string, typename V = string>
-			static vector<K> GetValues(const map<K, V>& dict)
+			static vector<V> GetValues(const map<K, V>& dict)
 			{
 				vector<V> res;
 				res.reserve(dict.size());

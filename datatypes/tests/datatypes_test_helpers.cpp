@@ -346,16 +346,19 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 
 		TestTimeSeriesEnsembleTimeSeriesStore::~TestTimeSeriesEnsembleTimeSeriesStore() 
 		{
-			auto tsensts = STLHelper::GetValues(ensFcastsSeries);
+			vector<PtrTSeriesEnsemblePtrType> tsensts = STLHelper::GetValues<string, PtrTSeriesEnsemblePtrType>(ensFcastsSeries);
+			for (size_t i = 0; i < tsensts.size(); i++)
+			{
+				delete tsensts[i];
+			}
 		}
-		TestTimeSeriesEnsembleTimeSeriesStore::TestTimeSeriesEnsembleTimeSeriesStore(const TSeriesEnsemblePtrType& ensFts, const string& id) {
-			this->ensFts = new TSeriesEnsemblePtrType(ensFts, new SharedVectorStorage<EnsembleForecastTimeSeries<>::ElementType>());
-			this->id = id;
+		TestTimeSeriesEnsembleTimeSeriesStore::TestTimeSeriesEnsembleTimeSeriesStore(const TSeriesEnsemblePtrType& ensFts, const string& id) 
+		{
+			ensFcastsSeries[id] = new TSeriesEnsemblePtrType(ensFts, new SharedVectorStorage<EnsembleForecastTimeSeries<>::ElementType>());
 		};
 
 		TestTimeSeriesEnsembleTimeSeriesStore::TestTimeSeriesEnsembleTimeSeriesStore(const string& id) {
-			this->ensFts = new EnsembleForecastTimeSeries<>(new SharedVectorStorage<EnsembleForecastTimeSeries<>::ElementType>());
-			this->id = id;
+			ensFcastsSeries[id] = new TSeriesEnsemblePtrType(new SharedVectorStorage<EnsembleForecastTimeSeries<>::ElementType>());
 		};
 
 
@@ -380,16 +383,21 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 		TestTimeSeriesEnsembleTimeSeriesStore::PtrEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::Read(const std::string& ensembleIdentifier)
 		{
 			int i = boost::lexical_cast<int>(ensembleIdentifier);
-			MultiTimeSeries<TTimeSeries<double>*>* blah = ensFts->GetValue(i);
+			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
+			MultiTimeSeries<TTimeSeries<double>*>* blah = nullptr; //ensFts->GetValue(i);
 			return blah;
 		}
 		size_t TestTimeSeriesEnsembleTimeSeriesStore::GetLength() const
 		{
-			return ensFts->GetLength();
+			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
+			return 0;
+//	return ensFts->GetLength();
 		}
 		ptime TestTimeSeriesEnsembleTimeSeriesStore::GetStart() const
 		{
-			return ensFts->GetStartDate();
+			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
+			return not_a_date_time;
+			//return ensFts->GetStartDate();
 		}
 		//vector<string> TestTimeSeriesEnsembleTimeSeriesStore::GetItemIdentifiers() const
 		//{
@@ -414,35 +422,58 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 			};
 		}
 
+		TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::GetFirstTsEnsTs() const
+		{
+			TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType t;
+			for (auto& x : ensFcastsSeries)
+			{
+				t = x.second;
+				break;
+			}
+			return t;
+		}
+
 		TimeStep TestTimeSeriesEnsembleTimeSeriesStore::GetTimeStep() const
 		{
+			auto ensFts = GetFirstTsEnsTs();
 			return ensFts->GetTimeStep();
 		}
 
 		void TestTimeSeriesEnsembleTimeSeriesStore::Allocate(size_t length, PtrEnsemblePtrType value)
 		{
-			vector<PtrEnsemblePtrType> v (length, value);
-			ensFts->Reset(v, ensFts->GetStartDate());
+			for (auto& x : ensFcastsSeries)
+			{
+				auto ensFts = x.second;
+				vector<PtrEnsemblePtrType> v (length, value);
+				ensFts->Reset(v, ensFts->GetStartDate());
+			}
 		}
 
 		void TestTimeSeriesEnsembleTimeSeriesStore::AllocateValues(const vector<PtrEnsemblePtrType>& values)
 		{
-			ensFts->Reset(values, ensFts->GetStartDate());
+			for (auto& x : ensFcastsSeries)
+			{
+				auto ensFts = x.second;
+				ensFts->Reset(values, ensFts->GetStartDate());
+			}
 		}
 
 		void TestTimeSeriesEnsembleTimeSeriesStore::SetSeries(const string& dataId, PtrTSeriesEnsemblePtrType value)
 		{
+			auto ensFts = ensFcastsSeries[dataId];
 			*ensFts = value;
 		}
 
 		void TestTimeSeriesEnsembleTimeSeriesStore::SetItem(const string& dataId, size_t index, PtrEnsemblePtrType value)
 		{
+			auto ensFts = ensFcastsSeries[dataId];
 			ensFts->SetValue(index, value);
 		}
 
 		void TestTimeSeriesEnsembleTimeSeriesStore::SetItem(const string& dataId, size_t index, const EnsemblePtrType& value)
 		{
 			EnsemblePtrType* nval = new EnsemblePtrType(value);
+			auto ensFts = ensFcastsSeries[dataId];
 			ensFts->SetValue(index, nval);
 		}
 
@@ -454,27 +485,38 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 
 		void TestTimeSeriesEnsembleTimeSeriesStore::SetStart(ptime start)
 		{
-			ensFts->SetStartDate(start);
+			for (auto& x : ensFcastsSeries)
+			{
+				auto ensFts = x.second;
+				ensFts->SetStartDate(start);
+			}
 		}
 
 		//vector<string> GetItemIdentifiers() const = 0;
 		void TestTimeSeriesEnsembleTimeSeriesStore::SetTimeStep(const TimeStep& timeStep)
 		{
-			ensFts->SetTimeStep(timeStep);
+			for (auto& x : ensFcastsSeries)
+			{
+				auto ensFts = x.second;
+				ensFts->SetTimeStep(timeStep);
+			}
 		}
 
 		TestTimeSeriesEnsembleTimeSeriesStore::PtrEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::GetItem(const string& dataId, size_t fcastIndex)
 		{
+			auto ensFts = ensFcastsSeries[dataId];
 			return ensFts->GetValue(fcastIndex);
 		}
 
 		TestTimeSeriesEnsembleTimeSeriesStore::PtrSeriesType TestTimeSeriesEnsembleTimeSeriesStore::GetItem(const string& dataId, size_t fcastIndex, size_t ensIndex)
 		{
+			auto ensFts = ensFcastsSeries[dataId];
 			return new SeriesType(ensFts->GetValue(fcastIndex)->Get(ensIndex));
 		}
 
 		size_t TestTimeSeriesEnsembleTimeSeriesStore::GetEnsembleSize(const string& dataId, size_t fcastIndex) const
 		{
+			auto ensFts = ensFcastsSeries.at(dataId);
 			return ensFts->GetValue(fcastIndex)->Size();
 		}
 
