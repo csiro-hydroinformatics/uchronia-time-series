@@ -370,8 +370,13 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 
 		TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::GetSeries(const string& dataId)
 		{
+			return new TSeriesEnsemblePtrType(GetSeriesTestBackend(dataId));
+		}
+
+		TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::GetSeriesTestBackend(const string& dataId)
+		{
 			if (!STLHelper::HasKey(ensFcastsSeries, dataId))
-				if(allowDynamicCreation)
+				if (allowDynamicCreation)
 					ensFcastsSeries[dataId] = CreateNewSeries();
 				else
 				{

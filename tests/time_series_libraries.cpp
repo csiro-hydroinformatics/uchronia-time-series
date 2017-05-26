@@ -70,6 +70,7 @@ TEST_CASE("High level library of time series")
 
 	auto entsActualPtr = tsl.GetTimeSeriesEnsembleTimeSeries("ts_ensemble");
 	REQUIRE_EQUAL_COMPARER(ensFts, *entsActualPtr, TimeSeriesOperations<TimeSeries>::AreTimeSeriesEnsembleTimeSeriesEqual);
+	delete entsActualPtr;
 
 }
 

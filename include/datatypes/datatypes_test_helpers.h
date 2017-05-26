@@ -122,6 +122,8 @@ namespace datatypes {
 			TestTimeSeriesEnsembleTimeSeriesStore(const string& id = "");
 			TestTimeSeriesEnsembleTimeSeriesStore(const TSeriesEnsemblePtrType& ensFts, const string& id = "");
 			PtrTSeriesEnsemblePtrType GetSeries(const string& dataId);
+			PtrTSeriesEnsemblePtrType GetSeriesTestBackend(const string& dataId);
+
 			PtrEnsemblePtrType Read(const std::string& ensembleIdentifier);
 			size_t GetLength() const;
 			ptime GetStart() const;
