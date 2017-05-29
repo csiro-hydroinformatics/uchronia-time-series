@@ -2263,6 +2263,9 @@ namespace datatypes
 			return forecastRainMultiTimeSeries;
 		}
 
+		template
+		typename TimeSeriesIOHelper<double>::PtrEnsemblePtrType TimeSeriesIOHelper<double>::ReadForecastTimeSeries(const string& netCdfFilepath, const string& varName, const string& identifier, int index);
+
 		template <typename T>
 		typename TimeSeriesIOHelper<T>::PtrTSeriesEnsemblePtrType TimeSeriesIOHelper<T>::ReadForecastTimeSeries(const string& netCdfFilepath, const string& varName, const string& identifier)
 		{

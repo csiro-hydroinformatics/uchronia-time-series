@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+
 SET (this_target datatypes_tests)
 PROJECT(${this_target})
 
@@ -39,6 +40,8 @@ include_directories(
 #    ${MOIRAI_INCLUDE_DIRS}
     ${NETCDF_INCLUDE_DIRS}
 )
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 TARGET_LINK_LIBRARIES( ${this_target}

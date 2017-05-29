@@ -120,6 +120,8 @@ add_custom_target(uninstall
 
 if(WIN32)
   INSTALL(TARGETS ${this_target}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
   )
 else()

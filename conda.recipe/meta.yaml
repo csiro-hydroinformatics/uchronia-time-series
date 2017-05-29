@@ -1,0 +1,39 @@
+package:
+  name: datatypes
+  version: "{{GIT_DESCRIBE_TAG }}"
+
+# Note that the build script overrides these using info from git.
+build:
+  string: "{{ GIT_BUILD_STR }}"
+  features:
+    - vc14               [win]
+
+source:
+  path: ../
+
+requirements:
+  build:
+    - boost 1.57.0 [unix]
+    - boost 1.61.0 py36_vc14_0 [win]
+    - curl [win]
+    - cmake
+    - gcc [unix]
+    - hdf5
+    - libnetcdf <4.4 [unix]
+    - libnetcdf 4.3.3.1 vc14_5 [win]
+  run:
+    - hdf5 
+    - libnetcdf <4.4 [unix]
+    - libnetcdf 4.3.3.1 vc14_5 [win]
+    - boost 1.57.0 [unix]
+    - boost 1.61.0 py36_vc14_0 [win]
+    - curl [win]
+    - libgcc [unix]
+
+test:
+  files:
+    - UnitTestData.tar.gz
+
+about:
+  home: 'https://gitlab.bom.gov.au/dkent/swift'
+  summary: 'SWIFT libraries.'
