@@ -5,9 +5,9 @@
 #' \tabular{ll}{
 #' Package: \tab uchronia \cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.1-1 \cr
-#' Date: \tab 2017-02 \cr
-#' Release Notes: \tab Draft to set up essentials. \cr
+#' Version: \tab 0.2-1 \cr
+#' Date: \tab 2017-05-26 \cr
+#' Release Notes: \tab First version with port of all features from SWIFT, and succint vignette \cr
 #' License: \tab LGPL-3 \cr
 #' }
 #'

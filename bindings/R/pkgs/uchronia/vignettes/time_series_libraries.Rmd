@@ -1,0 +1,102 @@
+---
+title: "Ensemble time series - overview"
+author: "Jean-Michel Perraud"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ensemble time series - overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Time series libraries - overview
+=================
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(out.extra='style="display:block; margin: auto"', fig.align="center", fig.width=10, fig.height=8, dev='png')
+```
+
+```{r, eval=FALSE, include=FALSE}
+library(swiftdev)
+thisPkgDir <- file.path(find_uchronia_src_path(), 'bindings/R/pkgs/uchronia')
+if(file.exists(thisPkgDir))
+{
+  setwd(file.path(thisPkgDir, 'vignettes'))
+  purlVignettes('.','..')
+}
+```
+
+# About this document
+
+This document was generated from an R markdown file on `r as.character(Sys.time())`.
+
+# Elaboration
+
+```{r, eval=FALSE, include=FALSE}
+# if we want to debug, reminder possibly:
+swiftr_dev() 
+swiftr_dev(prepend_rlibpath_with='c:/RLibDev') 
+```
+
+
+```{r}
+library(uchronia)
+```
+
+`uchronia` includes facilities to access time series from a "library", akin to what you would do to manage books. One way to describe such a library is to load a text description file written in the YAML format.
+
+```{r}
+# docDataPath <- Sys.getenv('SWIFT_SAMPLE_DATA_DIR') # swift::sampleDataDir()
+sampleDataDir <- 'C:/STSF/sample/documentation'
+dataLibraryFile <- file.path(sampleDataDir, 'time_series_library.yaml')
+stopifnot(file.exists(dataLibraryFile))
+```
+
+Time series libraries are meant to hide the details of storage. Data is referenced by unique identifier, as a cornerstone for provenance management.
+
+```{r}
+dataLibrary <- getEnsembleDataSet(dataLibraryFile, '')
+dataIds <- getDataSetIds(dataLibrary)
+print(dataIds)
+```
+
+the function `getDataSet` will retrieve a reference to the data irrespective of its dimensionality. What we obtain is a "pointer" to data, not necessarily all the data which can be several gigabytes. 
+Small enough data subsets can be converted to the popular `xts` time series format in R.
+
+```{r}
+singleObs <- getDataSet(dataLibrary, "var1_obs")
+singleObs
+plot(asXts(singleObs))
+```
+
+Some datasets are composites of several time series (e.g. multivariate series). Sub-identifiers can be specified to retrieve particular variables; this is particularly important for large datasets.
+
+```{r}
+stationIds <- GetEnsembleDatasetDataSubIdentifiers_R(dataLibrary, "var1_obs_collection")
+print(stationIds)
+multiObs <- getDataSet(dataLibrary, "var1_obs_collection")
+multiObs
+multiObs <- asXts(multiObs)
+head(multiObs)
+library(zoo)
+plot.zoo(multiObs)
+```
+
+Data sets are meant to be discoverable. The data library can be queried for the main geometric characteristics of the data.
+
+```{r}
+GetEnsembleDatasetDataSummaries_R(dataLibrary)
+```
+
+Ensemble forecast time series (structurally, "time series of ensemble of time series") are supported as first class citizens by uchronia:
+
+```{r}
+fcasts <- getDataSet(dataLibrary, "var2_fcast_ens")
+fcasts
+# TODO: currently conversion ot xts is the default. Review:
+firstFcast <- getItem(fcasts, 1)
+head(firstFcast)
+str(firstFcast)
+plot.zoo(firstFcast, plot.type='single')
+```
