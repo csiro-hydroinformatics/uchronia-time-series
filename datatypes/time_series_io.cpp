@@ -2263,8 +2263,14 @@ namespace datatypes
 			return forecastRainMultiTimeSeries;
 		}
 
+
+#ifdef __GNUC__
+#if (__GNUC__ <= 4 && __GNUC_MINOR__ < 9)
+		// after commit 9d46c261751de559bbdeb578242ac29eb2575092 does not compile with visual studio; possibly not more recent GCC either
 		template
 		typename TimeSeriesIOHelper<double>::PtrEnsemblePtrType TimeSeriesIOHelper<double>::ReadForecastTimeSeries(const string& netCdfFilepath, const string& varName, const string& identifier, int index);
+#endif
+#endif // __GNUC__
 
 		template <typename T>
 		typename TimeSeriesIOHelper<T>::PtrTSeriesEnsemblePtrType TimeSeriesIOHelper<T>::ReadForecastTimeSeries(const string& netCdfFilepath, const string& varName, const string& identifier)
