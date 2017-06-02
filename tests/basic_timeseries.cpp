@@ -79,12 +79,12 @@ TEST_CASE("Time step calculation and number of items in the series are consisten
 
 	REQUIRE_EQUAL(TimeStep::GetHourly(), ts.GetTimeStep());
 	REQUIRE_EQUAL(newStart, ts.GetStartDate());
-	REQUIRE_EQUAL(newStart + hours(numSteps - 1), ts.GetEndDate());
+	REQUIRE_EQUAL((newStart + hours(numSteps - 1)), ts.GetEndDate());
 
 	ts.SetTimeStep(TimeStep::GetDaily());
 	REQUIRE_EQUAL(TimeStep::GetDaily(), ts.GetTimeStep());
 	REQUIRE_EQUAL(newStart, ts.GetStartDate());
-	REQUIRE_EQUAL(newStart + days(numSteps - 1), ts.GetEndDate());
+	REQUIRE_EQUAL((newStart + days(numSteps - 1)), ts.GetEndDate());
 
 }
 
@@ -137,7 +137,7 @@ TEST_CASE("MultiTimeSeries - template argument is a pointer to a TimeSeries")
 	TimeSeries * pts = mtsPtr.Get(0);
 	REQUIRE_EQUAL(mypi, (*pts)[1]);
 	mtsPtr.Set(0, 1, mypi * 2);
-	REQUIRE_EQUAL(mypi * 2, (*pts)[1]);
+	REQUIRE_EQUAL((mypi * 2), (*pts)[1]);
 
 }
 
@@ -199,7 +199,7 @@ TEST_CASE("Different time steps")
 		[&](TimeSeries& td, boost::function<time_duration(int increment)> incrementer)
 	{
 		REQUIRE_EQUAL(s, td.GetStartDate());
-		REQUIRE_EQUAL(s + incrementer(6 - 1), td.GetEndDate());
+		REQUIRE_EQUAL((s + incrementer(6 - 1)), td.GetEndDate());
 		auto threeStepsLater = s + incrementer(3);
 		REQUIRE_EQUAL(22.0, td[3]);
 		REQUIRE_EQUAL(22.0, td[threeStepsLater]);
@@ -400,5 +400,5 @@ TEST_CASE("TimeStep operations")
 	auto hourly = TimeStep::GetHourly();
 
 	auto threeHourly = hourly * 3;
-	REQUIRE_EQUAL(3600 * 3, threeHourly.GetRegularStepDuration().total_seconds());
+	REQUIRE_EQUAL((3600 * 3), threeHourly.GetRegularStepDuration().total_seconds());
 }

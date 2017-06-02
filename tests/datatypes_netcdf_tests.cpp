@@ -22,7 +22,7 @@ TEST_CASE("Read operations from a netCDF SWIFT data file")
 	auto timeDim = store.GetTimeDim();
 	REQUIRE_EQUAL(startDate, store.GetStart());
 	REQUIRE_EQUAL(startDate, timeDim[0]);
-	REQUIRE_EQUAL(startDate + hours(2), timeDim[2]);
+	REQUIRE_EQUAL((startDate + hours(2)), timeDim[2]);
 
 
 	// Check single realization time series
@@ -169,7 +169,9 @@ TEST_CASE("Read operations from a netCDF SWIFT data file")
 	REQUIRE_EQUAL(t, ts->GetStartDate());
 
 	// finally, a check on a value in the time series
-	REQUIRE_EQUAL(mult * (offsetR + 0.1 * replicateNum + leadTimeIndexR*0.01 + stationNum*0.1), ts->GetValue(leadTimeIndex));
+	REQUIRE_EQUAL(
+		(mult * (offsetR + 0.1 * replicateNum + leadTimeIndexR*0.01 + stationNum*0.1)),
+		ts->GetValue(leadTimeIndex));
 	// We do need to reclaim the memory of these time series.
 
 	delete mts;
@@ -711,12 +713,12 @@ TEST_CASE("Swift NetCDF variable attributes")
 	ptime d(date(2011, 2, 16));
 	auto f = [](const ptime& d, const TimeStep& t) { return SwiftNetCDFAccess::CreateTimeUnitsAttribute(d, t); };
 	string since(" since 2011-02-16 00:00:00.0 +0000");
-	REQUIRE(f(d, daily) == "days" + since);
-	REQUIRE(f(d, daily * 2) == "days" + since);
-	REQUIRE(f(d, hourly) == "hours" + since);
-	REQUIRE(f(d, hourly * 2) == "hours" + since);
-	REQUIRE(f(d, hourly * 48) == "days" + since);
-	REQUIRE(f(d, hourly / 4) == "minutes" + since);
+	REQUIRE(f(d, daily) == ("days" + since));
+	REQUIRE(f(d, daily * 2) == ("days" + since));
+	REQUIRE(f(d, hourly) == ("hours" + since));
+	REQUIRE(f(d, hourly * 2) == ("hours" + since));
+	REQUIRE(f(d, hourly * 48) == ("days" + since));
+	REQUIRE(f(d, hourly / 4) == ("minutes" + since));
 
 	auto g = [](const ptime& d, const TimeStep& t, const size_t& length) { return SwiftNetCDFAccess::CreateTimeVector(d, t, length); };
 	auto areEqual = [](const VD& a, const VD& b) { return datatypes::tests::AreEqual<double>(a, b); };
