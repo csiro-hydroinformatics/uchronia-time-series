@@ -59,6 +59,22 @@ Rcpp::S4 GetTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries)
 	return fromMarshalledTsinfo(mtsg);
 }
 
+// should there be something like the following:
+//Rcpp::S4 GetEnsembleTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries)
+//{
+//	regular_time_series_geometry mtsg;
+//	GetEnsembleTimeSeriesGeometry(timeSeries->get(), &mtsg);
+//	return fromMarshalledTsinfo(mtsg);
+//}
+
+// [[Rcpp::export]]
+Rcpp::S4 GetEnsembleForecastTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries)
+{
+	regular_time_series_geometry mtsg;
+	GetEnsembleForecastTimeSeriesGeometry(timeSeries->get(), &mtsg);
+	return fromMarshalledTsinfo(mtsg);
+}
+
 // [[Rcpp::export]]
 Rcpp::S4 GetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i)
 {
@@ -86,14 +102,6 @@ Rcpp::S4 GetEnsembleTimeSeries_Pkg(XPtr<opaque_pointer_handle> series)
 }
 
 // [[Rcpp::export]]
-Rcpp::S4 GetEnsembleForecastTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries)
-{
-	regular_time_series_geometry mtsg;
-	GetEnsembleForecastTimeSeriesGeometry(timeSeries->get(), &mtsg);
-	return fromMarshalledTsinfo(mtsg);
-}
-
-// [[Rcpp::export]]
 List TimeSeriesToTsInfo_Pkg(XPtr<opaque_pointer_handle> timeSeries)
 {
 	regular_time_series_geometry mtsg;
@@ -105,7 +113,6 @@ List TimeSeriesToTsInfo_Pkg(XPtr<opaque_pointer_handle> timeSeries)
 	delete[] values;
 	return cinterop::timeseries::make_time_series_info<List>(data, mtsg);
 }
-
 
 Rcpp::S4 wrap_xptr(const XPtr<opaque_pointer_handle>& xptr, const string& type = "")
 {

@@ -175,6 +175,49 @@ asXts <- function(tsInfo) {
   }
 }
 
+tsIndex <- function(geom) {
+# An object of class "RegularTimeSeriesGeometry"
+# Slot "Start":
+# [1] "2010-08-01 UTC"
+
+# Slot "Length":
+# [1] 1249
+
+# Slot "TimeStepSeconds":
+# [1] 86400
+  len <- geom@Length
+  tssec <- geom@TimeStepSeconds
+  return(geom@Start + 0:(len-1) * tssec)
+}
+
+#' Get the time index of a time series
+#'
+#' Get the time index of a time series
+#'
+#' @param tsInfo A representation of a time series. Supported types are external pointers as data from uchronia C API, or an R list returned by some of the *_R functions.
+#' @return a vector of POSIXct
+#' @export
+timeIndex <- function(tsInfo) {
+  if(is.list(tsInfo)) {
+    stop("timeIndex on a list - not yet supported")
+    # return(SomethingTappingIntoCInterop???(tsInfo))
+  } else if(cinterop::isExternalObjRef(tsInfo)) {
+    if(isSingularTimeSeries(tsInfo)) {
+      return(tsIndex(GetTimeSeriesGeometry_Pkg_R(tsInfo)))
+    } else if(isEnsembleTimeSeries(tsInfo)) {
+      stop(paste0('timeIndex: getting a time index not (yet?) supported for an object of external type "', tsInfo@type, '"'))
+    } else if(isEnsembleForecastTimeSeries(tsInfo)) {
+      return(tsIndex(GetEnsembleForecastTimeSeriesGeometry_Pkg_R(tsInfo)))
+    } else {
+      stop(paste0('timeIndex: does not know how to get a time index out of an object of external type "', tsInfo@type, '"'))
+    }
+  } else {
+    k <- class(tsInfo)
+    stop( paste0( 'cannot retrieve time indexing for objects of this(these) class(es): ', paste(k, collapse = ',')))
+  }
+}
+
+
 marshaledTimeSeriesToXts <- function(tsInfo) {
   stopifnot(is.list(tsInfo))
   if (!setequal( c('Start','tzone','Data','TimeStep'), names(tsInfo) )) {
