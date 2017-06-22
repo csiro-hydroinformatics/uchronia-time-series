@@ -176,15 +176,7 @@ asXts <- function(tsInfo) {
 }
 
 tsIndex <- function(geom) {
-# An object of class "RegularTimeSeriesGeometry"
-# Slot "Start":
-# [1] "2010-08-01 UTC"
-
-# Slot "Length":
-# [1] 1249
-
-# Slot "TimeStepSeconds":
-# [1] 86400
+  stopifnot(is(geom, "RegularTimeSeriesGeometry"))
   len <- geom@Length
   tssec <- geom@TimeStepSeconds
   return(geom@Start + 0:(len-1) * tssec)

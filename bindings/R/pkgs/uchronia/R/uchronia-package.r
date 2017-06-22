@@ -5,14 +5,15 @@
 #' \tabular{ll}{
 #' Package: \tab uchronia \cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.2-1 \cr
-#' Date: \tab 2017-05-26 \cr
-#' Release Notes: \tab First version with port of all features from SWIFT, and succint vignette \cr
+#' Version: \tab 0.2.2 \cr
+#' Date: \tab 2017-06-22 \cr
+#' Release Notes: \tab Minor functions added. Note that the R package itself (i.e. not the C++ library) is still new and much documentation remains to be written/ported from other packages. \cr
 #' License: \tab LGPL-3 \cr
 #' }
 #'
 #' \tabular{lll}{
 #' Version \tab Date \tab Notes \cr
+#' 0.2.1 \tab 2017-05-26 First version with port of all features from SWIFT, and succinct vignette \cr
 #' }
 #'
 #' @import xts

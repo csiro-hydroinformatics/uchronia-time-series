@@ -9,6 +9,10 @@ GetTimeSeriesGeometry_Pkg <- function(timeSeries) {
     .Call('uchronia_GetTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
 }
 
+GetEnsembleForecastTimeSeriesGeometry_Pkg <- function(timeSeries) {
+    .Call('uchronia_GetEnsembleForecastTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
+}
+
 GetItemEnsembleForecastTimeSeries_Pkg <- function(series, i) {
     .Call('uchronia_GetItemEnsembleForecastTimeSeries_Pkg', PACKAGE = 'uchronia_r', series, i)
 }
@@ -19,10 +23,6 @@ SetItemEnsembleForecastTimeSeries_Pkg <- function(series, i, timeSeriesEnsemble)
 
 GetEnsembleTimeSeries_Pkg <- function(series) {
     .Call('uchronia_GetEnsembleTimeSeries_Pkg', PACKAGE = 'uchronia_r', series)
-}
-
-GetEnsembleForecastTimeSeriesGeometry_Pkg <- function(timeSeries) {
-    .Call('uchronia_GetEnsembleForecastTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
 }
 
 TimeSeriesToTsInfo_Pkg <- function(timeSeries) {

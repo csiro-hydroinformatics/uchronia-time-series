@@ -1,15 +1,15 @@
 ---
-title: "Ensemble time series - overview"
+title: "Ensemble time series - libraries"
 author: "Jean-Michel Perraud"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Ensemble time series - overview}
+  %\VignetteIndexEntry{Ensemble time series - libraries}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-Time series libraries - overview
+Time series libraries
 =================
 
 ```{r setup, include=FALSE}

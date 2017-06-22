@@ -26,6 +26,18 @@ GetTimeSeriesGeometry_Pkg_R <- function(timeSeries) {
   return(cinterop::mkExternalObjRef(result, 'Rcpp::S4'))
 }
 
+#' GetEnsembleForecastTimeSeriesGeometry_Pkg_R
+#'
+#' GetEnsembleForecastTimeSeriesGeometry_Pkg_R Wrapper function for GetEnsembleForecastTimeSeriesGeometry_Pkg
+#'
+#' @param timeSeries R type equivalent for C++ type XPtr<opaque_pointer_handle>
+#' @export
+GetEnsembleForecastTimeSeriesGeometry_Pkg_R <- function(timeSeries) {
+  timeSeries <- cinterop::getExternalXptr(timeSeries)
+  result <- GetEnsembleForecastTimeSeriesGeometry_Pkg(timeSeries)
+  return(cinterop::mkExternalObjRef(result, 'Rcpp::S4'))
+}
+
 #' GetItemEnsembleForecastTimeSeries_Pkg_R
 #'
 #' GetItemEnsembleForecastTimeSeries_Pkg_R Wrapper function for GetItemEnsembleForecastTimeSeries_Pkg
@@ -64,18 +76,6 @@ SetItemEnsembleForecastTimeSeries_Pkg_R <- function(series, i, timeSeriesEnsembl
 GetEnsembleTimeSeries_Pkg_R <- function(series) {
   series <- cinterop::getExternalXptr(series)
   result <- GetEnsembleTimeSeries_Pkg(series)
-  return(cinterop::mkExternalObjRef(result, 'Rcpp::S4'))
-}
-
-#' GetEnsembleForecastTimeSeriesGeometry_Pkg_R
-#'
-#' GetEnsembleForecastTimeSeriesGeometry_Pkg_R Wrapper function for GetEnsembleForecastTimeSeriesGeometry_Pkg
-#'
-#' @param timeSeries R type equivalent for C++ type XPtr<opaque_pointer_handle>
-#' @export
-GetEnsembleForecastTimeSeriesGeometry_Pkg_R <- function(timeSeries) {
-  timeSeries <- cinterop::getExternalXptr(timeSeries)
-  result <- GetEnsembleForecastTimeSeriesGeometry_Pkg(timeSeries)
   return(cinterop::mkExternalObjRef(result, 'Rcpp::S4'))
 }
 
