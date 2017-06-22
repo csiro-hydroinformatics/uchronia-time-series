@@ -583,7 +583,14 @@ namespace datatypes
 				// Also, some files including in the unit test files have NC_DOUBLE precision for time dimensions. 
 				// For backward compat, given that the precision is "unlikely" to be an issue in time dims:
 				timeVec = ReadAsFloat(timeVarId, numTimeSteps, false);
-				leadTimeVec = ReadAsFloat(leadTimeVarId, leadTimeLength, false);
+				// Handle NetCDF files without lead-time variable gracefully.
+				if (leadTimeVarId < 0) {
+					for (int j=0; j < leadTimeLength; j++){
+						leadTimeVec.push_back((float)j);
+					}
+				}
+				else {
+					leadTimeVec = ReadAsFloat(leadTimeVarId, leadTimeLength, false);
 			}
 
 			void SwiftNetCDFAccess::ReadGeometry()
