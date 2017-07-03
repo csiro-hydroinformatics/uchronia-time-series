@@ -41,6 +41,14 @@ namespace datatypes {
 			static bool Exists(const boost::filesystem::path& p);
 		};
 
+		class DATATYPES_DLL_LIB TempFileCleaner
+		{
+		public:
+			string uri;
+			TempFileCleaner(const string uri);
+			~TempFileCleaner();
+		};
+
 		class DATATYPES_DLL_LIB TestDataLocationHelper
 		{
 		public:

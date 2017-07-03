@@ -10,6 +10,15 @@ namespace datatypes {
 		using namespace datatypes::timeseries;
 		using namespace boost::filesystem;
 
+		TempFileCleaner::TempFileCleaner(const string uri) : uri(uri) {}
+		TempFileCleaner::~TempFileCleaner()
+		{
+			if (FileSystemHelper::Exists(uri))
+			{
+				FileSystemHelper::Remove(uri);
+			}
+		}
+
 		path FileSystemHelper::GetTempFile(const string& format)
 		{
 			path tempFname = unique_path(format);

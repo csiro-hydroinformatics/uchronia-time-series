@@ -46,14 +46,6 @@ public:
 	StoragePolicy<T>* Clone() const { return new TestWindowedStorage<T>(*this); }
 };
 
-class TempFileCleaner
-{
-public:
-	string uri;
-	TempFileCleaner(const string uri);
-	~TempFileCleaner();
-};
-
 class NcFileDef
 {
 public:

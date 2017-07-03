@@ -32,16 +32,6 @@ using namespace datatypes::tests;
 using namespace datatypes::timeseries;
 using namespace std;
 
-TempFileCleaner::TempFileCleaner(const string uri) : uri(uri) {}
-TempFileCleaner::~TempFileCleaner()
-{
-	if (FileSystemHelper::Exists(uri))
-	{
-		FileSystemHelper::Remove(uri);
-	}
-}
-
-
 string var1_fcast_ens = ("var1_fcast_ens");
 string var2_fcast_ens = ("var2_fcast_ens");
 string       var1_obs = ("var1_obs");
