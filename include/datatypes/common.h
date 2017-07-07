@@ -65,10 +65,31 @@ using namespace boost::gregorian;
 #define INDEX_KEY      "Index"
 #define TYPE_KEY       "Type"
 
+/**
+* \brief	A string identifier for a multivariate time series (structurally an ensemble, but not semantically, e.g. TS for multiple sites)
+*/
 #define SINGLE_SERIES_COLLECTION_TYPE_ID       "single_collection"
+
+/**
+* \brief	A string identifier for a single univariate time series
+*/
 #define SINGLE_SERIES_TYPE_ID                  "single"
+
+/**
+* \brief	A string identifier for ensemble of time series (e.g. ensemble forecasts for one lead time)
+*/
 #define ENSEMBLE_SERIES_TYPE_ID                "ensemble_ts"
-#define TIME_SERIES_ENSEMBLE_SERIES_TYPE_ID          "ts_ensemble_ts"
+
+/**
+* \brief	A string identifier for time series of ensemble of time series (e.g. ensemble forecasts time series)
+*/
+#define TIME_SERIES_ENSEMBLE_SERIES_TYPE_ID    "ts_ensemble_ts"
+
+/**
+ * \brief	A string identifier for time series of collection of time series (e.g. forecasts for multiple sites)
+ */
+#define TIME_SERIES_SERIES_COLLECTION_TYPE_ID  "ts_ts_collection"
+
 #define STORAGE_TYPE_SINGLE_NETCDF_FILE        "single_nc_file"
 #define STORAGE_TYPE_MULTIPLE_NETCDF_FILES     "multiple_nc_files_filename_date_pattern"
 
