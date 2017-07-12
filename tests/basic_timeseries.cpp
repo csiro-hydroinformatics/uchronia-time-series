@@ -165,6 +165,27 @@ TEST_CASE("Ensembles of time series")
 
 }
 
+class SpatialGrid
+{
+private:
+	std::vector<double> data;
+public:
+	double easting, northing;
+	SpatialGrid operator+(const SpatialGrid& rhs) const {/*TODO*/ return SpatialGrid(); }
+	SpatialGrid operator+(double rhs) const {/*TODO*/ return SpatialGrid(); }
+};
+
+TEST_CASE("Extensibility of templated time series")
+{
+	using SpatialTs = TTimeSeries<SpatialGrid>;
+
+	auto start = ptime(date(2017, 1, 1));
+	SpatialTs oneWeek(7, start, TimeStep::GetDaily());
+	SpatialGrid val = oneWeek[start + days(2)];
+	SpatialTs other = oneWeek + val;
+
+}
+
 TEST_CASE("Check bounds when retrieving items in ensemble forecast time series")
 {
 	EnsembleForecastTimeSeries<> forecasts;
