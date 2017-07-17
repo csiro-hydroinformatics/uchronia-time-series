@@ -78,7 +78,7 @@ Rcpp::S4 GetEnsembleForecastTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> t
 // [[Rcpp::export]]
 Rcpp::S4 GetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i)
 {
-	multi_regular_time_series_data* mts = GetItemEnsembleForecastTimeSeries(series->get(), as<int>(i));
+	multi_regular_time_series_data* mts = GetItemEnsembleForecastTimeSeriesAsStructure(series->get(), as<int>(i));
 	auto res = cinterop::timeseries::from_multi_regular_time_series_data<Rcpp::S4>(*mts);
 	// mts created by the datatypes library - we need to use its API to dispose of it, not this present R package's version
 	DisposeMultiTimeSeriesData(mts);
@@ -89,13 +89,13 @@ Rcpp::S4 GetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> serie
 void SetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i, Rcpp::S4& timeSeriesEnsemble)
 {
 	multi_regular_time_series_data mts = cinterop::timeseries::to_multi_regular_time_series_data(timeSeriesEnsemble);
-	SetItemEnsembleForecastTimeSeries(series->get(), as<int>(i), &mts);
+	SetItemEnsembleForecastTimeSeriesAsStructure(series->get(), as<int>(i), &mts);
 }
 
 // [[Rcpp::export]]
 Rcpp::S4 GetEnsembleTimeSeries_Pkg(XPtr<opaque_pointer_handle> series)
 {
-	multi_regular_time_series_data* mts = GetEnsembleTimeSeriesData(series->get());
+	multi_regular_time_series_data* mts = ToStructEnsembleTimeSeriesData(series->get());
 	auto res = cinterop::timeseries::from_multi_regular_time_series_data<Rcpp::S4>(*mts);
 	DisposeMultiTimeSeriesData(mts);
 	return res;

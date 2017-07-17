@@ -230,3 +230,37 @@ TEST_CASE("Ensemble input provider")
 
 
 }
+
+TEST_CASE("Create a series of forecasts out of a time series of observation")
+{
+	using TSO = datatypes::timeseries::TimeSeriesOperations<>;
+	size_t ndays = 7;
+	size_t leadTime = 24;
+	ptime startObs(date(2010, 2, 3));
+	size_t obsLength = (ndays + 5) * leadTime;
+
+	TimeStep hourly = TimeStep::GetHourly();
+	TimeStep threeHourly = hourly * 3;
+	ptime startFcast = hourly.AddSteps(startObs, 6);
+	size_t nFcastIssues = 16; // every three hours, ~2 days
+	size_t forecastStartOffset = 1;
+
+	vector<double> values = DTH::SeqVec(0, 0.1, obsLength);
+	TimeSeries observations(values, startObs, hourly);
+	TSO::TSeriesEnsemblePtrType forecast = TSO::CreateForecast(observations, startFcast, nFcastIssues, threeHourly, leadTime, 1);
+	REQUIRE(forecast.GetLength() == nFcastIssues);
+	REQUIRE(forecast.GetStartDate() == startFcast);
+	REQUIRE(forecast.GetTimeStep() == threeHourly);
+
+	auto mts = forecast.GetValue(0);
+
+	REQUIRE(mts->GetStartDate() == hourly.AddSteps(startFcast, forecastStartOffset));
+	REQUIRE(mts->Size() == 1);
+	auto ts = mts->Get(0);
+	REQUIRE(ts->GetLength() == leadTime);
+	REQUIRE(ts->GetStartDate() == hourly.AddSteps(startFcast, forecastStartOffset));
+	REQUIRE(ts->GetTimeStep() == hourly);
+
+	for (size_t i = 0; i < leadTime; i++)
+		REQUIRE(ts->GetValue(i) == observations.GetValue(startFcast + hours(i + forecastStartOffset)));
+}

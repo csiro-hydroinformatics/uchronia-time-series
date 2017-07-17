@@ -91,11 +91,9 @@ CreateEnsembleDataset_R <- function(type) {
 #' GetEnsembleDatasetDataIdentifiers_R Wrapper function for GetEnsembleDatasetDataIdentifiers
 #'
 #' @export
-
 GetEnsembleDatasetDataIdentifiers_R <- function(dataLibrary)
 {
     dataLibrary <- cinterop::getExternalXptr(dataLibrary)
-
     result <- GetEnsembleDatasetDataIdentifiers_Rcpp(dataLibrary);
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
@@ -106,12 +104,10 @@ GetEnsembleDatasetDataIdentifiers_R <- function(dataLibrary)
 #' GetEnsembleDatasetDataSubIdentifiers_R Wrapper function for GetEnsembleDatasetDataSubIdentifiers
 #'
 #' @export
-
 GetEnsembleDatasetDataSubIdentifiers_R <- function(dataLibrary, dataCollectionId)
 {
     dataLibrary <- cinterop::getExternalXptr(dataLibrary)
 dataCollectionId <- cinterop::getExternalXptr(dataCollectionId)
-
     result <- GetEnsembleDatasetDataSubIdentifiers_Rcpp(dataLibrary, dataCollectionId);
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
@@ -122,11 +118,9 @@ dataCollectionId <- cinterop::getExternalXptr(dataCollectionId)
 #' GetEnsembleDatasetDataSummaries_R Wrapper function for GetEnsembleDatasetDataSummaries
 #'
 #' @export
-
 GetEnsembleDatasetDataSummaries_R <- function(dataLibrary)
 {
     dataLibrary <- cinterop::getExternalXptr(dataLibrary)
-
     result <- GetEnsembleDatasetDataSummaries_Rcpp(dataLibrary);
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
@@ -175,18 +169,6 @@ GetDatasetEnsembleTimeSeries_R <- function(dataLibrary, dataEnsembleId) {
   return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR'))
 }
 
-#' GetEnsembleTimeSeriesData_R
-#'
-#' GetEnsembleTimeSeriesData_R Wrapper function for GetEnsembleTimeSeriesData
-#'
-#' @param ensSeries R type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-#' @export
-GetEnsembleTimeSeriesData_R <- function(ensSeries) {
-  ensSeries <- cinterop::getExternalXptr(ensSeries)
-  result <- GetEnsembleTimeSeriesData_Rcpp(ensSeries)
-  return(cinterop::mkExternalObjRef(result, 'multi_regular_time_series_data*'))
-}
-
 #' GetDatasetEnsembleForecastTimeSeries_R
 #'
 #' GetDatasetEnsembleForecastTimeSeries_R Wrapper function for GetDatasetEnsembleForecastTimeSeries
@@ -199,6 +181,82 @@ GetDatasetEnsembleForecastTimeSeries_R <- function(dataLibrary, dataId) {
   dataId <- cinterop::getExternalXptr(dataId)
   result <- GetDatasetEnsembleForecastTimeSeries_Rcpp(dataLibrary, dataId)
   return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
+}
+
+#' TimeSeriesFromEnsembleOfTimeSeries_R
+#'
+#' TimeSeriesFromEnsembleOfTimeSeries_R Wrapper function for TimeSeriesFromEnsembleOfTimeSeries
+#'
+#' @param collectionTs R type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+#' @param index R type equivalent for C++ type int
+#' @export
+TimeSeriesFromEnsembleOfTimeSeries_R <- function(collectionTs, index) {
+  collectionTs <- cinterop::getExternalXptr(collectionTs)
+  index <- cinterop::getExternalXptr(index)
+  result <- TimeSeriesFromEnsembleOfTimeSeries_Rcpp(collectionTs, index)
+  return(cinterop::mkExternalObjRef(result, 'TIME_SERIES_PTR'))
+}
+
+#' TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_R
+#'
+#' TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_R Wrapper function for TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries
+#'
+#' @param efts R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+#' @param indexInIssueTime R type equivalent for C++ type int
+#' @param indexInForecastTime R type equivalent for C++ type int
+#' @export
+TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_R <- function(efts, indexInIssueTime, indexInForecastTime) {
+  efts <- cinterop::getExternalXptr(efts)
+  indexInIssueTime <- cinterop::getExternalXptr(indexInIssueTime)
+  indexInForecastTime <- cinterop::getExternalXptr(indexInForecastTime)
+  result <- TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp(efts, indexInIssueTime, indexInForecastTime)
+  return(cinterop::mkExternalObjRef(result, 'TIME_SERIES_PTR'))
+}
+
+#' CreatePerfectForecastTimeSeries_R
+#'
+#' CreatePerfectForecastTimeSeries_R Wrapper function for CreatePerfectForecastTimeSeries
+#'
+#' @param observations R type equivalent for C++ type TIME_SERIES_PTR
+#' @param start R type equivalent for C++ type date_time_to_second
+#' @param length R type equivalent for C++ type int
+#' @param timeStepName R type equivalent for C++ type const char*
+#' @param offsetForecasts R type equivalent for C++ type int
+#' @param leadTime R type equivalent for C++ type int
+#' @export
+CreatePerfectForecastTimeSeries_R <- function(observations, start, length, timeStepName, offsetForecasts, leadTime) {
+  observations <- cinterop::getExternalXptr(observations)
+  start <- cinterop::getExternalXptr(start)
+  length <- cinterop::getExternalXptr(length)
+  timeStepName <- cinterop::getExternalXptr(timeStepName)
+  offsetForecasts <- cinterop::getExternalXptr(offsetForecasts)
+  leadTime <- cinterop::getExternalXptr(leadTime)
+  result <- CreatePerfectForecastTimeSeries_Rcpp(observations, start, length, timeStepName, offsetForecasts, leadTime)
+  return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
+}
+
+#' ToStructEnsembleTimeSeriesData_R
+#'
+#' ToStructEnsembleTimeSeriesData_R Wrapper function for ToStructEnsembleTimeSeriesData
+#'
+#' @param ensSeries R type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+#' @export
+ToStructEnsembleTimeSeriesData_R <- function(ensSeries) {
+  ensSeries <- cinterop::getExternalXptr(ensSeries)
+  result <- ToStructEnsembleTimeSeriesData_Rcpp(ensSeries)
+  return(cinterop::mkExternalObjRef(result, 'multi_regular_time_series_data*'))
+}
+
+#' ToStructSingleTimeSeriesData_R
+#'
+#' ToStructSingleTimeSeriesData_R Wrapper function for ToStructSingleTimeSeriesData
+#'
+#' @param timeSeries R type equivalent for C++ type TIME_SERIES_PTR
+#' @export
+ToStructSingleTimeSeriesData_R <- function(timeSeries) {
+  timeSeries <- cinterop::getExternalXptr(timeSeries)
+  result <- ToStructSingleTimeSeriesData_Rcpp(timeSeries)
+  return(cinterop::mkExternalObjRef(result, 'multi_regular_time_series_data*'))
 }
 
 #' GetTimeSeriesGeometry_R
@@ -290,11 +348,9 @@ GetProviderTimeSeriesValues_R <- function(dataLibrary, variableIdentifier, value
 #' GetProviderTimeSeriesIdentifiers_R Wrapper function for GetProviderTimeSeriesIdentifiers
 #'
 #' @export
-
 GetProviderTimeSeriesIdentifiers_R <- function(dataLibrary)
 {
     dataLibrary <- cinterop::getExternalXptr(dataLibrary)
-
     result <- GetProviderTimeSeriesIdentifiers_Rcpp(dataLibrary);
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }

@@ -118,17 +118,51 @@ XPtr<opaque_pointer_handle> GetDatasetEnsembleTimeSeries_Rcpp(XPtr<opaque_pointe
 }
 
 // [[Rcpp::export]]
-XPtr<opaque_pointer_handle> GetEnsembleTimeSeriesData_Rcpp(XPtr<opaque_pointer_handle> ensSeries)
+XPtr<opaque_pointer_handle> GetDatasetEnsembleForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataId)
 {
-    auto result = GetEnsembleTimeSeriesData(ensSeries->get());
+    auto result = GetDatasetEnsembleForecastTimeSeries(dataLibrary->get(), dataId[0]);
     auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }
 
 // [[Rcpp::export]]
-XPtr<opaque_pointer_handle> GetDatasetEnsembleForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataId)
+XPtr<opaque_pointer_handle> TimeSeriesFromEnsembleOfTimeSeries_Rcpp(XPtr<opaque_pointer_handle> collectionTs, IntegerVector index)
 {
-    auto result = GetDatasetEnsembleForecastTimeSeries(dataLibrary->get(), dataId[0]);
+    auto result = TimeSeriesFromEnsembleOfTimeSeries(collectionTs->get(), as<int>(index));
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
+    return x;
+}
+
+// [[Rcpp::export]]
+XPtr<opaque_pointer_handle> TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp(XPtr<opaque_pointer_handle> efts, IntegerVector indexInIssueTime, IntegerVector indexInForecastTime)
+{
+    auto result = TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts->get(), as<int>(indexInIssueTime), as<int>(indexInForecastTime));
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
+    return x;
+}
+
+// [[Rcpp::export]]
+XPtr<opaque_pointer_handle> CreatePerfectForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> observations, Rcpp::Datetime start, IntegerVector length, CharacterVector timeStepName, IntegerVector offsetForecasts, IntegerVector leadTime)
+{
+    date_time_to_second start_datetime = to_date_time_to_second<Rcpp::Datetime>(start);
+    auto result = CreatePerfectForecastTimeSeries(observations->get(), start_datetime, as<int>(length), timeStepName[0], as<int>(offsetForecasts), as<int>(leadTime));
+    // start_datetime - no cleanup needed
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
+    return x;
+}
+
+// [[Rcpp::export]]
+XPtr<opaque_pointer_handle> ToStructEnsembleTimeSeriesData_Rcpp(XPtr<opaque_pointer_handle> ensSeries)
+{
+    auto result = ToStructEnsembleTimeSeriesData(ensSeries->get());
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
+    return x;
+}
+
+// [[Rcpp::export]]
+XPtr<opaque_pointer_handle> ToStructSingleTimeSeriesData_Rcpp(XPtr<opaque_pointer_handle> timeSeries)
+{
+    auto result = ToStructSingleTimeSeriesData(timeSeries->get());
     auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }

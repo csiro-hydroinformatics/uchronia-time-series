@@ -579,6 +579,11 @@ namespace datatypes
 				return TsType(series.at(i));
 			}
 
+			Type Get(size_t i) const
+			{
+				return Type(series.at(i));
+			}
+
 			ElementType Get(size_t i, size_t tsIndex)
 			{
 				return (*series[i])[tsIndex];

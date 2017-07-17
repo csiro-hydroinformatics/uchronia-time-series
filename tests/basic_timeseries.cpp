@@ -177,12 +177,12 @@ public:
 
 TEST_CASE("Extensibility of templated time series")
 {
-	using SpatialTs = TTimeSeries<SpatialGrid>;
+	//using SpatialTs = TTimeSeries<SpatialGrid>;
 
-	auto start = ptime(date(2017, 1, 1));
-	SpatialTs oneWeek(7, start, TimeStep::GetDaily());
-	SpatialGrid val = oneWeek[start + days(2)];
-	SpatialTs other = oneWeek + val;
+	//auto start = ptime(date(2017, 1, 1));
+	//SpatialTs oneWeek(7, start, TimeStep::GetDaily());
+	//SpatialGrid val = oneWeek[start + days(2)];
+	//SpatialTs other = oneWeek + val;
 
 }
 

@@ -777,4 +777,3 @@ TEST_CASE("DimensionsDefinition")
 	REQUIRE(VectorEqual<double>(dimDef.TimeVar, SeqVec<double>(0, 6, tsEtsLength)));
 	REQUIRE(VectorEqual<double>(dimDef.LeadTimeVar, SeqVec<double>(0.25, 0.25, tsLength)));
 }
-

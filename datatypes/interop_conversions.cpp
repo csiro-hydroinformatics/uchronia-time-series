@@ -25,8 +25,17 @@ TimeSeries CreateTimeSeries(double * values, TS_GEOMETRY_PTR geom)
 	return CreateTimeSeries(values, *g);
 }
 
+TimeSeries CreateTimeSeries(const multi_regular_time_series_data& g)
+{
+	if (g.ensemble_size == 0)
+		throw std::logic_error("time series data structure has ensemble size 0");
+	return CreateTimeSeries(g.numeric_data[0], g.time_series_geometry);
+}
+
 TimeSeriesEnsemble<TimeSeries> ToTimeSeriesEnsemble(const multi_regular_time_series_data& rawData)
 {
+	if (rawData.ensemble_size == 0)
+		throw std::logic_error("time series data structure has ensemble size 0");
 	auto start = to_ptime(rawData.time_series_geometry.start);
 	TimeSeriesEnsemble<TimeSeries> ts(rawData.numeric_data, rawData.ensemble_size, rawData.time_series_geometry.length, start, TimeStep::FromSeconds(rawData.time_series_geometry.time_step_seconds));
 	return ts;
@@ -38,14 +47,21 @@ TimeSeriesEnsemble<TimeSeries>* ToTimeSeriesEnsemblePtr(const multi_regular_time
 	return new TimeSeriesEnsemble<TimeSeries>(rawData.numeric_data, rawData.ensemble_size, rawData.time_series_geometry.length, start, TimeStep::FromSeconds(rawData.time_series_geometry.time_step_seconds));
 }
 
-multi_regular_time_series_data* ToMultiTimeSeriesDataPtr(TimeSeriesEnsemble<TimeSeries>& mts)
+multi_regular_time_series_data* ToMultiTimeSeriesDataPtr(const TimeSeriesEnsemble<TimeSeries>& mts)
 {
 	multi_regular_time_series_data* result = new multi_regular_time_series_data();
 	CopyToMultiTimeSeriesData(mts, *result);
 	return result;
 }
 
-void CopyToMultiTimeSeriesData(TimeSeriesEnsemble<TimeSeries>& mts, multi_regular_time_series_data& result)
+multi_regular_time_series_data* ToMultiTimeSeriesDataPtr(const TimeSeries& ts)
+{
+	multi_regular_time_series_data* result = new multi_regular_time_series_data();
+	CopyToMultiTimeSeriesData(ts, *result);
+	return result;
+}
+
+void CopyToMultiTimeSeriesData(const TimeSeriesEnsemble<TimeSeries>& mts, multi_regular_time_series_data& result)
 {
 	result.ensemble_size = mts.Size();
 	auto ts = mts.Get(0);
@@ -53,18 +69,33 @@ void CopyToMultiTimeSeriesData(TimeSeriesEnsemble<TimeSeries>& mts, multi_regula
 	result.numeric_data = ToRawData(mts);
 }
 
-double** ToRawData(TimeSeriesEnsemble<TimeSeries>& mts)
+void CopyToMultiTimeSeriesData(const TimeSeries& ts, multi_regular_time_series_data& result)
+{
+	result.ensemble_size = 1;
+	ToTimeSeriesGeomStruct<TimeSeries>(ts, result.time_series_geometry);
+	result.numeric_data = new double*[result.ensemble_size];
+	result.numeric_data[0] = ToRawData(ts);
+}
+
+double** ToRawData(const TimeSeriesEnsemble<TimeSeries>& mts)
 {
 	size_t ensSize = mts.Size();
 	double** result = new double*[ensSize];
 	vector<double*>* values = mts.GetValues();
 	for (size_t i = 0; i < ensSize; i++)
 	{
-		auto timeSeries = mts.Get(i);
-		result[i] = new double[timeSeries->GetLength()];
-		timeSeries->CopyWithMissingValueTo(result[i], datatypes::interop::MissingValueHandling::TimeSeriesMissingValueValue);
+		TimeSeries timeSeries = mts.Get(i);
+		result[i] = new double[timeSeries.GetLength()];
+		timeSeries.CopyWithMissingValueTo(result[i], datatypes::interop::MissingValueHandling::TimeSeriesMissingValueValue);
 	}
 	delete values;
+	return result;
+}
+
+double* ToRawData(const TimeSeries& ts)
+{
+	double* result = new double[ts.GetLength()];
+	ts.CopyWithMissingValueTo(result, datatypes::interop::MissingValueHandling::TimeSeriesMissingValueValue);
 	return result;
 }
 

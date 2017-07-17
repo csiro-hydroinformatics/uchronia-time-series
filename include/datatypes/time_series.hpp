@@ -623,6 +623,16 @@ namespace datatypes
 				store->Reset(values, startDate, timeStep);
 			}
 
+			MultiTimeSeries(const Type& series)
+			{
+				Clear();
+				this->startDate = series.GetStartDate();
+				this->timeStep = series.GetTimeStep();
+				vector<PtrType> s;
+				s.push_back(new Type(series));
+				store->Reset(s, startDate, timeStep);
+			}
+
 			MultiTimeSeries(const vector<Type>& values, const ptime& startDate, const TimeStep& timeStep)
 			{
 				Clear();
@@ -705,6 +715,11 @@ namespace datatypes
 			}
 
 			TsType Get(size_t i)
+			{
+				return store->Get(i);
+			}
+
+			Type Get(size_t i) const
 			{
 				return store->Get(i);
 			}
@@ -955,6 +970,36 @@ namespace datatypes
 			{
 				auto ens = GetEnsemble(ensTs, index);
 				return ens->Get(0)->GetEndDate();
+			}
+
+			static void CreateForecast(TSeriesEnsemblePtrType& forecast, const SeriesType& observations, const ptime& start, size_t length, const TimeStep& issueTimeStep, size_t leadTime, size_t offsetForecasts)
+			{
+				forecast.Reset(length, start, issueTimeStep);
+				TimeStep obsTstep = observations.GetTimeStep();
+				for (size_t i = 0; i < length; i++)
+				{
+					// Index in the observation time series corresponding to the forecast issue time 'i'
+					size_t obsIndex = observations.IndexForTime(issueTimeStep.AddSteps(start, i));
+					size_t from = obsIndex + offsetForecasts;
+					size_t to = from + (leadTime-1);
+					SeriesType fcast = observations.Subset(from, to);
+					EnsemblePtrType* mts = new EnsemblePtrType(fcast);
+					forecast.SetValue(i, mts);
+				}
+			}
+
+			static TSeriesEnsemblePtrType* CreateForecastPtr(const SeriesType& observations, const ptime& start, size_t length, const TimeStep& issueTimeStep, size_t leadTime, size_t offsetForecasts)
+			{
+				TSeriesEnsemblePtrType* forecast = new TSeriesEnsemblePtrType(length, start, issueTimeStep);
+				CreateForecast(*forecast, observations, start, length, issueTimeStep, leadTime, offsetForecasts);
+				return forecast;
+			}
+
+			static TSeriesEnsemblePtrType CreateForecast(const SeriesType& observations, const ptime& start, size_t length, const TimeStep& issueTimeStep, size_t leadTime, size_t offsetForecasts)
+			{
+				TSeriesEnsemblePtrType forecast;
+				CreateForecast(forecast, observations, start, length, issueTimeStep, leadTime, offsetForecasts);
+				return forecast;
 			}
 
 			template<typename U>

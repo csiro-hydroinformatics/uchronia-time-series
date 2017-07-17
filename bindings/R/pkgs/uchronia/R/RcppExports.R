@@ -85,12 +85,28 @@ GetDatasetEnsembleTimeSeries_Rcpp <- function(dataLibrary, dataEnsembleId) {
     .Call('uchronia_GetDatasetEnsembleTimeSeries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataEnsembleId)
 }
 
-GetEnsembleTimeSeriesData_Rcpp <- function(ensSeries) {
-    .Call('uchronia_GetEnsembleTimeSeriesData_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
-}
-
 GetDatasetEnsembleForecastTimeSeries_Rcpp <- function(dataLibrary, dataId) {
     .Call('uchronia_GetDatasetEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataId)
+}
+
+TimeSeriesFromEnsembleOfTimeSeries_Rcpp <- function(collectionTs, index) {
+    .Call('uchronia_TimeSeriesFromEnsembleOfTimeSeries_Rcpp', PACKAGE = 'uchronia_r', collectionTs, index)
+}
+
+TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp <- function(efts, indexInIssueTime, indexInForecastTime) {
+    .Call('uchronia_TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp', PACKAGE = 'uchronia_r', efts, indexInIssueTime, indexInForecastTime)
+}
+
+CreatePerfectForecastTimeSeries_Rcpp <- function(observations, start, length, timeStepName, offsetForecasts, leadTime) {
+    .Call('uchronia_CreatePerfectForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', observations, start, length, timeStepName, offsetForecasts, leadTime)
+}
+
+ToStructEnsembleTimeSeriesData_Rcpp <- function(ensSeries) {
+    .Call('uchronia_ToStructEnsembleTimeSeriesData_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
+}
+
+ToStructSingleTimeSeriesData_Rcpp <- function(timeSeries) {
+    .Call('uchronia_ToStructSingleTimeSeriesData_Rcpp', PACKAGE = 'uchronia_r', timeSeries)
 }
 
 GetTimeSeriesGeometry_Rcpp <- function(timeSeries, geom) {
