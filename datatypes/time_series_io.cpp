@@ -591,6 +591,7 @@ namespace datatypes
 				}
 				else {
 					leadTimeVec = ReadAsFloat(leadTimeVarId, leadTimeLength, false);
+				}
 			}
 
 			void SwiftNetCDFAccess::ReadGeometry()
