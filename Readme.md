@@ -5,6 +5,13 @@ Uchronia is a C++ library designed to handle multidimensional time series and en
 * Extensibility to various data types (numeric or not) through C++ templates, e.g. to a "time series of spatial grids"
 * High level language bindings for R, Python, Matlab, and others via a consistent "C" API. 
 
+## Design goals
+
+* Consistent handling of multidimensional time series across programming languages, from prototyping to operations
+* Prevent wasting resource in I/O code duplication and idiosyncratic data structure across (matlab/R/Python/etc.) implementations
+* Scalable from interactive explatory data analysis to HPC
+* Promote high level data identification for provenance and data integrity
+
 [Uchronia](https://en.wikipedia.org/wiki/Uchronia) refers to a hypothetical or fictional time-period of our world. This seems a suitable name for a library primarily designed for handling retrospective ensemble forecast time series.
 
 # Acknowledgement and Licensing
@@ -22,9 +29,42 @@ Please contact David Robertson (david.robertson@csiro.au) if you want to reuse t
 
 ## Using off-the-shelf
 
-Placeholder, now need to have a subset of [Setting up precompiled SWIFT2 and/or dependency libraries](https://confluence.csiro.au/pages/viewpage.action?pageId=376901923)
+Note to self: material subset of [Setting up precompiled SWIFT2 and/or dependency libraries](https://confluence.csiro.au/pages/viewpage.action?pageId=376901923) will be reformatted to this readme.
 
-### Example in R
+_uchronia_ is largely header-only but can be installed as a shared library, for off the shelf use.
+
+On Linux:
+
+```sh
+INSTALL_PREFIX=/usr/local
+CSIRO_BITBUCKET=~/src/stash
+GITHUB_REPOS=~/src/github_jm
+
+CXX_COMP=-DCMAKE_CXX_COMPILER=g++
+C_COMP=-DCMAKE_C_COMPILER=gcc
+CM_PREF=-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+CM="cmake ${CXX_COMP} ${C_COMP} ${CM_PREF} -DBUILD_SHARED_LIBS=ON .."
+
+# placeholder: depending on Linux machine getting yaml-cpp, moirai, netCDF, cinterop, and Boost packages pre-installed
+
+cd ${CSIRO_BITBUCKET}/datatypes/datatypes
+mkdir -p build ; cd build
+$CM
+make 
+sudo make install
+```
+
+### R bindings
+
+Building the package from source can be done with:
+
+```sh
+cd ${CSIRO_BITBUCKET}/datatypes/bindings/R/pkgs
+R CMD build uchronia
+R CMD INSTALL uchronia_x.y.tar.gz
+```
+
+The package includes examples in the form of built-in vignettes:
 
 ```r
 library(uchronia)
@@ -33,9 +73,11 @@ browseVignettes("uchronia")
 
 ### Example in Python
 
+Placeholder as of 2017-07, Python bindings and documentation are currently ported from the pySwift python package.
+
 ```python
 import uchronia
-# TODO
+# etc.
 ```
 
 ## As a developer
@@ -86,6 +128,8 @@ void ensembleForecasts() {
 ```
 
 ### Extending, customizing 
+
+uchronia is largely template based, you can create time series for other item types such as spatial grids. Thanks to the static typing of C++ and its template metaprogramming features, errors are often caught at compile time, and several operations such as arithmetic ones will "just work":
 
 ```c++ 
 
