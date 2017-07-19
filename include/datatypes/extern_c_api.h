@@ -44,7 +44,7 @@ extern "C" {
 	/**
 	 * \fn	DATATYPES_API char* GetLastStdExceptionMessage();
 	 *
-	 * \brief	Gets the last message from an std::exception caught by the SWIFT API.
+	 * \brief	Gets the last message from an std::exception caught by the uchronia API.
 	 *
 	 * \return        the last standard exception message.
 	 */
@@ -53,7 +53,7 @@ extern "C" {
 	/**
 	 * \fn	DATATYPES_API void RegisterExceptionCallback(void* callback);
 	 *
-	 * \brief	Registers a function to call when SWIFT has generated a std::exception that has been caught by the API.
+	 * \brief	Registers a function to call when uchronia has generated a std::exception that has been caught by the API.
 	 *
 	 * \param [in]	callback function pointer. The function must have a signature like void on_error_message(const char* msg);
 	 */
@@ -66,7 +66,7 @@ extern "C" {
 	/**
 	 * \fn	DATATYPES_API void DisposeSharedPointer(VOID_PTR_PROVIDER_PTR ptr);
 	 *
-	 * \brief	Notifies SWIFT that an object managed by an opaque pointer is not used by the caller anymore.
+	 * \brief	Notifies uchronia that an object managed by an opaque pointer is not used by the caller anymore.
 	 *
 	 * \param	ptr	pointer obtained via the API, such as a MODEL_SIMULATION_PTR.
 	 */
@@ -76,7 +76,7 @@ extern "C" {
 	/**
 	 * \fn	DATATYPES_API void DeleteAnsiStringArray(char** values, int arrayLength);
 	 *
-	 * \brief	Deletes the ANSI string array , which has been create by SWIFT. Do not use for char** created outside libswift.
+	 * \brief	Deletes the ANSI string array , which has been create by uchronia. Do not use for char** created outside libswift.
 	 *
 	 * \param [in]	values	pointer to the array to delete (its elements and the array itself).
 	 * \param	arrayLength   	Length of the array.
@@ -87,44 +87,106 @@ extern "C" {
 	/**
 	 * \fn	DATATYPES_API void DeleteAnsiString(const char* value);
 	 *
-	 * \brief	Deletes the ANSI string which has been create by SWIFT. Do not use for char* created outside libswift.
+	 * \brief	Deletes the ANSI string which has been create by uchronia. Do not use for char* created outside libswift.
 	 *
-	 * \param [in]	value	a C-style string, which has been create by SWIFT. Do not use for char* created elsewhere.
+	 * \param [in]	value	a C-style string, which has been create by uchronia. Do not use for char* created elsewhere.
 	 */
 
 	DATATYPES_API void DeleteAnsiString(const char* value);
 
+	/**
+	 * \fn	DATATYPES_API void DeleteDoubleArray(double* value);
+	 *
+	 * \brief	Dispose of an array of double created via this C API.
+	 *
+	 * \param [in,out]	value	If non-null, the value.
+	 */
+
 	DATATYPES_API void DeleteDoubleArray(double* value);
 
+
 	////////////////////////////////
-	// Global settings for the C SWIFT API
+	// Global settings for the C uchronia API
 	////////////////////////////////
+
+
+	/**
+	 * \fn	DATATYPES_API void SetTimeSeriesMissingValueValue(double missingValueValue);
+	 *
+	 * \brief	Sets a value whoch should be considered as a missing value when data is passed to this C API.
+	 *
+	 * \param	missingValueValue	The missing value.
+	 */
 
 	DATATYPES_API void SetTimeSeriesMissingValueValue(double missingValueValue);
 
-	////////////////////////////////
-	// Model simulations
-	////////////////////////////////
-
 	/**
-	 * \fn	DATATYPES_API MODEL_SIMULATION_PTR CloneModel(MODEL_SIMULATION_PTR simulation);
+	 * \fn	DATATYPES_API ENSEMBLE_DATA_SET_PTR LoadEnsembleDataset(const char* filename, const char* dataPath);
 	 *
-	 * \brief	Clone a model simulation
+	 * \brief	Creates a time series library, defined (for now) by a YAML descriptor.
 	 *
-	 * \param	simulation	the simulation to clone.
+	 * \param	libraryIdentifier	an ID for the library (currently path to a YAML file)
+	 * \param	dataPath	optional root data path for on-disk data, if the YAML file uses relative paths.
 	 *
-	 * \return	A MODEL_SIMULATION_PTR.
+	 * \return	The ensemble dataset.
 	 */
 
-	DATATYPES_API ENSEMBLE_DATA_SET_PTR LoadEnsembleDataset(const char* filename, const char* dataPath);
+	DATATYPES_API ENSEMBLE_DATA_SET_PTR LoadEnsembleDataset(const char* libraryIdentifier, const char* dataPath);
+
+	/**
+	 * \fn	DATATYPES_API ENSEMBLE_DATA_SET_PTR CreateEnsembleDataset(const char* type);
+	 *
+	 * \brief	Creates a time series library
+	 *
+	 * \param	type	The type of library to create. Currently supports cases for unit tests
+	 * 					and time series libraries that can be "recorded to" by modelling engines.
+	 *
+	 * \return	The new ensemble dataset.
+	 */
 
 	DATATYPES_API ENSEMBLE_DATA_SET_PTR CreateEnsembleDataset(const char* type);
 
+	/**
+	 * \fn	DATATYPES_API char** GetEnsembleDatasetDataIdentifiers(ENSEMBLE_DATA_SET_PTR dataLibrary, int* size);
+	 *
+	 * \brief	Gets the highest level datasets' IDs known to this library.
+	 *
+	 * \param 		  	dataLibrary	The data library.
+	 * \param [out]	size	   	Size of the list of IDs
+	 *
+	 * \return	Null if it fails, else the ensemble dataset data identifiers.
+	 */
+
 	DATATYPES_API char** GetEnsembleDatasetDataIdentifiers(ENSEMBLE_DATA_SET_PTR dataLibrary, int* size);
+
+	/**
+	 * \fn	DATATYPES_API char** GetEnsembleDatasetDataSubIdentifiers(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataCollectionId, int* size);
+	 *
+	 * \brief	Gets sub identifiers, if any, in a hierarchical ID scheme 
+	 * 			(e.g. if a collection of streamflows is such that you can ID each series as "streamflow.gauge_id")
+	 *
+	 * \param 		  	dataLibrary			The data library.
+	 * \param 		  	dataCollectionId	Main identifier within which to query for sub-identifgiers
+	 * \param [out]	size	   	Size of the list of sub-IDs
+	 *
+	 * \return	Null if it fails, else the dataset data sub identifiers. (e.g. the streamflow gauge idenfiers)
+	 */
 
 	DATATYPES_API char** GetEnsembleDatasetDataSubIdentifiers(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataCollectionId, int* size);
 
 	DATATYPES_API char** GetEnsembleDatasetDataSummaries(ENSEMBLE_DATA_SET_PTR dataLibrary, int* size);
+
+	/**
+	 * \fn	DATATYPES_API time_series_dimensions_description* GetDataDimensionsDescription(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataId);
+	 *
+	 * \brief	Gets data dimensions description. This function is useful for wrappers 
+	 * 			to discover the dimensionality of a data set before trying to load it in memory.
+	 *
+	 * \param	dataLibrary	The data library.
+	 * \param	dataId	   	Identifier for the data.
+	 *
+	 * \return	A struct describing the dimensionality of the data set in the library.
+	 */
 
 	DATATYPES_API time_series_dimensions_description* GetDataDimensionsDescription(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataId);
 
