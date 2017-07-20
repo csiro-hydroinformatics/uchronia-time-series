@@ -200,48 +200,6 @@ def CreateEnsembleForecastTimeSeries_py(start, length, timeStepName):
     return cinterop.mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
-def SetItemEnsembleForecastTimeSeries_py(series, i, values):
-    """
-    SetItemEnsembleForecastTimeSeries_py
-    
-    SetItemEnsembleForecastTimeSeries_py Wrapper function for SetItemEnsembleForecastTimeSeries
-    
-    :param series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param i Python type equivalent for C++ type int
-    :param values Python type equivalent for C++ type multi_regular_time_series_data*
-    :export
-    """
-    series_xptr = cinterop.getExternalXptr(series)
-    nativelib.SetItemEnsembleForecastTimeSeries(series_xptr, i, values)
-
-
-def GetItemEnsembleForecastTimeSeries_py(series, i):
-    """
-    GetItemEnsembleForecastTimeSeries_py
-    
-    GetItemEnsembleForecastTimeSeries_py Wrapper function for GetItemEnsembleForecastTimeSeries
-    
-    :param series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param i Python type equivalent for C++ type int
-    :export
-    """
-    series_xptr = cinterop.getExternalXptr(series)
-    result = nativelib.GetItemEnsembleForecastTimeSeries(series_xptr, i)
-    return cinterop.mkExternalObjRef(result, 'multi_regular_time_series_data*')
-
-
-def DisposeMultiTimeSeriesData_py(data):
-    """
-    DisposeMultiTimeSeriesData_py
-    
-    DisposeMultiTimeSeriesData_py Wrapper function for DisposeMultiTimeSeriesData
-    
-    :param data Python type equivalent for C++ type multi_regular_time_series_data*
-    :export
-    """
-    nativelib.DisposeMultiTimeSeriesData(data)
-
-
 def GetDatasetSingleTimeSeries_py(dataLibrary, dataId):
     """
     GetDatasetSingleTimeSeries_py
@@ -272,20 +230,6 @@ def GetDatasetEnsembleTimeSeries_py(dataLibrary, dataEnsembleId):
     return cinterop.mkExternalObjRef(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
-def GetEnsembleTimeSeriesData_py(ensSeries):
-    """
-    GetEnsembleTimeSeriesData_py
-    
-    GetEnsembleTimeSeriesData_py Wrapper function for GetEnsembleTimeSeriesData
-    
-    :param ensSeries Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-    :export
-    """
-    ensSeries_xptr = cinterop.getExternalXptr(ensSeries)
-    result = nativelib.GetEnsembleTimeSeriesData(ensSeries_xptr)
-    return cinterop.mkExternalObjRef(result, 'multi_regular_time_series_data*')
-
-
 def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary, dataId):
     """
     GetDatasetEnsembleForecastTimeSeries_py
@@ -299,6 +243,141 @@ def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary, dataId):
     dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
     result = nativelib.GetDatasetEnsembleForecastTimeSeries(dataLibrary_xptr, dataId)
     return cinterop.mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
+
+
+def GetItemEnsembleForecastTimeSeries_py(efts, i):
+    """
+    GetItemEnsembleForecastTimeSeries_py
+    
+    GetItemEnsembleForecastTimeSeries_py Wrapper function for GetItemEnsembleForecastTimeSeries
+    
+    :param efts Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+    :param i Python type equivalent for C++ type int
+    :export
+    """
+    efts_xptr = cinterop.getExternalXptr(efts)
+    result = nativelib.GetItemEnsembleForecastTimeSeries(efts_xptr, i)
+    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
+
+
+def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs, index):
+    """
+    TimeSeriesFromEnsembleOfTimeSeries_py
+    
+    TimeSeriesFromEnsembleOfTimeSeries_py Wrapper function for TimeSeriesFromEnsembleOfTimeSeries
+    
+    :param collectionTs Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+    :param index Python type equivalent for C++ type int
+    :export
+    """
+    collectionTs_xptr = cinterop.getExternalXptr(collectionTs)
+    result = nativelib.TimeSeriesFromEnsembleOfTimeSeries(collectionTs_xptr, index)
+    return cinterop.mkExternalObjRef(result, 'TIME_SERIES_PTR')
+
+
+def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts, indexInIssueTime, indexInForecastTime):
+    """
+    TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py
+    
+    TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py Wrapper function for TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries
+    
+    :param efts Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+    :param indexInIssueTime Python type equivalent for C++ type int
+    :param indexInForecastTime Python type equivalent for C++ type int
+    :export
+    """
+    efts_xptr = cinterop.getExternalXptr(efts)
+    result = nativelib.TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts_xptr, indexInIssueTime, indexInForecastTime)
+    return cinterop.mkExternalObjRef(result, 'TIME_SERIES_PTR')
+
+
+def CreatePerfectForecastTimeSeries_py(observations, start, length, timeStepName, offsetForecasts, leadTime):
+    """
+    CreatePerfectForecastTimeSeries_py
+    
+    CreatePerfectForecastTimeSeries_py Wrapper function for CreatePerfectForecastTimeSeries
+    
+    :param observations Python type equivalent for C++ type TIME_SERIES_PTR
+    :param start Python type equivalent for C++ type date_time_to_second
+    :param length Python type equivalent for C++ type int
+    :param timeStepName Python type equivalent for C++ type const char*
+    :param offsetForecasts Python type equivalent for C++ type int
+    :param leadTime Python type equivalent for C++ type int
+    :export
+    """
+    observations_xptr = cinterop.getExternalXptr(observations)
+    result = nativelib.CreatePerfectForecastTimeSeries(observations_xptr, start, length, timeStepName, offsetForecasts, leadTime)
+    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
+
+
+def SetItemEnsembleForecastTimeSeriesAsStructure_py(series, i, values):
+    """
+    SetItemEnsembleForecastTimeSeriesAsStructure_py
+    
+    SetItemEnsembleForecastTimeSeriesAsStructure_py Wrapper function for SetItemEnsembleForecastTimeSeriesAsStructure
+    
+    :param series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+    :param i Python type equivalent for C++ type int
+    :param values Python type equivalent for C++ type multi_regular_time_series_data*
+    :export
+    """
+    series_xptr = cinterop.getExternalXptr(series)
+    nativelib.SetItemEnsembleForecastTimeSeriesAsStructure(series_xptr, i, values)
+
+
+def GetItemEnsembleForecastTimeSeriesAsStructure_py(series, i):
+    """
+    GetItemEnsembleForecastTimeSeriesAsStructure_py
+    
+    GetItemEnsembleForecastTimeSeriesAsStructure_py Wrapper function for GetItemEnsembleForecastTimeSeriesAsStructure
+    
+    :param series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+    :param i Python type equivalent for C++ type int
+    :export
+    """
+    series_xptr = cinterop.getExternalXptr(series)
+    result = nativelib.GetItemEnsembleForecastTimeSeriesAsStructure(series_xptr, i)
+    return cinterop.mkExternalObjRef(result, 'multi_regular_time_series_data*')
+
+
+def ToStructEnsembleTimeSeriesData_py(ensSeries):
+    """
+    ToStructEnsembleTimeSeriesData_py
+    
+    ToStructEnsembleTimeSeriesData_py Wrapper function for ToStructEnsembleTimeSeriesData
+    
+    :param ensSeries Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+    :export
+    """
+    ensSeries_xptr = cinterop.getExternalXptr(ensSeries)
+    result = nativelib.ToStructEnsembleTimeSeriesData(ensSeries_xptr)
+    return cinterop.mkExternalObjRef(result, 'multi_regular_time_series_data*')
+
+
+def ToStructSingleTimeSeriesData_py(timeSeries):
+    """
+    ToStructSingleTimeSeriesData_py
+    
+    ToStructSingleTimeSeriesData_py Wrapper function for ToStructSingleTimeSeriesData
+    
+    :param timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
+    :export
+    """
+    timeSeries_xptr = cinterop.getExternalXptr(timeSeries)
+    result = nativelib.ToStructSingleTimeSeriesData(timeSeries_xptr)
+    return cinterop.mkExternalObjRef(result, 'multi_regular_time_series_data*')
+
+
+def DisposeMultiTimeSeriesData_py(data):
+    """
+    DisposeMultiTimeSeriesData_py
+    
+    DisposeMultiTimeSeriesData_py Wrapper function for DisposeMultiTimeSeriesData
+    
+    :param data Python type equivalent for C++ type multi_regular_time_series_data*
+    :export
+    """
+    nativelib.DisposeMultiTimeSeriesData(data)
 
 
 def GetTimeSeriesGeometry_py(timeSeries, geom):

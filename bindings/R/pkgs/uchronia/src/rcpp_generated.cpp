@@ -170,7 +170,7 @@ XPtr<opaque_pointer_handle> ToStructSingleTimeSeriesData_Rcpp(XPtr<opaque_pointe
 // [[Rcpp::export]]
 void GetTimeSeriesGeometry_Rcpp(XPtr<opaque_pointer_handle> timeSeries, const Rcpp::S4& geom)
 {
-    regular_time_series_geometry* geom_tsgeom = toMarshalledTsinfoPtr(geom);
+    regular_time_series_geometry* geom_tsgeom = cinterop::timeseries::to_regular_time_series_geometry_ptr(geom);
     GetTimeSeriesGeometry(timeSeries->get(), geom_tsgeom);
     delete geom_tsgeom;
 }
@@ -178,7 +178,7 @@ void GetTimeSeriesGeometry_Rcpp(XPtr<opaque_pointer_handle> timeSeries, const Rc
 // [[Rcpp::export]]
 void GetEnsembleForecastTimeSeriesGeometry_Rcpp(XPtr<opaque_pointer_handle> timeSeries, const Rcpp::S4& geom)
 {
-    regular_time_series_geometry* geom_tsgeom = toMarshalledTsinfoPtr(geom);
+    regular_time_series_geometry* geom_tsgeom = cinterop::timeseries::to_regular_time_series_geometry_ptr(geom);
     GetEnsembleForecastTimeSeriesGeometry(timeSeries->get(), geom_tsgeom);
     delete geom_tsgeom;
 }
@@ -200,7 +200,7 @@ IntegerVector GetNumTimeSeries_Rcpp()
 // [[Rcpp::export]]
 void GetProviderTsGeometry_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector variableIdentifier, const Rcpp::S4& geom)
 {
-    regular_time_series_geometry* geom_tsgeom = toMarshalledTsinfoPtr(geom);
+    regular_time_series_geometry* geom_tsgeom = cinterop::timeseries::to_regular_time_series_geometry_ptr(geom);
     GetProviderTsGeometry(dataLibrary->get(), variableIdentifier[0], geom_tsgeom);
     delete geom_tsgeom;
 }
