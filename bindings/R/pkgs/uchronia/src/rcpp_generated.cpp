@@ -5,9 +5,8 @@
 // 
 ////////////////////////////////////
 
+#include "uchronia.h"
 #include "uchronia_wrapper_setup.h"
-#include "cinterop/rcpp_interop.hpp"
-#include "uchronia_r_exports.h"
 #include "uchronia_struct_interop.h"
 
 using namespace Rcpp;
@@ -49,9 +48,9 @@ void SetTimeSeriesMissingValueValue_Rcpp(NumericVector missingValueValue)
 }
 
 // [[Rcpp::export]]
-XPtr<opaque_pointer_handle> LoadEnsembleDataset_Rcpp(CharacterVector filename, CharacterVector dataPath)
+XPtr<opaque_pointer_handle> LoadEnsembleDataset_Rcpp(CharacterVector libraryIdentifier, CharacterVector dataPath)
 {
-    auto result = LoadEnsembleDataset(filename[0], dataPath[0]);
+    auto result = LoadEnsembleDataset(libraryIdentifier[0], dataPath[0]);
     auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }

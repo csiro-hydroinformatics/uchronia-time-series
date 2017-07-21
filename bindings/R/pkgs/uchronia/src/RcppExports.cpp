@@ -152,14 +152,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // LoadEnsembleDataset_Rcpp
-XPtr<opaque_pointer_handle> LoadEnsembleDataset_Rcpp(CharacterVector filename, CharacterVector dataPath);
-RcppExport SEXP uchronia_LoadEnsembleDataset_Rcpp(SEXP filenameSEXP, SEXP dataPathSEXP) {
+XPtr<opaque_pointer_handle> LoadEnsembleDataset_Rcpp(CharacterVector libraryIdentifier, CharacterVector dataPath);
+RcppExport SEXP uchronia_LoadEnsembleDataset_Rcpp(SEXP libraryIdentifierSEXP, SEXP dataPathSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type libraryIdentifier(libraryIdentifierSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type dataPath(dataPathSEXP);
-    rcpp_result_gen = Rcpp::wrap(LoadEnsembleDataset_Rcpp(filename, dataPath));
+    rcpp_result_gen = Rcpp::wrap(LoadEnsembleDataset_Rcpp(libraryIdentifier, dataPath));
     return rcpp_result_gen;
 END_RCPP
 }

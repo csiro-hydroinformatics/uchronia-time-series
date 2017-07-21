@@ -53,8 +53,8 @@ SetTimeSeriesMissingValueValue_Rcpp <- function(missingValueValue) {
     invisible(.Call('uchronia_SetTimeSeriesMissingValueValue_Rcpp', PACKAGE = 'uchronia_r', missingValueValue))
 }
 
-LoadEnsembleDataset_Rcpp <- function(filename, dataPath) {
-    .Call('uchronia_LoadEnsembleDataset_Rcpp', PACKAGE = 'uchronia_r', filename, dataPath)
+LoadEnsembleDataset_Rcpp <- function(libraryIdentifier, dataPath) {
+    .Call('uchronia_LoadEnsembleDataset_Rcpp', PACKAGE = 'uchronia_r', libraryIdentifier, dataPath)
 }
 
 CreateEnsembleDataset_Rcpp <- function(type) {

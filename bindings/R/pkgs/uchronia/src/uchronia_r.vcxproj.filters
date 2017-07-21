@@ -38,9 +38,6 @@
     <ClInclude Include="../inst/include/uchronia.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="uchronia_struct_interop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\inst\include\rcpp_uchronia.h">
       <Filter>Header Files</Filter>
     </ClInclude>

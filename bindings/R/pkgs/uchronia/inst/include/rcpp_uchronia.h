@@ -1,6 +1,8 @@
 #pragma once
 
+// imports headers for Rcpp interop constructs for package uchronia
+
 #include <Rcpp.h>
-#include "uchronia_wrapper_setup.h"
 #include "cinterop/rcpp_interop.hpp"
+#include "cinterop/rcpp_timeseries_interop.hpp"
 

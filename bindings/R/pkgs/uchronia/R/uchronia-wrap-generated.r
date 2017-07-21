@@ -63,13 +63,13 @@ SetTimeSeriesMissingValueValue_R <- function(missingValueValue) {
 #'
 #' LoadEnsembleDataset_R Wrapper function for LoadEnsembleDataset
 #'
-#' @param filename R type equivalent for C++ type const char*
+#' @param libraryIdentifier R type equivalent for C++ type const char*
 #' @param dataPath R type equivalent for C++ type const char*
 #' @export
-LoadEnsembleDataset_R <- function(filename, dataPath) {
-  filename <- cinterop::getExternalXptr(filename)
+LoadEnsembleDataset_R <- function(libraryIdentifier, dataPath) {
+  libraryIdentifier <- cinterop::getExternalXptr(libraryIdentifier)
   dataPath <- cinterop::getExternalXptr(dataPath)
-  result <- LoadEnsembleDataset_Rcpp(filename, dataPath)
+  result <- LoadEnsembleDataset_Rcpp(libraryIdentifier, dataPath)
   return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_DATA_SET_PTR'))
 }
 

@@ -1,10 +1,6 @@
 #include <string>
+#include "uchronia.h"
 #include "rcpp_custom.h"
-#include "uchronia_r_exports.h"
-#include "uchronia_struct_interop.h"
-
-#include "cinterop/rcpp_timeseries_interop.hpp"
-
 
 using namespace Rcpp;
 using namespace cinterop::utils;

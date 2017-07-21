@@ -63,7 +63,6 @@
     <ClInclude Include="../inst/include/uchronia_wrapper_setup.h" />
     <ClInclude Include="../inst/include/uchronia.h" />
     <ClInclude Include="..\inst\include\rcpp_uchronia.h" />
-    <ClInclude Include="uchronia_struct_interop.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)/Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
