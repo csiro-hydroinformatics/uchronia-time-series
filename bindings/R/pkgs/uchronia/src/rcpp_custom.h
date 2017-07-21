@@ -1,3 +1,5 @@
+#pragma once
+
 #include "uchronia_wrapper_setup.h"
 
 // Pragmatic: these are generated in rcpp_generated.cpp but declarations are needed for custom. 
