@@ -2,7 +2,7 @@
 
 #include "uchronia_wrapper_setup.h"
 
-// Pragmatic: these are generated in rcpp_generated.cpp but declarations are needed for custom. 
+// Pragmatic: these are generated in rcpp_generated.cpp but declarations are needed for functions in rpp_custom. 
 // Ideally should there be a .h file generated?
 
 XPtr<opaque_pointer_handle> GetDatasetSingleTimeSeries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataId);
