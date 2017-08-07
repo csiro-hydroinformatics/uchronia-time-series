@@ -9,6 +9,8 @@
 
 #include "cinterop/c_cpp_interop.hpp"
 
+#include <moirai/reference_handle_test_helper.hpp>
+
 // We first include the extern_c_api as a user of the external library via opaque pointers:
 #define DATATYPES_USE_OPAQUE_POINTERS
 #define USING_DATATYPES
@@ -27,8 +29,14 @@
 
 
 #include "datatypes/datatypes_test_helpers.h"
+#include "datatypes/datatypes_test_helpers.hpp"
 
 using namespace std;
+
+template<typename TTo>
+TTo* scast(void* ref_hndl) {
+	return moirai::tests::unchecked_cast_to_raw_ptr<TTo>(ref_hndl);
+}
 
 
 void delete_ansi_string_array(char** values, int arrayLength)
@@ -81,4 +89,62 @@ TEST_CASE("Retrieving", "[uchronia]")
 	DisposeDataDimensionsDescriptions(tsdim);
 
 	delete ds;
+}
+
+
+TEST_CASE("Converting to and from uchronia time series")
+{
+
+	//sampleDataDir <- "c:/STSF/RPP/data"
+	//
+	//# One way to define a catalogue of a time series library is a YAML definition
+	//x <- uchronia::LoadEnsembleDataset_R(file.path(sampleDataDir, 'Stanley.yaml'), dataPath='')
+	//obsStationIds <- uchronia::GetEnsembleDatasetDataSubIdentifiers_R(x, "rain_obs_collection")
+	//
+	//tsEnsTs <- uchronia::getDataSet(x, "rain_fcast_ens")
+	//fcasts <- ToRppSeriesVectors_R(tsEnsTs, subset=FALSE, -1, -1, FALSE)
+	//
+	//tsObservations <- uchronia::getDataSet(x, "rain_obs_collection")
+	//#  This should be supported:
+	//# uchronia::getItem(tsObservations, "1")
+	//# TODO: needs a better uchronia interface. Starting with extracting from a collection of TS.
+	//tsObs <- uchronia::TimeSeriesFromEnsembleOfTimeSeries_R(tsObservations, 0)
+	//
+	ptime start(date(2008, 3, 4));
+	using DTH = datatypes::tests::DataTestHelper<double>;
+	using EFTS = datatypes::timeseries::EnsembleForecastTimeSeries<>;
+	using MTSPTR = EFTS::ElementType;
+	using MTS = std::remove_pointer<MTSPTR>::type;
+
+	size_t nFcasts = 4;
+	size_t offsetForecasts = 1;
+	size_t lenFcasts = 24;
+	size_t obsLen = nFcasts * lenFcasts * 3;
+	double from = 0.0, increment = 1.0;
+	auto tsObs = new TimeSeries(DTH::Ramp(obsLen, start, from, increment));
+	auto tIndex = tsObs->TimeIndices();
+
+	TIME_SERIES_PTR tsPtr = WRAP_TIME_SERIES_PTR(tsObs);
+	//fcastsTimeIndex <- uchronia::timeIndex(tsInfo=tsEnsTs)
+
+	int offsetFcast = 3;
+	auto startFcast = tIndex[offsetFcast];
+	auto st = cinterop::utils::to_date_time_to_second(startFcast);
+
+	auto fcastObs = CreatePerfectForecastTimeSeries(tsPtr, st, nFcasts, "daily", offsetForecasts, lenFcasts);
+	EFTS* ensFts = scast<EFTS>(fcastObs);
+
+	REQUIRE(ensFts->GetLength() == nFcasts);
+	for (size_t i = 0; i < nFcasts; i++)
+	{
+		auto mts = ensFts->GetValue(i);
+		REQUIRE(mts->Size() == 1);
+		auto ts = mts->Get(0);
+		REQUIRE(ts->GetLength() == lenFcasts);
+		// Further testing for values is covered in the other unit test application and not duplicated here.
+	}
+
+	delete tsPtr;
+	delete fcastObs;
+
 }

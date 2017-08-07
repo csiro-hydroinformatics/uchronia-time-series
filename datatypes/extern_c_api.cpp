@@ -209,8 +209,7 @@ ENSEMBLE_FORECAST_TIME_SERIES_PTR CreatePerfectForecastTimeSeries(TIME_SERIES_PT
 		TimeStep tstep = TimeStep::Parse(string(timeStepName));
 		ptime s = to_ptime(start);
 		EFTSPTR result = datatypes::timeseries::TimeSeriesOperations<>::CreateForecastPtr(*obs, s, length, tstep, leadTime, offsetForecasts);
-	auto x = new ENSEMBLE_FORECAST_TIME_SERIES_DOUBLE(length, to_ptime(start), tstep);
-	return WRAP_ENSEMBLE_FORECAST_TIME_SERIES_PTR(x);
+	return WRAP_ENSEMBLE_FORECAST_TIME_SERIES_PTR(result);
 	INTERCEPT_STD_EXCEPTION
 }
 
