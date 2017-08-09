@@ -282,6 +282,54 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// GetValueFromUnivariateTimeSeries_Rcpp
+NumericVector GetValueFromUnivariateTimeSeries_Rcpp(XPtr<opaque_pointer_handle> ts, IntegerVector index);
+RcppExport SEXP uchronia_GetValueFromUnivariateTimeSeries_Rcpp(SEXP tsSEXP, SEXP indexSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type ts(tsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type index(indexSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetValueFromUnivariateTimeSeries_Rcpp(ts, index));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SetValueToUnivariateTimeSeries_Rcpp
+void SetValueToUnivariateTimeSeries_Rcpp(XPtr<opaque_pointer_handle> ts, IntegerVector index, NumericVector value);
+RcppExport SEXP uchronia_SetValueToUnivariateTimeSeries_Rcpp(SEXP tsSEXP, SEXP indexSEXP, SEXP valueSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type ts(tsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type index(indexSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type value(valueSEXP);
+    SetValueToUnivariateTimeSeries_Rcpp(ts, index, value);
+    return R_NilValue;
+END_RCPP
+}
+// GetItemEnsembleTimeSeriesAsStructure_Rcpp
+XPtr<opaque_pointer_handle> GetItemEnsembleTimeSeriesAsStructure_Rcpp(XPtr<opaque_pointer_handle> series, IntegerVector i);
+RcppExport SEXP uchronia_GetItemEnsembleTimeSeriesAsStructure_Rcpp(SEXP seriesSEXP, SEXP iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetItemEnsembleTimeSeriesAsStructure_Rcpp(series, i));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SetItemEnsembleTimeSeriesAsStructure_Rcpp
+void SetItemEnsembleTimeSeriesAsStructure_Rcpp(XPtr<opaque_pointer_handle> collection, IntegerVector i, const Rcpp::S4& values);
+RcppExport SEXP uchronia_SetItemEnsembleTimeSeriesAsStructure_Rcpp(SEXP collectionSEXP, SEXP iSEXP, SEXP valuesSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type collection(collectionSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type i(iSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::S4& >::type values(valuesSEXP);
+    SetItemEnsembleTimeSeriesAsStructure_Rcpp(collection, i, values);
+    return R_NilValue;
+END_RCPP
+}
 // CreatePerfectForecastTimeSeries_Rcpp
 XPtr<opaque_pointer_handle> CreatePerfectForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> observations, Rcpp::Datetime start, IntegerVector length, CharacterVector timeStepName, IntegerVector offsetForecasts, IntegerVector leadTime);
 RcppExport SEXP uchronia_CreatePerfectForecastTimeSeries_Rcpp(SEXP observationsSEXP, SEXP startSEXP, SEXP lengthSEXP, SEXP timeStepNameSEXP, SEXP offsetForecastsSEXP, SEXP leadTimeSEXP) {
@@ -317,6 +365,28 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type timeSeries(timeSeriesSEXP);
     rcpp_result_gen = Rcpp::wrap(ToStructSingleTimeSeriesData_Rcpp(timeSeries));
+    return rcpp_result_gen;
+END_RCPP
+}
+// CreateEnsembleTimeSeriesDataFromStruct_Rcpp
+XPtr<opaque_pointer_handle> CreateEnsembleTimeSeriesDataFromStruct_Rcpp(const Rcpp::S4& ensSeries);
+RcppExport SEXP uchronia_CreateEnsembleTimeSeriesDataFromStruct_Rcpp(SEXP ensSeriesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::S4& >::type ensSeries(ensSeriesSEXP);
+    rcpp_result_gen = Rcpp::wrap(CreateEnsembleTimeSeriesDataFromStruct_Rcpp(ensSeries));
+    return rcpp_result_gen;
+END_RCPP
+}
+// CreateSingleTimeSeriesDataFromStruct_Rcpp
+XPtr<opaque_pointer_handle> CreateSingleTimeSeriesDataFromStruct_Rcpp(const Rcpp::S4& timeSeries);
+RcppExport SEXP uchronia_CreateSingleTimeSeriesDataFromStruct_Rcpp(SEXP timeSeriesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::S4& >::type timeSeries(timeSeriesSEXP);
+    rcpp_result_gen = Rcpp::wrap(CreateSingleTimeSeriesDataFromStruct_Rcpp(timeSeries));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -85,7 +85,7 @@ Rcpp::S4 GetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> serie
 void SetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i, Rcpp::S4& timeSeriesEnsemble)
 {
 	multi_regular_time_series_data mts = cinterop::timeseries::to_multi_regular_time_series_data(timeSeriesEnsemble);
-	SetItemEnsembleForecastTimeSeriesAsStructure(series->get(), as<int>(i), &mts);
+	SetItemEnsembleForecastTimeSeriesAsStructure(series->get(), as<int>(i), mts);
 }
 
 // [[Rcpp::export]]

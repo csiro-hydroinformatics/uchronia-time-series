@@ -213,6 +213,64 @@ TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_R <- function(efts, indexInIssueT
   return(cinterop::mkExternalObjRef(result, 'TIME_SERIES_PTR'))
 }
 
+#' GetValueFromUnivariateTimeSeries_R
+#'
+#' GetValueFromUnivariateTimeSeries_R Wrapper function for GetValueFromUnivariateTimeSeries
+#'
+#' @param ts R type equivalent for C++ type TIME_SERIES_PTR
+#' @param index R type equivalent for C++ type int
+#' @export
+GetValueFromUnivariateTimeSeries_R <- function(ts, index) {
+  ts <- cinterop::getExternalXptr(ts)
+  index <- cinterop::getExternalXptr(index)
+  result <- GetValueFromUnivariateTimeSeries_Rcpp(ts, index)
+  return(cinterop::mkExternalObjRef(result, 'double'))
+}
+
+#' SetValueToUnivariateTimeSeries_R
+#'
+#' SetValueToUnivariateTimeSeries_R Wrapper function for SetValueToUnivariateTimeSeries
+#'
+#' @param ts R type equivalent for C++ type TIME_SERIES_PTR
+#' @param index R type equivalent for C++ type int
+#' @param value R type equivalent for C++ type double
+#' @export
+SetValueToUnivariateTimeSeries_R <- function(ts, index, value) {
+  ts <- cinterop::getExternalXptr(ts)
+  index <- cinterop::getExternalXptr(index)
+  value <- cinterop::getExternalXptr(value)
+  SetValueToUnivariateTimeSeries_Rcpp(ts, index, value)
+}
+
+#' GetItemEnsembleTimeSeriesAsStructure_R
+#'
+#' GetItemEnsembleTimeSeriesAsStructure_R Wrapper function for GetItemEnsembleTimeSeriesAsStructure
+#'
+#' @param series R type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+#' @param i R type equivalent for C++ type int
+#' @export
+GetItemEnsembleTimeSeriesAsStructure_R <- function(series, i) {
+  series <- cinterop::getExternalXptr(series)
+  i <- cinterop::getExternalXptr(i)
+  result <- GetItemEnsembleTimeSeriesAsStructure_Rcpp(series, i)
+  return(cinterop::mkExternalObjRef(result, 'multi_regular_time_series_data*'))
+}
+
+#' SetItemEnsembleTimeSeriesAsStructure_R
+#'
+#' SetItemEnsembleTimeSeriesAsStructure_R Wrapper function for SetItemEnsembleTimeSeriesAsStructure
+#'
+#' @param collection R type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+#' @param i R type equivalent for C++ type int
+#' @param values R type equivalent for C++ type const multi_regular_time_series_data&
+#' @export
+SetItemEnsembleTimeSeriesAsStructure_R <- function(collection, i, values) {
+  collection <- cinterop::getExternalXptr(collection)
+  i <- cinterop::getExternalXptr(i)
+  values <- cinterop::getExternalXptr(values)
+  SetItemEnsembleTimeSeriesAsStructure_Rcpp(collection, i, values)
+}
+
 #' CreatePerfectForecastTimeSeries_R
 #'
 #' CreatePerfectForecastTimeSeries_R Wrapper function for CreatePerfectForecastTimeSeries
@@ -257,6 +315,30 @@ ToStructSingleTimeSeriesData_R <- function(timeSeries) {
   timeSeries <- cinterop::getExternalXptr(timeSeries)
   result <- ToStructSingleTimeSeriesData_Rcpp(timeSeries)
   return(cinterop::mkExternalObjRef(result, 'multi_regular_time_series_data*'))
+}
+
+#' CreateEnsembleTimeSeriesDataFromStruct_R
+#'
+#' CreateEnsembleTimeSeriesDataFromStruct_R Wrapper function for CreateEnsembleTimeSeriesDataFromStruct
+#'
+#' @param ensSeries R type equivalent for C++ type const multi_regular_time_series_data&
+#' @export
+CreateEnsembleTimeSeriesDataFromStruct_R <- function(ensSeries) {
+  ensSeries <- cinterop::getExternalXptr(ensSeries)
+  result <- CreateEnsembleTimeSeriesDataFromStruct_Rcpp(ensSeries)
+  return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR'))
+}
+
+#' CreateSingleTimeSeriesDataFromStruct_R
+#'
+#' CreateSingleTimeSeriesDataFromStruct_R Wrapper function for CreateSingleTimeSeriesDataFromStruct
+#'
+#' @param timeSeries R type equivalent for C++ type const multi_regular_time_series_data&
+#' @export
+CreateSingleTimeSeriesDataFromStruct_R <- function(timeSeries) {
+  timeSeries <- cinterop::getExternalXptr(timeSeries)
+  result <- CreateSingleTimeSeriesDataFromStruct_Rcpp(timeSeries)
+  return(cinterop::mkExternalObjRef(result, 'TIME_SERIES_PTR'))
 }
 
 #' GetTimeSeriesGeometry_R

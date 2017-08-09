@@ -213,11 +213,19 @@ ENSEMBLE_FORECAST_TIME_SERIES_PTR CreatePerfectForecastTimeSeries(TIME_SERIES_PT
 	INTERCEPT_STD_EXCEPTION
 }
 
-void SetItemEnsembleForecastTimeSeriesAsStructure(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i, multi_regular_time_series_data* values)
+void SetItemEnsembleForecastTimeSeriesAsStructure(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i, const multi_regular_time_series_data&  values)
 {
 	TRY_START
 		EFTSPTR x = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(series);
-	x->SetValue(i, ToTimeSeriesEnsemblePtr(*values));
+	x->SetValue(i, ToTimeSeriesEnsemblePtr(values));
+	INTERCEPT_STD_EXCEPTION
+}
+
+void SetItemEnsembleTimeSeriesAsStructure(ENSEMBLE_PTR_TIME_SERIES_PTR collection, int i, const multi_regular_time_series_data&  values)
+{
+	TRY_START
+		MTSPTR x = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(collection);
+	x->Set(i, SingleTsFromMultiTimeSeriesData(values));
 	INTERCEPT_STD_EXCEPTION
 }
 
@@ -260,6 +268,32 @@ multi_regular_time_series_data* GetItemEnsembleForecastTimeSeriesAsStructure(ENS
 	INTERCEPT_STD_EXCEPTION
 }
 
+multi_regular_time_series_data* GetItemEnsembleTimeSeriesAsStructure(ENSEMBLE_PTR_TIME_SERIES_PTR series, int i)
+{
+	TRY_START
+		MTSPTR x = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(series);
+	auto ts = x->Get(i);
+	multi_regular_time_series_data* result = ToMultiTimeSeriesDataPtr(*ts);
+	return result;
+	INTERCEPT_STD_EXCEPTION
+}
+
+double GetValueFromUnivariateTimeSeries(TIME_SERIES_PTR ts, int index)
+{
+	TRY_START
+		TSPTR tsptr = TIME_SERIES_DYNCAST(ts);
+	return tsptr->GetValue(index);
+	INTERCEPT_STD_EXCEPTION
+}
+
+void SetValueToUnivariateTimeSeries(TIME_SERIES_PTR ts, int index, double value)
+{
+	TRY_START
+		TSPTR tsptr = TIME_SERIES_DYNCAST(ts);
+	return tsptr->SetValue(index, value);
+	INTERCEPT_STD_EXCEPTION
+}
+
 TIME_SERIES_PTR TimeSeriesFromEnsembleOfTimeSeries(ENSEMBLE_PTR_TIME_SERIES_PTR collectionTs, int index)
 {
 	TRY_START
@@ -294,6 +328,20 @@ multi_regular_time_series_data* ToStructSingleTimeSeriesData(TIME_SERIES_PTR tim
 		TSPTR ts = TIME_SERIES_DYNCAST(timeSeries);
 	multi_regular_time_series_data* result = ToMultiTimeSeriesDataPtr(*ts);
 	return result;
+	INTERCEPT_STD_EXCEPTION
+}
+
+ENSEMBLE_PTR_TIME_SERIES_PTR CreateEnsembleTimeSeriesDataFromStruct(const multi_regular_time_series_data& ensSeries)
+{
+	TRY_START
+		return WRAP_ENSEMBLE_TIME_SERIES_PTR(MultiTsPtrFromMultiTimeSeriesData(ensSeries));
+	INTERCEPT_STD_EXCEPTION
+}
+
+TIME_SERIES_PTR CreateSingleTimeSeriesDataFromStruct(const multi_regular_time_series_data& timeSeries)
+{
+	TRY_START
+		return WRAP_TIME_SERIES_PTR(SingleTsPtrFromMultiTimeSeriesData(timeSeries));
 	INTERCEPT_STD_EXCEPTION
 }
 

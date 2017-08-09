@@ -161,6 +161,8 @@ getDataIdentifiers <- function(provider) {
 asXts <- function(tsInfo) {
   if(is.list(tsInfo)) {
     return(marshaledTimeSeriesToXts(tsInfo))
+  } else if(cinterop::isInteropRegularTimeSeries(tsInfo)) {
+    return(cinterop::asXtsTimeSeries(tsInfo))
   } else if(cinterop::isExternalObjRef(tsInfo)) {
     if(isSingularTimeSeries(tsInfo)) {
       return(marshaledTimeSeriesToXts(TimeSeriesToTsInfo_Pkg_R(tsInfo)))
@@ -172,6 +174,32 @@ asXts <- function(tsInfo) {
   } else {
     k <- class(tsInfo)
     stop( paste0( 'cannot convert objects of this(these) class(es) to an xts time series: ', paste(k, collapse = ',')))
+  }
+}
+
+toUchroniaSeries <- function(tsInfo) {
+  if(tsInfo@EnsembleSize==1) {
+    return(CreateSingleTimeSeriesDataFromStruct_R(tsInfo))
+  } else {
+    return(CreateEnsembleTimeSeriesDataFromStruct_R(tsInfo))
+  }
+}
+
+#' Coerce an object to an xts object
+#'
+#' Coerce an object to an xts object
+#'
+#' @param d A representation of a time series. Supported types are external pointers as data from uchronia C API, or an R list returned by some of the *_R functions.
+#' @return an xts object
+#' @export
+asUchroniaData <- function(tsInfo) {
+  if(xts::is.xts(tsInfo)) {
+    return(toUchroniaSeries(cinterop::asInteropRegularTimeSeries(tsInfo)))
+  } else if(cinterop::isExternalObjRef(tsInfo)) {
+    return(tsInfo)
+  } else {
+    k <- class(tsInfo)
+    stop( paste0( 'cannot convert objects of this(these) class(es) to an uchronia data set (xptr): ', paste(k, collapse = ',')))
   }
 }
 

@@ -15,9 +15,15 @@ DATATYPES_DLL_LIB TimeSeriesEnsemble<TimeSeries> ToTimeSeriesEnsemble(const mult
 DATATYPES_DLL_LIB TimeSeriesEnsemble<TimeSeries>* ToTimeSeriesEnsemblePtr(const multi_regular_time_series_data& rawData);
 DATATYPES_DLL_LIB multi_regular_time_series_data* ToMultiTimeSeriesDataPtr(const TimeSeriesEnsemble<TimeSeries>& mts);
 DATATYPES_DLL_LIB multi_regular_time_series_data* ToMultiTimeSeriesDataPtr(const TimeSeries& ts);
+DATATYPES_DLL_LIB TimeSeries* SingleTsPtrFromMultiTimeSeriesData(const multi_regular_time_series_data& ts);
+DATATYPES_DLL_LIB TimeSeriesEnsemble<TimeSeries>* MultiTsPtrFromMultiTimeSeriesData(const multi_regular_time_series_data& ts);
+DATATYPES_DLL_LIB TimeSeries SingleTsFromMultiTimeSeriesData(const multi_regular_time_series_data& ts);
+DATATYPES_DLL_LIB TimeSeriesEnsemble<TimeSeries> MultiTsFromMultiTimeSeriesData(const multi_regular_time_series_data& ts);
 DATATYPES_DLL_LIB time_series_dimensions_description* ToTimeSeriesDimensionDescriptions(vector<DataDimensionDescriptor>& mts);
 DATATYPES_DLL_LIB void CopyToMultiTimeSeriesData(const TimeSeriesEnsemble<TimeSeries>& mts, multi_regular_time_series_data& result);
 DATATYPES_DLL_LIB void CopyToMultiTimeSeriesData(const TimeSeries& ts, multi_regular_time_series_data& result);
+DATATYPES_DLL_LIB void CopyFromMultiTimeSeriesData(const multi_regular_time_series_data& interopdata, TimeSeries& ts);
+DATATYPES_DLL_LIB void CopyFromMultiTimeSeriesData(const multi_regular_time_series_data& interopdata, TimeSeriesEnsemble<TimeSeries>& mts);
 DATATYPES_DLL_LIB double** ToRawData(const TimeSeriesEnsemble<TimeSeries>& mts);
 DATATYPES_DLL_LIB double* ToRawData(const TimeSeries& ts);
 DATATYPES_DLL_LIB void DisposeMultiTimeSeriesData(multi_regular_time_series_data* d);

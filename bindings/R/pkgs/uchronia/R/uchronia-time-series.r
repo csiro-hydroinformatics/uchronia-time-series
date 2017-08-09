@@ -58,7 +58,7 @@ createEnsembleForecastTimeSeries <- function (tsStartEns, n, timeStep='daily') {
 #'
 #' @param ensFcTs  R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
 #' @param i	   integer. One-based index in the ensemble forecast.
-#' @param multiTimeSeries an xts object to put the the specified index
+#' @param value an xts object to put the the specified index
 #' @examples
 #' \dontrun{
 #' ensFcTs <- createEnsembleForecastTimeSeries(lubridate::origin, 3, 'daily')
@@ -73,10 +73,23 @@ createEnsembleForecastTimeSeries <- function (tsStartEns, n, timeStep='daily') {
 #' print(uchronia::getItem(ensFcTs, 1))
 #' }
 #' @export
-setItem <- function(ensFcTs, i, multiTimeSeries) {
-  stopifnot(is.xts(multiTimeSeries))
-  mts <- cinterop::asInteropRegularTimeSeries(multiTimeSeries)
-  SetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs, as.integer(i-1), mts)
+setItem <- function(ensFcTs, i, value) {
+  if(!is.numeric(i)) stop("Only numeric indices are supported for now")
+  zeroIndex <- as.integer(i-1)
+  if(isSingularTimeSeries(ensFcTs)) {
+    if(!is.numeric(value)) stop("For an univariate time series item set must be a scalar")
+    SetValueToUnivariateTimeSeries_R(ensFcTs, zeroIndex, value)
+  } else if(isEnsembleTimeSeries(ensFcTs)) {
+    if(!xts::is.xts(value)) stop("For an ensemble of time series the item set must be an xts")
+    SetItemEnsembleTimeSeriesAsStructure_R(ensFcTs, zeroIndex, cinterop::asInteropRegularTimeSeries(value))
+  } else if(isEnsembleForecastTimeSeries(ensFcTs)) {
+    stopifnot(xts::is.xts(value))
+    mts <- cinterop::asInteropRegularTimeSeries(value)
+    SetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs, as.integer(i-1), mts)
+  } else {
+    stop(paste0('getItem: does not know how to set indexed item into an object of external type "', ensFcTs@type, '"'))
+  }
+
 }
 
 ensTsToXts <- function(ensTs) {  # RegularTimeSeries in cinterop
@@ -104,8 +117,33 @@ ensTsToXts <- function(ensTs) {  # RegularTimeSeries in cinterop
 #' print(uchronia::getItem(ensFcTs, 1))
 #' }
 #' @export
-getItem <- function(ensFcTs, i) {
-  return(ensTsToXts(GetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs, as.integer(i-1))))
+getItem <- function(ensFcTs, i, convertToXts=TRUE) {
+  if(!is.numeric(i)) stop("Only numeric indices are supported for now")
+  zeroIndex <- as.integer(i-1)
+  if(isSingularTimeSeries(ensFcTs)) {
+    return(GetValueFromUnivariateTimeSeries_R(ensFcTs, zeroIndex))
+  } else if(isEnsembleTimeSeries(ensFcTs)) {
+    univTs <- TimeSeriesFromEnsembleOfTimeSeries_R(ensFcTs, zeroIndex)
+    if(convertToXts) {univTs <- asXts(univTs)}
+    return(univTs)
+  } else if(isEnsembleForecastTimeSeries(ensFcTs)) {
+    mts <- GetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs,zeroIndex)
+    if(convertToXts) {mts <- asXts(mts)}
+    return(mts)
+  } else {
+    stop(paste0('getItem: does not know how to get from an object of external type "', ensFcTs@type, '"'))
+  }
+}
+
+#' @export
+hasIdentifier <- function(dataLibrary, identifier) {
+  dataIds <- getDataSetIds(dataLibrary)
+  return(identifier %in% dataIds)
+}
+
+#' @export
+subIdentifiers <- function(dataLibrary, identifier) {
+  stationIds <- GetEnsembleDatasetDataSubIdentifiers_R(dataLibrary, identifier)
 }
 
 #' Make an hourly time series

@@ -359,6 +359,13 @@ namespace datatypes
 				this->storage->SetStart(startDate);
 			}
 
+			void Reset(const vector<T>& values, const ptime& startDate, const TimeStep& timeStep)
+			{
+				this->storage->AllocateValues(values);
+				this->storage->SetStart(startDate);
+				this->storage->SetTimeStep(timeStep);
+			}
+
 			size_t GetLength() const
 			{
 				return storage->Size();

@@ -141,6 +141,36 @@ XPtr<opaque_pointer_handle> TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp(
 }
 
 // [[Rcpp::export]]
+NumericVector GetValueFromUnivariateTimeSeries_Rcpp(XPtr<opaque_pointer_handle> ts, IntegerVector index)
+{
+    auto result = GetValueFromUnivariateTimeSeries(ts->get(), as<int>(index));
+    auto x = Rcpp::wrap(result);
+    return x;
+}
+
+// [[Rcpp::export]]
+void SetValueToUnivariateTimeSeries_Rcpp(XPtr<opaque_pointer_handle> ts, IntegerVector index, NumericVector value)
+{
+    SetValueToUnivariateTimeSeries(ts->get(), as<int>(index), as<double>(value));
+}
+
+// [[Rcpp::export]]
+XPtr<opaque_pointer_handle> GetItemEnsembleTimeSeriesAsStructure_Rcpp(XPtr<opaque_pointer_handle> series, IntegerVector i)
+{
+    auto result = GetItemEnsembleTimeSeriesAsStructure(series->get(), as<int>(i));
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
+    return x;
+}
+
+// [[Rcpp::export]]
+void SetItemEnsembleTimeSeriesAsStructure_Rcpp(XPtr<opaque_pointer_handle> collection, IntegerVector i, const Rcpp::S4& values)
+{
+    multi_regular_time_series_data values_tsd = cinterop::timeseries::to_multi_regular_time_series_data(values);
+    SetItemEnsembleTimeSeriesAsStructure(collection->get(), as<int>(i), values_tsd);
+    cinterop::disposal::dispose_of<multi_regular_time_series_data>(values_tsd);
+}
+
+// [[Rcpp::export]]
 XPtr<opaque_pointer_handle> CreatePerfectForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> observations, Rcpp::Datetime start, IntegerVector length, CharacterVector timeStepName, IntegerVector offsetForecasts, IntegerVector leadTime)
 {
     date_time_to_second start_datetime = to_date_time_to_second<Rcpp::Datetime>(start);
@@ -162,6 +192,26 @@ XPtr<opaque_pointer_handle> ToStructEnsembleTimeSeriesData_Rcpp(XPtr<opaque_poin
 XPtr<opaque_pointer_handle> ToStructSingleTimeSeriesData_Rcpp(XPtr<opaque_pointer_handle> timeSeries)
 {
     auto result = ToStructSingleTimeSeriesData(timeSeries->get());
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
+    return x;
+}
+
+// [[Rcpp::export]]
+XPtr<opaque_pointer_handle> CreateEnsembleTimeSeriesDataFromStruct_Rcpp(const Rcpp::S4& ensSeries)
+{
+    multi_regular_time_series_data ensSeries_tsd = cinterop::timeseries::to_multi_regular_time_series_data(ensSeries);
+    auto result = CreateEnsembleTimeSeriesDataFromStruct(ensSeries_tsd);
+    cinterop::disposal::dispose_of<multi_regular_time_series_data>(ensSeries_tsd);
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
+    return x;
+}
+
+// [[Rcpp::export]]
+XPtr<opaque_pointer_handle> CreateSingleTimeSeriesDataFromStruct_Rcpp(const Rcpp::S4& timeSeries)
+{
+    multi_regular_time_series_data timeSeries_tsd = cinterop::timeseries::to_multi_regular_time_series_data(timeSeries);
+    auto result = CreateSingleTimeSeriesDataFromStruct(timeSeries_tsd);
+    cinterop::disposal::dispose_of<multi_regular_time_series_data>(timeSeries_tsd);
     auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }

@@ -61,6 +61,34 @@ multi_regular_time_series_data* ToMultiTimeSeriesDataPtr(const TimeSeries& ts)
 	return result;
 }
 
+TimeSeries* SingleTsPtrFromMultiTimeSeriesData(const multi_regular_time_series_data& ts)
+{
+	TimeSeries* result = new TimeSeries();
+	CopyFromMultiTimeSeriesData(ts, *result);
+	return result;
+}
+
+TimeSeriesEnsemble<TimeSeries>* MultiTsPtrFromMultiTimeSeriesData(const multi_regular_time_series_data& ts)
+{
+	TimeSeriesEnsemble<TimeSeries>* result = new TimeSeriesEnsemble<TimeSeries>();
+	CopyFromMultiTimeSeriesData(ts, *result);
+	return result;
+}
+
+TimeSeries SingleTsFromMultiTimeSeriesData(const multi_regular_time_series_data& ts)
+{
+	TimeSeries result;
+	CopyFromMultiTimeSeriesData(ts, result);
+	return result;
+}
+
+TimeSeriesEnsemble<TimeSeries> MultiTsFromMultiTimeSeriesData(const multi_regular_time_series_data& ts)
+{
+	TimeSeriesEnsemble<TimeSeries> result;
+	CopyFromMultiTimeSeriesData(ts, result);
+	return result;
+}
+
 void CopyToMultiTimeSeriesData(const TimeSeriesEnsemble<TimeSeries>& mts, multi_regular_time_series_data& result)
 {
 	result.ensemble_size = mts.Size();
@@ -75,6 +103,25 @@ void CopyToMultiTimeSeriesData(const TimeSeries& ts, multi_regular_time_series_d
 	ToTimeSeriesGeomStruct<TimeSeries>(ts, result.time_series_geometry);
 	result.numeric_data = new double*[result.ensemble_size];
 	result.numeric_data[0] = ToRawData(ts);
+}
+
+void CopyFromMultiTimeSeriesData(const multi_regular_time_series_data& interopdata, TimeSeries& ts)
+{
+	auto geom = interopdata.time_series_geometry;
+	auto values = cinterop::utils::to_cpp_numeric_vector(interopdata.numeric_data[0], geom.length);
+	ts.Reset(values,
+		cinterop::utils::from_date_time_to_second<ptime>(geom.start),
+		TimeStep::FromSeconds(geom.time_step_seconds));
+}
+
+void CopyFromMultiTimeSeriesData(const multi_regular_time_series_data& interopdata, TimeSeriesEnsemble<TimeSeries>& mts)
+{
+	auto geom = interopdata.time_series_geometry;
+	TimeSeriesEnsemble<TimeSeries> tmp(
+		interopdata.numeric_data, interopdata.ensemble_size, geom.length,
+		cinterop::utils::from_date_time_to_second<ptime>(geom.start),
+		TimeStep::FromSeconds(geom.time_step_seconds));
+	mts = tmp;
 }
 
 double** ToRawData(const TimeSeriesEnsemble<TimeSeries>& mts)

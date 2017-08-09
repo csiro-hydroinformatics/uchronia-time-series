@@ -89,17 +89,22 @@ basicTimeSeriesInfo <- function(header='SWIFT time series:', spanInfo, bnbt = '\
 }
 
 #' @export
+geometryOf <- function(x) {
+  warning("geometryOf: not implemented")
+}
+
+#' @export
 strDatatypeRef <- function(x, ...) {
   bnbt <- '\n\t'
   newline <- '\n'
   if (isSingularTimeSeries(x)) {
-    s <- GetTimeSeriesGeometry_Pkg(x)
+    s <- GetTimeSeriesGeometry_Pkg_R(x)
     cat(basicTimeSeriesInfo(header='time series:', spanInfo=s, bnbt=bnbt, newline=newline))
+  } else if (isEnsembleTimeSeries(x)) {
+    cat('collection of time series - TODO summary')
   } else if (isEnsembleForecastTimeSeries(x)) {
     s <- GetEnsembleForecastTimeSeriesGeometry_Pkg_R(x) 
     cat(basicTimeSeriesInfo(header='ensemble forecast time series:', spanInfo=s, bnbt=bnbt, newline=newline))
-  # } else if (isDatatypeRef(x)) {
-  #   cat(paste0('SWIFT object of type "', x@type ,'"\n'))
   } else {
     cinterop::strExternalObjRef(x)
   }

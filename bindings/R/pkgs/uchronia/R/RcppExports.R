@@ -97,6 +97,22 @@ TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp <- function(efts, indexInIss
     .Call('uchronia_TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp', PACKAGE = 'uchronia_r', efts, indexInIssueTime, indexInForecastTime)
 }
 
+GetValueFromUnivariateTimeSeries_Rcpp <- function(ts, index) {
+    .Call('uchronia_GetValueFromUnivariateTimeSeries_Rcpp', PACKAGE = 'uchronia_r', ts, index)
+}
+
+SetValueToUnivariateTimeSeries_Rcpp <- function(ts, index, value) {
+    invisible(.Call('uchronia_SetValueToUnivariateTimeSeries_Rcpp', PACKAGE = 'uchronia_r', ts, index, value))
+}
+
+GetItemEnsembleTimeSeriesAsStructure_Rcpp <- function(series, i) {
+    .Call('uchronia_GetItemEnsembleTimeSeriesAsStructure_Rcpp', PACKAGE = 'uchronia_r', series, i)
+}
+
+SetItemEnsembleTimeSeriesAsStructure_Rcpp <- function(collection, i, values) {
+    invisible(.Call('uchronia_SetItemEnsembleTimeSeriesAsStructure_Rcpp', PACKAGE = 'uchronia_r', collection, i, values))
+}
+
 CreatePerfectForecastTimeSeries_Rcpp <- function(observations, start, length, timeStepName, offsetForecasts, leadTime) {
     .Call('uchronia_CreatePerfectForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', observations, start, length, timeStepName, offsetForecasts, leadTime)
 }
@@ -107,6 +123,14 @@ ToStructEnsembleTimeSeriesData_Rcpp <- function(ensSeries) {
 
 ToStructSingleTimeSeriesData_Rcpp <- function(timeSeries) {
     .Call('uchronia_ToStructSingleTimeSeriesData_Rcpp', PACKAGE = 'uchronia_r', timeSeries)
+}
+
+CreateEnsembleTimeSeriesDataFromStruct_Rcpp <- function(ensSeries) {
+    .Call('uchronia_CreateEnsembleTimeSeriesDataFromStruct_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
+}
+
+CreateSingleTimeSeriesDataFromStruct_Rcpp <- function(timeSeries) {
+    .Call('uchronia_CreateSingleTimeSeriesDataFromStruct_Rcpp', PACKAGE = 'uchronia_r', timeSeries)
 }
 
 GetTimeSeriesGeometry_Rcpp <- function(timeSeries, geom) {
