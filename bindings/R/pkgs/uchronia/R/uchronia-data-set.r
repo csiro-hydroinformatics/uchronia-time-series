@@ -25,15 +25,22 @@ getMultipleTimeSeriesFromProvider <- function(tsProvider, varIds, apiGetTsFunc) 
 #' @return an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
 #' @examples
 #' \dontrun{
-#' yamlFn <- file.path(system.file(package='swift', 'data'), 'time_series_library.yaml')
-#' if(file.exists(yamlFn)) {stop(paste0('sample YAML file ', yamlFn, ' not found')) }
-#' file.show(yamlFn)
-#' dataSet <- uchronia::getEnsembleDataSet(yamlFn)
-#' # dataIds <- uchronia::getDataSetIds(dataSet)
-#' precipIds <- paste( 'subarea', getSubareaIds(simulation), 'P', sep='.')
-#' evapIds <- paste( 'subarea', getSubareaIds(simulation), 'E', sep='.')
-#' playInputs(simulation, dataSet, precipIds, rep('rain_obs', length(precipIds)))
-#' playInputs(simulation, dataSet, evapIds, rep('pet_obs', length(evapIds)), 'daily_to_hourly')
+#'  d <- uchronia::sampleDataDir()
+#'  yamlFn <- file.path(d, 'time_series_library.yaml')
+#'  if(!file.exists(yamlFn)) {stop(paste0('sample YAML file ', yamlFn, ' not found')) }
+#'  file.show(yamlFn)
+#'  dataSet <- uchronia::getEnsembleDataSet(yamlFn)
+#'  (dataIds <- uchronia::getDataSetIds(dataSet))
+#'  subIdentifiers(dataSet, "var1_obs_collection")
+#'  (univTs <- uchronia::getDataSet(dataSet, "var1_obs"))
+#'  (multivTs <- uchronia::getDataSet(dataSet, "var1_obs_collection"))
+#'  (ensFcast <- uchronia::getDataSet(dataSet, "pet_fcast_ens"))
+#'  plot(asXts(univTs))
+#'  zoo::plot.zoo(asXts(multivTs))
+#'  ## precipIds <- paste( 'subarea', getSubareaIds(simulation), 'P', sep='.')
+#'  ## evapIds <- paste( 'subarea', getSubareaIds(simulation), 'E', sep='.')
+#'  ## swift::playInputs(simulation, dataSet, precipIds, rep('rain_obs', length(precipIds)))
+#'  ## swift::playInputs(simulation, dataSet, evapIds, rep('pet_obs', length(evapIds)), 'daily_to_hourly')
 #' }
 #' @export
 getEnsembleDataSet <- function(dataSetId='someId', dataPath='') {
@@ -47,9 +54,11 @@ getEnsembleDataSet <- function(dataSetId='someId', dataPath='') {
   }
 }
 
-#' Gets the data identifiers in a data library (data set)
+#' Gets the top level data identifiers in a data library (data set)
 #'
-#' Gets the data identifiers in a data library (data set)
+#' Gets the top level data identifiers in a data library (data set)
+#'
+#' @param dataLibrary R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR, a.k.a a "time series library"
 #'
 #' @export
 getDataSetIds <- function(dataLibrary) {
@@ -66,39 +75,46 @@ queryDataGeometry <- function(dataLibrary, dataId)
 {
 }
 
-#' Gets the data from a library
+#' Retrieve data from a data sets library
 #' 
 #' Gets the data from a library for a given identifier.
 #' 
-#' @param dataLibrary R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-#' @param dataId character, one data identifier for the time series.
-#' @return R type equivalent for one of the C++ types TIME_SERIES_PTR, ENSEMBLE_PTR_TIME_SERIES_PTR, ENSEMBLE_FORECAST_TIME_SERIES_PTR
+#' @param dataLibrary R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR, a.k.a a "time series library"
+#' @param dataId character, one data identifier for the data retrieved.
+#' @return R type equivalent for one of the C++ types TIME_SERIES_PTR, 
+#'  ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
+#'  A data identifier may thus point to an univariate time series, 
+#'  a multivariate time series, or a time series of ensemble of (uni- or multi- variate) time series.
+#' @seealso the vignettes illustrate how to use time serie libraries
+#' 
 #' @export
 getDataSet <- function(dataLibrary, dataId)
 {
-    result <- GetDatasetFromLibrary_Pkg_R(dataLibrary, dataId);
-    return(result)
+  result <- GetDatasetFromLibrary_Pkg_R(dataLibrary, dataId);
+  return(result)
 }
 
 
-#' getDatasetSingleTimeSeries
+#' Retrieve data from a data sets library
 #' 
-#' getDatasetSingleTimeSeries Wrapper function for GetDatasetSingleTimeSeries
+#' Gets the data from a library for a given identifier.
 #' 
 #' @param dataLibrary R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
 #' @param dataId character, one data identifier for the time series.
 #' @export
 getDatasetSingleTimeSeries <- function(dataLibrary, dataId)
 {
-    result <- GetDatasetSingleTimeSeries_R(dataLibrary, dataId);
-    return(result)
+  result <- GetDatasetSingleTimeSeries_R(dataLibrary, dataId);
+  return(result)
 }
 
 #' Gets a time series from a time provider, given a data ID
 #'
-#' Gets a time series from a time provider, given a data ID
+#' Gets a time series from a time provider, given a data ID.
+#'  This means that the argument is a wrapper around an external pointer to a object whose type is 
+#'  inheriting from the C++ type datatypes::timeseries::TimeSeriesProvider<double>
 #'
-#' @param provider an external pointer to a SWIFT Time Series Provider.
+#' @param provider an external pointer to a uchronia Time Series Provider.
 #' @param dataId character, one or more data identifier for the time series. If missing, all known identifiers will be used; be careful about the resulting size.
 #' @return an xts time series.
 #' @export
@@ -111,37 +127,16 @@ getTimeSeriesFromProvider <- function(provider, dataId) {
 
 #' Gets the known time series identifiers (e.g. Gauge names) of a time series provider
 #'
-#' Gets the known time series identifiers (e.g. Gauge names) of a time series provider
+#' Gets the known time series identifiers (e.g. Gauge names) of a time series provider.
+#'  This means that the argument is a wrapper around an external pointer to a object whose type is 
+#'  inheriting from the C++ type datatypes::timeseries::TimeSeriesProvider<double>
 #'
-#' @param provider an external pointer to a SWIFT Time Series Provider.
-#' @param dataId character, a data identifier for the time series
+#' @param provider an external pointer to a uchronia Time Series Provider.
 #' @return a character vector
 #' @export
 getDataIdentifiers <- function(provider) {
   return(GetProviderTimeSeriesIdentifiers_R(provider))
 }
-
-# #' Extract a time series from an hourly SAK data set
-# #'
-# #' Extract a time series from an hourly SAK data set
-# #'
-# #' @param dataSet an external pointer to the the legacy SwiftDataSet object from the SAK, e.g. hourly rainfall
-# #' @param index one-based index of the time series in the data set
-# #' @return an hourly xts time series 
-# getHourlyTs <- function(dataSet, index) {
-#   mkTimeSeries(dataSet, index, mkSeriesFunctor(mkHourlySeries))
-# }
-
-# #' Extract a time series from an daily SAK data set
-# #'
-# #' Extract a time series from an daily SAK data set
-# #'
-# #' @param dataSet an external pointer to the the legacy SwiftDataSet object from the SAK, e.g. daily rainfall
-# #' @param index one-based index of the time series in the data set
-# #' @return an daily xts time series 
-# getDailyTs <- function (dataSet, index) {
-#   mkTimeSeries(dataSet, index, mkSeriesFunctor(mkDailySeries))
-# }
 
 # mkTimeSeries <- function(dataSet, index, fun) {
 #   tSeriesInfo <- getTimeSeriesInfo(as.integer(index-1), dataSet)
@@ -151,12 +146,14 @@ getDataIdentifiers <- function(provider) {
 # }
 
 
-#' Coerce an object to an xts object
+#' Coerce an object to an xts time series
 #'
-#' Coerce an object to an xts object
+#' Converts if possible an object to an xts time series. Suitable objects are an equivalent 'uchronia' C++ entity 
+#'  via an external pointer. Typically deals with time series and ensemble thereof, but may be expanded later on to support more types.
 #'
 #' @param tsInfo A representation of a time series. Supported types are external pointers as data from uchronia C API, or an R list returned by some of the *_R functions.
 #' @return an xts object
+#' @seealso \code{\link{asUchroniaData}} for a round-trip sample code
 #' @export
 asXts <- function(tsInfo) {
   if(is.list(tsInfo)) {
@@ -185,20 +182,33 @@ toUchroniaSeries <- function(tsInfo) {
   }
 }
 
-#' Coerce an object to an xts object
+#' Coerce an object to a c++ object handled via an external pointer
 #'
-#' Coerce an object to an xts object
+#' Converts an object such as an xts time series to an equivalent 'uchronia' C++ entity that it then refered to 
+#' via an external pointer. Typically deals with time series and ensemble thereof, but may be expanded later on to support more types.
 #'
-#' @param d A representation of a time series. Supported types are external pointers as data from uchronia C API, or an R list returned by some of the *_R functions.
-#' @return an xts object
+#' @param rData An R object such as an xts object.
+#' @return an S4 object 'ExternalObjRef' [package "cinterop"]
+#' @examples
+#' \dontrun{
+#' len <- 3
+#' ensSize <- 2
+#' set.seed(1)
+#' x <- matrix(rnorm(n=len*ensSize), ncol=ensSize)
+#' ind <- lubridate::origin + (1:len) * lubridate::days(1)
+#' (mts <- xts(x, ind))
+#' (umts <- asUchroniaData(mts))
+#' asXts(umts)
+#' }
+#' @import cinterop
 #' @export
-asUchroniaData <- function(tsInfo) {
-  if(xts::is.xts(tsInfo)) {
-    return(toUchroniaSeries(cinterop::asInteropRegularTimeSeries(tsInfo)))
-  } else if(cinterop::isExternalObjRef(tsInfo)) {
-    return(tsInfo)
+asUchroniaData <- function(rData) {
+  if(xts::is.xts(rData)) {
+    return(toUchroniaSeries(cinterop::asInteropRegularTimeSeries(rData)))
+  } else if(cinterop::isExternalObjRef(rData)) {
+    return(rData)
   } else {
-    k <- class(tsInfo)
+    k <- class(rData)
     stop( paste0( 'cannot convert objects of this(these) class(es) to an uchronia data set (xptr): ', paste(k, collapse = ',')))
   }
 }
@@ -226,7 +236,7 @@ timeIndex <- function(tsInfo) {
       return(tsIndex(GetTimeSeriesGeometry_Pkg_R(tsInfo)))
     } else if(isEnsembleTimeSeries(tsInfo)) {
       stop(paste0('timeIndex: getting a time index not (yet?) supported for an object of external type "', tsInfo@type, '"'))
-    } else if(isEnsembleForecastTimeSeries(tsInfo)) {
+    } else if(isTimeSeriesOfEnsembleTimeSeries(tsInfo)) {
       return(tsIndex(GetEnsembleForecastTimeSeriesGeometry_Pkg_R(tsInfo)))
     } else {
       stop(paste0('timeIndex: does not know how to get a time index out of an object of external type "', tsInfo@type, '"'))

@@ -1,12 +1,30 @@
 
-isEnsembleForecastTimeSeries <- function(series) {
-  return(cinterop::isExternalObjRef(series, type='ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
+#' Is the object a 'uchronia' time series of ensembles of time series 
+#' 
+#' Is the object a 'uchronia' time series of ensembles of time series 
+#' 
+#' @param s an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer
+#' @export
+isTimeSeriesOfEnsembleTimeSeries <- function(s) {
+  return(cinterop::isExternalObjRef(s, type='ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
 }
 
+#' Is the object a 'uchronia' ensemble of time series 
+#' 
+#' Is the object a 'uchronia' ensemble of time series 
+#' 
+#' @param s an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer
+#' @export
 isEnsembleTimeSeries <- function(s) {
   return(cinterop::isExternalObjRef(s, type='ENSEMBLE_PTR_TIME_SERIES_PTR'))
 }
 
+#' Is the object a 'uchronia' univariate time series 
+#' 
+#' Is the object a 'uchronia' univariate time series 
+#' 
+#' @param s an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer
+#' @export
 isSingularTimeSeries <- function(s) {
   return(cinterop::isExternalObjRef(s, type='TIME_SERIES_PTR'))
 }
@@ -20,7 +38,7 @@ checkEnsembleTimeSeries <- function(s) {
 }
 
 checkEnsembleForecastTimeSeries <- function(s) {
-  if(!isEnsembleForecastTimeSeries(s)) stop(cinterop::argErrorExternalObjType(s, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
+  if(!isTimeSeriesOfEnsembleTimeSeries(s)) stop(cinterop::argErrorExternalObjType(s, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
 }
 
 internalGetTimeSeriesFromProvider <- function(provider, dataIds) {
@@ -36,14 +54,14 @@ internalGetMultipleTimeSeries <- function(simulation, varIds, apiGetTsFunc) {
 }
 
 
-#' Perform an action on a SWIFT object that is expected to return a time series
+#' Internal only - Perform an action on a uchronia object that is expected to return a time series
 #'
-#' Perform an action on a SWIFT object that is expected to return a time series. 
+#' Perform an action on a uchronia object that is expected to return a time series. 
 #'   This function is internal to the package, to prevent code duplication between 
 #'   retrieval of time series from a time series provider, or played/recorded 
 #'   time series into/out of a model simulation
 #'
-#' @param tsProvider an external pointer to a SWIFT Time Series Provider or model simulation
+#' @param tsProvider an external pointer to a uchronia Time Series Provider or model simulation
 #' @param varId character, a data identifier for the time series
 #' @param apiGetTsFunc a function, that takes as arguments tsProvider and varId, and returns a list as suitable for \code{\link{marshaledTimeSeriesToXts}}  
 #' @return an xts time series.
@@ -79,7 +97,7 @@ dateTimeIso8601Format <- function(toSeconds=TRUE, toMinutes=TRUE, toHours=TRUE) 
 }
 
 #' @import lubridate
-basicTimeSeriesInfo <- function(header='SWIFT time series:', spanInfo, bnbt = '\n\t', newline = '\n') {
+basicTimeSeriesInfo <- function(header='uchronia time series:', spanInfo, bnbt = '\n\t', newline = '\n') {
   return(paste0(header, 
   bnbt, makeTextDate(spanInfo@Start, tz=lubridate::tz(spanInfo@Start)) , 
   bnbt, 'time step ', lubridate::seconds(spanInfo@TimeStepSeconds), 
@@ -102,7 +120,7 @@ strDatatypeRef <- function(x, ...) {
     cat(basicTimeSeriesInfo(header='time series:', spanInfo=s, bnbt=bnbt, newline=newline))
   } else if (isEnsembleTimeSeries(x)) {
     cat('collection of time series - TODO summary')
-  } else if (isEnsembleForecastTimeSeries(x)) {
+  } else if (isTimeSeriesOfEnsembleTimeSeries(x)) {
     s <- GetEnsembleForecastTimeSeriesGeometry_Pkg_R(x) 
     cat(basicTimeSeriesInfo(header='ensemble forecast time series:', spanInfo=s, bnbt=bnbt, newline=newline))
   } else {

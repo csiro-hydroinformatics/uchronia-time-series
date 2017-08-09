@@ -14,12 +14,12 @@ mkDate <- function (year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC")  {
   ISOdate(year, month, day, hour, min, sec, tz=tz) 
 }
 
-#' Creates an ensemble time series 
+#' Create a time series of ensemble of time series 
 #'
-#' Creates an ensemble time series 
+#' Create a time series of ensemble of time series (a.k.a. ensemble forecast time series)
 #'
 #' @param tsStartEns  data coercible to a POSIXct start date of the ensemble time series.
-#' @param n	   integer. length of the ensemble time series
+#' @param n  integer. length of the ensemble time series
 #' @param timeStep  a character vector (numeric integers are 'tolerated' as seconds). Examples are '24:00:00', 'hourly', 'daily'.
 #' @examples
 #' \dontrun{
@@ -82,7 +82,7 @@ setItem <- function(ensFcTs, i, value) {
   } else if(isEnsembleTimeSeries(ensFcTs)) {
     if(!xts::is.xts(value)) stop("For an ensemble of time series the item set must be an xts")
     SetItemEnsembleTimeSeriesAsStructure_R(ensFcTs, zeroIndex, cinterop::asInteropRegularTimeSeries(value))
-  } else if(isEnsembleForecastTimeSeries(ensFcTs)) {
+  } else if(isTimeSeriesOfEnsembleTimeSeries(ensFcTs)) {
     stopifnot(xts::is.xts(value))
     mts <- cinterop::asInteropRegularTimeSeries(value)
     SetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs, as.integer(i-1), mts)
@@ -97,12 +97,14 @@ ensTsToXts <- function(ensTs) {  # RegularTimeSeries in cinterop
   return(mkSeriesRegularTstep(ensTs@TsGeom@Start, x, isMissingFunc=is.na, ensTs@TsGeom@TimeStepSeconds))
 }
 
-#' Gets an item of an ensemble time series 
+#' Gets an item in an indexable uchronia object
 #'
-#' Gets an item of an ensemble time series 
+#' Gets an item in an indexable uchronia object of one of the the C++ uchronia types identifed by TIME_SERIES_PTR, 
+#'  ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
 #'
-#' @param ensFcTs  R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-#' @param i	   integer. One-based index in the ensemble forecast.
+#' @param ensFcTs  R type equivalent for C++ type TIME_SERIES_PTR, 
+#'  ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
+#' @param i	   integer. One-based index in the indexable object.
 #' @examples
 #' \dontrun{
 #' ensFcTs <- createEnsembleForecastTimeSeries(lubridate::origin, 3, 'daily')
@@ -126,7 +128,7 @@ getItem <- function(ensFcTs, i, convertToXts=TRUE) {
     univTs <- TimeSeriesFromEnsembleOfTimeSeries_R(ensFcTs, zeroIndex)
     if(convertToXts) {univTs <- asXts(univTs)}
     return(univTs)
-  } else if(isEnsembleForecastTimeSeries(ensFcTs)) {
+  } else if(isTimeSeriesOfEnsembleTimeSeries(ensFcTs)) {
     mts <- GetItemEnsembleForecastTimeSeries_Pkg_R(ensFcTs,zeroIndex)
     if(convertToXts) {mts <- asXts(mts)}
     return(mts)
@@ -135,15 +137,32 @@ getItem <- function(ensFcTs, i, convertToXts=TRUE) {
   }
 }
 
+#' Checks whether a data library has a given top level data identifier
+#' 
+#' Checks whether a data library has a given top level data identifier
+#' 
+#' @param dataLibrary an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
+#' @param identifier character, the identifier to test again
+#' @seealso \code{\link{getEnsembleDataSet}} for sample code
 #' @export
 hasIdentifier <- function(dataLibrary, identifier) {
   dataIds <- getDataSetIds(dataLibrary)
   return(identifier %in% dataIds)
 }
 
+#' Gets the next level data identifier of a top level ID
+#' 
+#' Gets the next level data identifier of a top level ID.
+#'  A collection of time series such as one identified by "streamflows" may have 
+#'  sub-identifiers such as gauge numbers. A single time series in a data library 
+#'  may thus be retrieved by a hierarchical string ID  "streamflows.401221" 401221 is a gauge ID.
+#' 
+#' @param dataLibrary an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
+#' @param identifier character, the top level identifier to test again for next level ids
+#' @seealso \code{\link{getEnsembleDataSet}} for sample code
 #' @export
 subIdentifiers <- function(dataLibrary, identifier) {
-  stationIds <- GetEnsembleDatasetDataSubIdentifiers_R(dataLibrary, identifier)
+  return(GetEnsembleDatasetDataSubIdentifiers_R(dataLibrary, identifier))
 }
 
 #' Make an hourly time series
@@ -269,28 +288,4 @@ getDataDimensionFunction <- function(x) {
     stop(paste0('unsupported data type for time series data values: ', class(x)))
   }
   return(dimFunc)
-}
-
-
-#' Apply a function to each row of a time series
-#'
-#' Apply a function to each row of a time series
-#'
-#' @param tSeries a time series of class 'xts'
-#' @param func a function to apply to time series values for each time stamp. 
-#' @examples
-#' \dontrun{
-#' n <- 15
-#' myrand <- function(i) { i + 0.5*sqrt(i) * rnorm(100)}
-#' set.seed(0)
-#' d <- laply(seq_len(n), myrand)
-#' ensTs <- xts(d, order.by=lubridate::origin + 0:(n-1) * 3600)
-#' xtsApply(ensTs)
-#' }
-#' @import xts
-#' @export
-xtsApply <- function(tSeries, func=function(x){ quantile(x, probs = c(0.05, 0.5, 0.95)) } )
-{
-  stopifnot(is.xts(tSeries))
-  xts(t(apply(tSeries, func, MARGIN=1)), order.by=zoo::index(tSeries))
 }
