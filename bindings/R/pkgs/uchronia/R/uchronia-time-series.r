@@ -9,9 +9,132 @@
 #' @param min    integer
 #' @param sec	   numeric
 #' @param tz     character, A time zone specification to be used for the conversion. Defaults to UTC.
+#' @return a POSIXct date/time object
 #' @export
 mkDate <- function (year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC")  { 
   ISOdate(year, month, day, hour, min, sec, tz=tz) 
+}
+
+#' Gets information about the dimension(s) of data
+#'
+#' Gets information about the dimension(s) of data
+#'
+#' @param x uchronia data such as TIME_SERIES_PTR, 
+#'  ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
+#' @export
+geometryOf <- function(x) {
+  # if(is.list(x)) {
+  #   return(marshaledTimeSeriesToXts(x))
+  if(xts::is.xts(x)){
+    return(geometryFromXts(x))
+  } else if(cinterop::isInteropRegularTimeSeries(x)) {
+    return(geometryFromInteropRegularTimeSeries(x))
+  } else if(cinterop::isExternalObjRef(x)) {
+    if(isSingularTimeSeries(x)) {
+      geometryFromUnivTs(x)
+    } else if(isEnsembleTimeSeries(x)) {
+      geometryFromMultivTs(x)
+    } else if(isTimeSeriesOfEnsembleTimeSeries(x)) {
+      geometryFromTsEnsTs(x)
+    } else {
+      stop(paste0('asXts: does not know how to convert to xts an object of external type "', x@type, '"'))
+    }
+  } else {
+    k <- class(x)
+    stop( paste0( 'retrieving geometry of objects of this(these) class(es) not (yet) supported: ', paste(k, collapse = ',')))
+  }
+}
+
+ensembleDimension <- function(name="", size=1) {
+  return(list(name=name, size=size))
+}
+
+timeDimension <- function(name="", start, time_step, size) {
+  return(list(start=start, time_step=time_step, size=size ))
+}
+
+geometryFromGeom <- function(geom) {
+  stopifnot(is(geom,'RegularTimeSeriesGeometry'))
+  return(list(start=geom@Start, time_step=lubridate::seconds(geom@TimeStepSeconds), size=geom@Length ))
+}
+
+geometryFromInteropRegularTimeSeries <- function(x) {
+  stopifnot(cinterop::isInteropRegularTimeSeries(x))
+  temporal=geometryFromGeom(x@TsGeom)
+  if(x@EnsembleSize > 1) {
+    list(
+        ensemble=ensembleDimension(size=x@EnsembleSize), 
+        temporal=temporal
+      )
+  } else {
+    temporal
+  }
+}
+
+geometryFromUnivTs <- function(x) {
+  d <- timeIndex(x) # not super efficient
+  geometryFromTimeIndex(d)
+}
+
+geometryFromTimeIndex <- function(d) {
+  if(length(d)<2) stop("Limitation: cannot retrieve time step from time series of one element")
+  timeDimension(start=d[1], time_step=lubridate::as.duration(d[2]-d[1]), size=length(d))
+}
+
+geometryFromXts <- function(x) {
+  stopifnot(xts::is.xts(x))
+  timeStep <- NA
+  if(nrow(x) > 1) {
+    ind <- xts:::index.xts(x[1:2])
+    timeStep <- lubridate::as.duration(ind[2]-ind[1])
+  }
+  ensSize <- ncol(x)
+  temporal<-timeDimension(
+    start=xts:::start.xts(x), 
+    time_step=timeStep, 
+    size=nrow(x))
+  if(ensSize>1){
+    list(
+      ensemble=ensembleDimension(size=ensSize), 
+      temporal=temporal
+    )
+  } else {
+    return(temporal)
+  }
+}
+
+geometryFromMultivTs <- function(x) {
+  if(isEnsembleTimeSeries(x)) {
+    # KLUDGE? 
+    y <- getItem(x,1, convertToXts=FALSE) 
+    temporal <- geometryFromTimeIndex(timeIndex(y))
+    ensSize <- EnsembleSizeEnsembleTimeSeries_R(x)
+  } else if (is(x,"RegularTimeSeriesGeometry")) {
+    temporal <- geometryFromGeom(x)
+    ensSize <- 1
+  } else if (is(x,"RegularTimeSeries")) {
+    temporal <- geometryFromGeom(x@TsGeom)
+    ensSize <- x@EnsembleSize
+  } else {
+    k <- class(x)
+    stop( paste0( 'Failed to retrieve temporal characteristics of objects of this(these) class(es) supported: ', paste(k, collapse = ',')))
+  }
+  list(
+    ensemble=ensembleDimension(size=ensSize),
+    temporal=temporal
+  )
+}
+
+geometryFromTsEnsTs <- function(x) {
+  temporal <- geometryFromTimeIndex(timeIndex(x))
+  # KLUDGE? the above would have checked there is at least one item...
+  y <- getItem(x,1, convertToXts=FALSE) 
+  geom <- geometryFromMultivTs(y)
+  list(
+    temporal=temporal,
+    ensemble=geom$ensemble,
+    temporal_lead=geom$temporal
+  )
 }
 
 #' Create a time series of ensemble of time series 
@@ -43,9 +166,7 @@ createEnsembleForecastTimeSeries <- function (tsStartEns, n, timeStep='daily') {
   tsStartEns <- as.POSIXct(tsStartEns)
   if(is.numeric(timeStep)) {
     timeStep <- as.integer(timeStep)
-    if(timeStep==3600) {timeStep <- 'hourly'
-    } else if(timeStep==86400) {timeStep <- 'daily'
-    }  else {stop(paste('unhandled time step: ', timeStep))}
+    timeStep <- as.character(timeStep)
   } else if (!is.character(timeStep)) {
     stop(paste('unhandled type for time step information: ', typeof(timeStep)))
   }

@@ -91,6 +91,14 @@ CharacterVector GetEnsembleDatasetDataSummaries_Rcpp(XPtr<opaque_pointer_handle>
 }
 
 // [[Rcpp::export]]
+IntegerVector EnsembleSizeEnsembleTimeSeries_Rcpp(XPtr<opaque_pointer_handle> ensSeries)
+{
+    auto result = EnsembleSizeEnsembleTimeSeries(ensSeries->get());
+    auto x = Rcpp::wrap(result);
+    return x;
+}
+
+// [[Rcpp::export]]
 XPtr<opaque_pointer_handle> CreateEnsembleForecastTimeSeries_Rcpp(Rcpp::Datetime start, IntegerVector length, CharacterVector timeStepName)
 {
     date_time_to_second start_datetime = to_date_time_to_second<Rcpp::Datetime>(start);
@@ -121,6 +129,14 @@ XPtr<opaque_pointer_handle> GetDatasetEnsembleForecastTimeSeries_Rcpp(XPtr<opaqu
 {
     auto result = GetDatasetEnsembleForecastTimeSeries(dataLibrary->get(), dataId[0]);
     auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
+    return x;
+}
+
+// [[Rcpp::export]]
+LogicalVector IsMissingValueItemEnsembleForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> series, IntegerVector i)
+{
+    auto result = IsMissingValueItemEnsembleForecastTimeSeries(series->get(), as<int>(i));
+    auto x = Rcpp::wrap(result);
     return x;
 }
 

@@ -208,6 +208,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// EnsembleSizeEnsembleTimeSeries_Rcpp
+IntegerVector EnsembleSizeEnsembleTimeSeries_Rcpp(XPtr<opaque_pointer_handle> ensSeries);
+RcppExport SEXP uchronia_EnsembleSizeEnsembleTimeSeries_Rcpp(SEXP ensSeriesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type ensSeries(ensSeriesSEXP);
+    rcpp_result_gen = Rcpp::wrap(EnsembleSizeEnsembleTimeSeries_Rcpp(ensSeries));
+    return rcpp_result_gen;
+END_RCPP
+}
 // CreateEnsembleForecastTimeSeries_Rcpp
 XPtr<opaque_pointer_handle> CreateEnsembleForecastTimeSeries_Rcpp(Rcpp::Datetime start, IntegerVector length, CharacterVector timeStepName);
 RcppExport SEXP uchronia_CreateEnsembleForecastTimeSeries_Rcpp(SEXP startSEXP, SEXP lengthSEXP, SEXP timeStepNameSEXP) {
@@ -254,6 +265,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type dataId(dataIdSEXP);
     rcpp_result_gen = Rcpp::wrap(GetDatasetEnsembleForecastTimeSeries_Rcpp(dataLibrary, dataId));
+    return rcpp_result_gen;
+END_RCPP
+}
+// IsMissingValueItemEnsembleForecastTimeSeries_Rcpp
+LogicalVector IsMissingValueItemEnsembleForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> series, IntegerVector i);
+RcppExport SEXP uchronia_IsMissingValueItemEnsembleForecastTimeSeries_Rcpp(SEXP seriesSEXP, SEXP iSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(IsMissingValueItemEnsembleForecastTimeSeries_Rcpp(series, i));
     return rcpp_result_gen;
 END_RCPP
 }

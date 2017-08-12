@@ -3,6 +3,26 @@
 
 using namespace datatypes::tests;
 
+TEST_CASE("Time step handling")
+{
+	auto parse = [](const string& s) {return TimeStep::Parse(s).GetRegularStepDuration().total_seconds();};
+	REQUIRE_EQUAL((3600 * 24), parse("daily"));
+	REQUIRE_EQUAL((3600 * 24), parse("24:00:00"));
+	REQUIRE_EQUAL((3600), parse("hourly"));
+	REQUIRE_EQUAL((3600 * 3), parse("03:00:00"));
+
+	REQUIRE_EQUAL((3600 * 3 + 45), parse("03:00:45"));
+
+	REQUIRE_EQUAL((43200), parse("43200"));
+
+	// arithmetic
+	auto hourly = TimeStep::GetHourly();
+	auto threeHourly = hourly * 3;
+	REQUIRE_EQUAL((3600 * 3), threeHourly.GetRegularStepDuration().total_seconds());
+	auto sixMinutes = hourly / 10;
+	REQUIRE_EQUAL((360), sixMinutes.GetRegularStepDuration().total_seconds());
+}
+
 TEST_CASE("Basic access - single and double precision")
 {
 	double inputValues[6] = { 0, 1, 2, 22, 4, 5 };
@@ -416,10 +436,3 @@ TEST_CASE("Test Time Series Masking")
 	delete result;
 }
 
-TEST_CASE("TimeStep operations")
-{
-	auto hourly = TimeStep::GetHourly();
-
-	auto threeHourly = hourly * 3;
-	REQUIRE_EQUAL((3600 * 3), threeHourly.GetRegularStepDuration().total_seconds());
-}

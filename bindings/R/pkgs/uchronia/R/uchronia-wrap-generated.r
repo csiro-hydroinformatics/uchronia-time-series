@@ -125,6 +125,18 @@ GetEnsembleDatasetDataSummaries_R <- function(dataLibrary)
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
 
+#' EnsembleSizeEnsembleTimeSeries_R
+#'
+#' EnsembleSizeEnsembleTimeSeries_R Wrapper function for EnsembleSizeEnsembleTimeSeries
+#'
+#' @param ensSeries R type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+#' @export
+EnsembleSizeEnsembleTimeSeries_R <- function(ensSeries) {
+  ensSeries <- cinterop::getExternalXptr(ensSeries)
+  result <- EnsembleSizeEnsembleTimeSeries_Rcpp(ensSeries)
+  return(cinterop::mkExternalObjRef(result, 'int'))
+}
+
 #' CreateEnsembleForecastTimeSeries_R
 #'
 #' CreateEnsembleForecastTimeSeries_R Wrapper function for CreateEnsembleForecastTimeSeries
@@ -181,6 +193,20 @@ GetDatasetEnsembleForecastTimeSeries_R <- function(dataLibrary, dataId) {
   dataId <- cinterop::getExternalXptr(dataId)
   result <- GetDatasetEnsembleForecastTimeSeries_Rcpp(dataLibrary, dataId)
   return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
+}
+
+#' IsMissingValueItemEnsembleForecastTimeSeries_R
+#'
+#' IsMissingValueItemEnsembleForecastTimeSeries_R Wrapper function for IsMissingValueItemEnsembleForecastTimeSeries
+#'
+#' @param series R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+#' @param i R type equivalent for C++ type int
+#' @export
+IsMissingValueItemEnsembleForecastTimeSeries_R <- function(series, i) {
+  series <- cinterop::getExternalXptr(series)
+  i <- cinterop::getExternalXptr(i)
+  result <- IsMissingValueItemEnsembleForecastTimeSeries_Rcpp(series, i)
+  return(cinterop::mkExternalObjRef(result, 'bool'))
 }
 
 #' TimeSeriesFromEnsembleOfTimeSeries_R

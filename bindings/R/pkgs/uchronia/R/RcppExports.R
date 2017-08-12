@@ -73,6 +73,10 @@ GetEnsembleDatasetDataSummaries_Rcpp <- function(dataLibrary) {
     .Call('uchronia_GetEnsembleDatasetDataSummaries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary)
 }
 
+EnsembleSizeEnsembleTimeSeries_Rcpp <- function(ensSeries) {
+    .Call('uchronia_EnsembleSizeEnsembleTimeSeries_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
+}
+
 CreateEnsembleForecastTimeSeries_Rcpp <- function(start, length, timeStepName) {
     .Call('uchronia_CreateEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', start, length, timeStepName)
 }
@@ -87,6 +91,10 @@ GetDatasetEnsembleTimeSeries_Rcpp <- function(dataLibrary, dataEnsembleId) {
 
 GetDatasetEnsembleForecastTimeSeries_Rcpp <- function(dataLibrary, dataId) {
     .Call('uchronia_GetDatasetEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataId)
+}
+
+IsMissingValueItemEnsembleForecastTimeSeries_Rcpp <- function(series, i) {
+    .Call('uchronia_IsMissingValueItemEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', series, i)
 }
 
 TimeSeriesFromEnsembleOfTimeSeries_Rcpp <- function(collectionTs, index) {

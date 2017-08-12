@@ -91,7 +91,6 @@ TEST_CASE("Retrieving", "[uchronia]")
 	delete ds;
 }
 
-
 TEST_CASE("Converting to and from uchronia time series")
 {
 
@@ -146,5 +145,50 @@ TEST_CASE("Converting to and from uchronia time series")
 
 	delete tsPtr;
 	delete fcastObs;
+
+}
+TEST_CASE("time series of ensembles of time series: items with missing values")
+{
+	ptime start(date(2008, 3, 4));
+	using DTH = datatypes::tests::DataTestHelper<double>;
+	using EFTS = datatypes::timeseries::EnsembleForecastTimeSeries<>;
+	using MTSPTR = EFTS::ElementType;
+	using MTS = std::remove_pointer<MTSPTR>::type;
+
+	size_t nFcasts = 4;
+	size_t offsetForecasts = 1;
+	size_t lenFcasts = 24;
+	size_t obsLen = nFcasts * lenFcasts * 3;
+	double from = 0.0, increment = 1.0;
+	auto tsObs = new TimeSeries(DTH::Ramp(obsLen, start, from, increment));
+	auto tIndex = tsObs->TimeIndices();
+
+	date_time_to_second dt;
+	dt.year = 2010;
+	dt.day = 1; dt.month = 1; dt.hour = 0; dt.minute = 0; dt.second = 0;
+
+	int tsLen = 3;
+	ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs = CreateEnsembleForecastTimeSeries(dt, tsLen, "daily");
+
+	EFTS* ensFts = scast<EFTS>(tsEnsTs);
+
+	REQUIRE(IsMissingValueItemEnsembleForecastTimeSeries(tsEnsTs, 0));
+
+	multi_regular_time_series_data* mdt = GetItemEnsembleForecastTimeSeriesAsStructure(tsEnsTs, 0);
+	REQUIRE(mdt->numeric_data == nullptr);
+	REQUIRE(mdt->ensemble_size == -1);
+	DisposeMultiTimeSeriesData(mdt);
+
+	int ensSize = 2;
+	auto mts = new MTS(DTH::CreateEnsembleTs(ensSize, 3));
+	ensFts->SetValue(0, mts);
+
+	REQUIRE(!IsMissingValueItemEnsembleForecastTimeSeries(tsEnsTs, 0));
+	mdt = GetItemEnsembleForecastTimeSeriesAsStructure(tsEnsTs, 0);
+	REQUIRE(mdt->numeric_data != nullptr);
+	REQUIRE(mdt->ensemble_size == ensSize);
+	DisposeMultiTimeSeriesData(mdt);
+
+	delete tsEnsTs;
 
 }

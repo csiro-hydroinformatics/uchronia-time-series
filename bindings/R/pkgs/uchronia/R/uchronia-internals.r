@@ -107,11 +107,6 @@ basicTimeSeriesInfo <- function(header='uchronia time series:', spanInfo, bnbt =
 }
 
 #' @export
-geometryOf <- function(x) {
-  warning("geometryOf: not implemented")
-}
-
-#' @export
 strDatatypeRef <- function(x, ...) {
   bnbt <- '\n\t'
   newline <- '\n'

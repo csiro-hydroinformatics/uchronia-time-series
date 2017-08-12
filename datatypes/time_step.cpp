@@ -3,6 +3,16 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string.hpp>    
+#ifdef __GNUC__
+// https ://jira.csiro.au/browse/WIRADA-350  GNU gcc regex bug; use boost instead
+#if (__GNUC__ <= 4 && __GNUC_MINOR__ < 9)
+#include <boost/regex.hpp>
+#else
+#include <regex>
+#endif
+#else
+#include <regex>
+#endif // __GNUC__
 
 #include "datatypes/time_step.h"
 #include "datatypes/exception_utilities.h"
@@ -168,6 +178,46 @@ namespace datatypes
 			return s;
 		}
 
+		bool TimeStep::FromGeneralStringPeriod(const string& name, TimeStep& tstep)
+		{
+#ifdef __GNUC__
+			// https ://jira.csiro.au/browse/WIRADA-350  GNU gcc regex bug; use boost instead
+#if (__GNUC__ <= 4 && __GNUC_MINOR__ < 9)
+			using boost::regex;
+			using boost::regex_constants::icase;
+			using boost::regex_search;
+#else
+			using std::regex;
+			using std::regex_constants::icase;
+			using std::regex_search;
+#endif
+#else
+			using std::regex;
+			using std::regex_constants::icase;
+			using std::regex_search;
+#endif // __GNUC__
+			const string secondsOnlyPattern("^[0-9]+$");
+			const string hmsPattern("^[0-9]+:[0-9]+:[0-9]+$");
+			const regex rexhms(hmsPattern, icase);
+			const regex rexs(secondsOnlyPattern, icase);
+			string s = name;
+			boost::trim_if(s, boost::is_any_of("\t "));
+			
+			if (regex_search(s, rexhms))
+			{
+				boost::posix_time::time_duration d = boost::posix_time::duration_from_string(s);
+				tstep = TimeStep(d);
+				return true;
+			}
+			else if (regex_search(s, rexs))
+			{
+				int durationSeconds = datatypes::utils::StringProcessing::Parse<int>(s);
+				tstep = TimeStep::FromSeconds(durationSeconds);
+			}
+			else
+				return false;
+		}
+
 		TimeStep TimeStep::Parse(const string& name)
 		{
 			if (name == "daily")
@@ -181,9 +231,15 @@ namespace datatypes
 			else if (name == "monthly_qpp")
 				return GetMonthlyQpp();
 			else
-			{ 
-				ExceptionUtilities::ThrowInvalidArgument("time step " + name + " could not be parsed and recognized");
-				return GetUnknown(); // avoid compiler warning;
+			{
+				TimeStep tst;
+				if (FromGeneralStringPeriod(name, tst))
+					return tst;
+				else
+				{
+					ExceptionUtilities::ThrowInvalidArgument("time step " + name + " could not be parsed and recognized");
+					return GetUnknown(); // avoid compiler warning;
+				}
 			}
 		}
 

@@ -239,6 +239,14 @@ time_series_dimensions_description* GetDataDimensionsDescription(ENSEMBLE_DATA_S
 	INTERCEPT_STD_EXCEPTION
 }
 
+int EnsembleSizeEnsembleTimeSeries(ENSEMBLE_PTR_TIME_SERIES_PTR ensSeries)
+{
+	TRY_START
+		MTSPTR d = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(ensSeries);
+	return d->Size();
+	INTERCEPT_STD_EXCEPTION
+}
+
 void DisposeDataDimensionsDescriptions(time_series_dimensions_description* data)
 {
 	TRY_START
@@ -248,11 +256,22 @@ void DisposeDataDimensionsDescriptions(time_series_dimensions_description* data)
 	INTERCEPT_STD_EXCEPTION
 }
 
+bool IsMissingValueItemEnsembleForecastTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i)
+{
+	TRY_START
+		EFTSPTR x = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(series);
+	MTSPTR mts = x->GetValue(i);
+	return(x->IsMissingValue(mts));
+	INTERCEPT_STD_EXCEPTION
+}
+
 ENSEMBLE_PTR_TIME_SERIES_PTR GetItemEnsembleForecastTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i)
 {
 	TRY_START
 		EFTSPTR x = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(series);
 	MTSPTR mts = x->GetValue(i);
+	if (mts == nullptr)
+		datatypes::exceptions::ExceptionUtilities::ThrowNotSupported("GetItemEnsembleForecastTimeSeries cannot yet deal with missing values");
 	MTSPTR result = new MTS(*mts);
 	return WRAP_ENSEMBLE_TIME_SERIES_PTR(result);
 	INTERCEPT_STD_EXCEPTION
@@ -263,7 +282,25 @@ multi_regular_time_series_data* GetItemEnsembleForecastTimeSeriesAsStructure(ENS
 	TRY_START
 		EFTSPTR x = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(series);
 	auto mts = x->GetValue(i);
-	multi_regular_time_series_data* result = ToMultiTimeSeriesDataPtr(*mts);
+	multi_regular_time_series_data* result;
+	if(mts!=nullptr)
+		result = ToMultiTimeSeriesDataPtr(*mts);
+	else
+	{
+		// handle "missing value" in conventions by passing "degenerate" sizes rather than returning nullptr;
+		result = new multi_regular_time_series_data();
+		result->ensemble_size = -1;
+		result->numeric_data = nullptr;
+		result->time_series_geometry.length = 0;
+		result->time_series_geometry.time_step_seconds = 0;
+		// use R's lubridate::origin
+		result->time_series_geometry.start.year = 1970;
+		result->time_series_geometry.start.month = 1;
+		result->time_series_geometry.start.day = 1;
+		result->time_series_geometry.start.hour = 0;
+		result->time_series_geometry.start.minute = 0;
+		result->time_series_geometry.start.second = 0;
+	}
 	return result;
 	INTERCEPT_STD_EXCEPTION
 }

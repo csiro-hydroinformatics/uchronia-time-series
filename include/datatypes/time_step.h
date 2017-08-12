@@ -238,6 +238,7 @@ namespace datatypes
 
 			static const time_duration hourlyTd;
 			static const time_duration dailyTd;
+			static bool FromGeneralStringPeriod(const string& name, TimeStep& tstep);
 
 		};
 

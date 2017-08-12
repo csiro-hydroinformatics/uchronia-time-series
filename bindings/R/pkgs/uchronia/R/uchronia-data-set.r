@@ -266,17 +266,16 @@ marshaledTimeSeriesToXts <- function(tsInfo) {
     } else if (tsName=='hourly') {
       mkHourlySeries(s, values, NULL)
     } else {
+      tStepDuration <- as.integer(tsName)
+      if(!is.na(tStepDuration))
+      {
+        return(mkSeriesRegularTstep(s, values, NULL, deltaTSec=tStepDuration))
+      }
       stop(paste('Unsupported time step specification:', tsName))
     }
   } else if (is.integer(tStep)){
     tStepDuration <- tStep
-    if (tStepDuration==86400) {
-      mkDailySeries(s, values, NULL)
-    } else if (tStepDuration==3600) {
-      mkHourlySeries(s, values, NULL)
-    } else {
-      stop(paste('Unsupported time step specification:', tStepDuration, ' seconds'))
-    }
+    mkSeriesRegularTstep(s, values, NULL, deltaTSec=tStepDuration)
   } else {
     stop(paste('Unsupported time step specification:', tStep))
   }
