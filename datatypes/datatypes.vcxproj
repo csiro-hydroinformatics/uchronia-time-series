@@ -50,8 +50,6 @@
   <ItemGroup>
     <ClInclude Include="../include/datatypes/interop_conversions.h" />
     <ClInclude Include="../include/datatypes/interop_conversions.hpp" />
-    <ClInclude Include="tests/datatypes_test_helpers.h" />
-    <ClInclude Include="tests/datatypes_test_helpers.hpp" />
     <ClInclude Include="../include/datatypes/common.h" />
     <ClInclude Include="../include/datatypes/io_helper.h" />
     <ClInclude Include="../include/datatypes/time_series.hpp" />

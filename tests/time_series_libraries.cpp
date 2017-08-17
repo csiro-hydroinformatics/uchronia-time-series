@@ -185,15 +185,15 @@ TEST_CASE("Tease out facilities to retrieve data from time series libraries in a
 	REQUIRE_NOTHROW(ts = dataLibrary.GetSingle(varNameSingle));
 	delete ts; ts = nullptr;
 
-//6 variables (excluding dimension variables):
-//double var_multi_stations[station,time]   
-//station  Size:2
-//time  Size:48   *** is unlimited ***
-//units: hours since 2010-08-01 14:00:00 +0000
-//long_name: time
-//standard_name: time
-//time_standard: UTC
-//axis: t
+	//6 variables (excluding dimension variables):
+	//double var_multi_stations[station,time]   
+	//station  Size:2
+	//time  Size:48   *** is unlimited ***
+	//units: hours since 2010-08-01 14:00:00 +0000
+	//long_name: time
+	//standard_name: time
+	//time_standard: UTC
+	//axis: t
 
 	//Single main id, but collection of time series as one per station identifier
 	REQUIRE_NOTHROW(ts = dataLibrary.GetSingle(StringProcessing::BuildIdentifier(varNameMultiple, TestDataLocationHelper::kStationIdOne)));
@@ -219,5 +219,34 @@ TEST_CASE("Tease out facilities to retrieve data from time series libraries in a
 	//Ensemble of time series, different entities AND more than one station id too.
 	//Ensemble of ensemble forecast time series, different entities
 	//Ensemble of ensemble forecast time series, different entities AND more than one station id too.
+}
+
+TEST_CASE("Transform time series inplace in an ensemble")
+{
+	using DTH = datatypes::tests::DataTestHelper<double>;
+	using EFTS = datatypes::timeseries::EnsembleForecastTimeSeries<>;
+
+	size_t tsEnsTsLength = 7;
+	size_t nEns = 3;
+	size_t leadLength = 240;
+	TimeStep leadTstep = TimeStep::GetHourly();
+	ptime start(date(2008, 3, 4));
+
+	EFTS efts = DTH::CreateTsEnsembleTs(tsEnsTsLength, nEns, leadLength, start, TimeStep::GetDaily(), leadTstep);
+
+	int testedItem = 3;
+
+	auto fcastStart = efts.GetValue(testedItem)->GetStartDate();
+	datatypes::timeseries::TimeSeriesOperations<>::TransformEachItem(efts, "accumulate", "03:00:00");
+
+
+	EFTS::ElementType blah;
+	auto fcasts = efts.GetValue(testedItem);
+	auto tsptr = fcasts->Get(0);
+	REQUIRE(tsptr->GetLength() == (leadLength / 3));
+	REQUIRE(tsptr->GetStartDate() == (fcastStart + hours(2)));
+	REQUIRE(fcasts->GetStartDate() == fcastStart + hours(2));
+	REQUIRE(fcasts->Size() == nEns);
+
 }
 

@@ -203,6 +203,10 @@ extern "C" {
 	// DATATYPES_API FORECAST_TIME_SERIES_DOUBLE_PTR GetDatasetForecastTimeSeries(ENSEMBLE_DATA_SET_PTR dataLibrary, char** identifiers, char** dataId, int size);
 	DATATYPES_API ENSEMBLE_FORECAST_TIME_SERIES_PTR GetDatasetEnsembleForecastTimeSeries(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataId);
 
+	// These api entry points are TEMPORARY: they must be phased out.
+	DATATYPES_API void SaveSingleTimeSeriesToNetcdf(TIME_SERIES_PTR timeSeries, char* filename, bool overwrite);
+	DATATYPES_API void SaveEnsembleTimeSeriesToNetcdf(ENSEMBLE_PTR_TIME_SERIES_PTR collection, char* filename, bool overwrite);
+	DATATYPES_API void SaveEnsembleForecastTimeSeriesToNetcdf(ENSEMBLE_FORECAST_TIME_SERIES_PTR , char* filename, bool overwrite);
 
 	DATATYPES_API bool IsMissingValueItemEnsembleForecastTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i);
 
@@ -214,6 +218,7 @@ extern "C" {
 	DATATYPES_API TIME_SERIES_PTR TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_PTR efts, int indexInIssueTime, int indexInForecastTime );
 	DATATYPES_API double GetValueFromUnivariateTimeSeries(TIME_SERIES_PTR ts, int index);
 
+	DATATYPES_API void TransformEachItem(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, char* method, char* methodArgument);
 
 	////////////////
 	//Functions that set items in data (along the 'first' dimension)

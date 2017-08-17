@@ -449,6 +449,61 @@ multi_regular_time_series_data* GetEnsembleTimeSeriesData(ENSEMBLE_PTR_TIME_SERI
 }
 
 
+
+void TransformEachItem(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, char* method, char* methodArgument)
+{
+	TRY_START
+		EFTSPTR efts = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(tsEnsTs);
+	datatypes::timeseries::TimeSeriesOperations<>::TransformEachItem(*efts, string(method), string(methodArgument));
+	INTERCEPT_STD_EXCEPTION
+}
+
+
+// Below are evil temporary things tied to a particular backend storage;
+void SaveSingleTimeSeriesToNetcdf(TIME_SERIES_PTR timeSeries, char* filename, bool overwrite)
+{
+	TRY_START
+		INTERCEPT_STD_EXCEPTION
+}
+void SaveEnsembleTimeSeriesToNetcdf(ENSEMBLE_PTR_TIME_SERIES_PTR collection, char* filename, bool overwrite) 
+{
+	TRY_START
+		throw std::logic_error("dimension from ensemble time series not implemented");
+	throw std::logic_error("dimension from ensemble time series not implemented");
+
+	//	auto ens = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(collection);
+	//datatypes::timeseries::DimensionsFromSeries(*ens);
+	//	string fn(filename);
+	//	size_t nEns = ens->Size();
+	//vector<double> leadTimeVar;
+	//string timeUnits;
+	//vector<double> timeVar;
+	//vector<string> stationIds;
+	//	std::map < string, VariableDefinition >  varDefinitions;
+	//GlobalAttributes globalAttributes;
+	//string ncVarName;
+	//string identifier = "";
+	//string leadTimeUnits = "";
+
+	//NetCdfEnsembleTimeSeriesStore<double> ensTsSrc(const string& filename, const size_t nEns, const vector<double>& leadTimeVar, const string& timeUnits, const vector<double>& timeVar, const vector<string>& stationIds,
+	//	const std::map<string, VariableDefinition>& varDefinitions, const GlobalAttributes& globalAttributes, const string& ncVarName, const string& identifier = "", const string& leadTimeUnits = "");
+	//(ncFilename, ncVarName, ncIdentifier);
+	//TimeSeriesLibraryFactory::CreateEnsTsSource(fileAllDataCases, TestDataLocationHelper::kVar1Ens, multiStationIds[0]);
+
+		INTERCEPT_STD_EXCEPTION
+}
+
+void SaveEnsembleForecastTimeSeriesToNetcdf(ENSEMBLE_FORECAST_TIME_SERIES_PTR, char* filename, bool overwrite)
+{
+	TRY_START
+		throw std::logic_error("dimension from ensemble time series not implemented");
+	INTERCEPT_STD_EXCEPTION
+}
+
+
+
+
+
 #undef DATATYPES_TIME_SERIES_DOUBLE
 #undef DATATYPES_TIME_SERIES_DOUBLE_PTR
 #undef SWIFT_ENSEMBLE_TIME_SERIES_DOUBLE
@@ -466,3 +521,4 @@ multi_regular_time_series_data* GetEnsembleTimeSeriesData(ENSEMBLE_PTR_TIME_SERI
 #undef DATE_TIME_INFO_DYNCAST
 #undef ENSEMBLE_DATA_SET_DYNCAST
 #undef OBJECT_STATE_INITIALIZER_DYNCAST
+

@@ -188,6 +188,13 @@ namespace datatypes
 			return DimensionsDefinitions(tsOrigin, mainTimeStep, values.size(), ensembleSize, ens->GetTimeStep(), leadTimeSize, fcastOffset, stationIds);
 		}
 
+		//template<typename ElementType>
+		//DimensionsDefinitions DimensionsFromSeries(
+		//	const TimeSeriesEnsemble<>& collectionOfTs, const vector<string>& stationIds = DEFAULT_STATION_IDENTIFIER)
+		//{
+		//	throw std::logic_error("dimension from ensemble time series not implemented");
+		//}
+
 		// A class that can provide the characteristics of a netCDF file for saving time series. 
 		// This class is a provision for future feature allowing for a late definition on disk
 		// of the file geometry, e.g. when time series to record are reset after creation of the recorder. 

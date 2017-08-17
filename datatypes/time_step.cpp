@@ -68,6 +68,12 @@ namespace datatypes
 			return *this;
 		}
 
+		TimeStep& TimeStep::operator=(const string& stepDuration)
+		{
+			this->operator=(TimeStep::Parse(stepDuration));
+			return *this;
+		}
+
 		TimeStep TimeStep::FromSeconds(unsigned int seconds)
 		{
 			return TimeStep(new RegularTimeStepImplementation(time_duration(0, 0, seconds, 0)));

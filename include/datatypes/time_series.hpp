@@ -771,6 +771,11 @@ namespace datatypes
 				return startDate;
 			}
 
+			void SetStartDate(const ptime& start)
+			{
+				startDate = start;
+			}
+
 			TimeStep GetTimeStep() const
 			{
 				return timeStep;
@@ -953,6 +958,71 @@ namespace datatypes
 				delete[] data;
 
 				return result;
+			}
+
+			static SeriesType AggregateTimeStep(const SeriesType& series, const string& argument) {
+
+				using sec_type = boost::posix_time::time_duration::sec_type;
+				auto newTimeStep = TimeStep::Parse(argument);
+				sec_type deltaNew = newTimeStep.GetRegularStepDuration().total_seconds();
+				sec_type delta = series.GetTimeStep().GetRegularStepDuration().total_seconds();
+				if (deltaNew < delta)
+					throw std::logic_error("Cannot aggregate to a target time step finer than data source");
+				sec_type remainder = deltaNew %delta;
+				if (remainder != 0)
+					throw std::logic_error("Aggregate: target time step must be a multiple of the starting time step");
+				sec_type multiple = deltaNew / delta;
+
+				newTimeStep;
+				size_t targetSize = series.GetLength() / multiple;
+				if (targetSize < 1)
+					throw std::logic_error("Aggregate: source lenght too short to aggregate");
+				SeriesType newTs(0.0, targetSize, series.TimeForIndex(multiple-1));
+
+				for (size_t i = 0; i < targetSize; i++)
+				{
+					double accumulated = 0;
+					for (size_t j = 0; j < multiple; j++)
+					{
+						auto val = series.GetValue(i * multiple + j);
+						if (series.IsMissingValue(val))
+						{
+							newTs.SetValue(i, newTs.GetMissingValue());
+							accumulated = .0;
+							break;
+						}
+						else
+							accumulated += val;
+					}
+					newTs.SetValue(i, accumulated);
+					accumulated = .0;
+				}
+				return newTs;
+			}
+
+			static void AggregateTimeStep(SeriesType& series, const string& argument) {
+				series = AggregateTimeStep((const SeriesType&)series, argument);
+			}
+
+			static void TransformEachItem(TSeriesEnsemblePtrType& efts, const string& method, const string& methodArgument)
+			{
+				if (method == string("accumulate"))
+				{
+					auto n = efts.GetLength();
+					for (size_t i = 0; i < n; i++)
+					{
+						PtrEnsemblePtrType item = efts.GetValue(i);
+						EnsemblePtrType& y = *item;
+						for (size_t j = 0; j < y.Size(); j++)
+						{
+							PtrSeriesType t = y.Get(j);
+							AggregateTimeStep(*t, methodArgument);
+							if (j == 0) y.SetStartDate(t->GetStartDate());
+						}
+					}
+				}
+				else
+					throw std::logic_error("TransformEachItem is limited to 'accumulate' or 'disaggregate'");
 			}
 
 		private:

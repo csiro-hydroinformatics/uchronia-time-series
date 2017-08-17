@@ -59,6 +59,9 @@ namespace datatypes
 			 */
 
 			TimeStep& operator=(const time_duration& stepDuration);
+
+			TimeStep& operator=(const string& stepDuration);
+
 			bool operator==(const TimeStep &rhs) const;
 
 			bool operator!=(const TimeStep &rhs) const;
