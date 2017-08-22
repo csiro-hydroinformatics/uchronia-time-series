@@ -195,6 +195,51 @@ GetDatasetEnsembleForecastTimeSeries_R <- function(dataLibrary, dataId) {
   return(cinterop::mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR'))
 }
 
+#' SaveSingleTimeSeriesToNetcdf_R
+#'
+#' SaveSingleTimeSeriesToNetcdf_R Wrapper function for SaveSingleTimeSeriesToNetcdf
+#'
+#' @param timeSeries R type equivalent for C++ type TIME_SERIES_PTR
+#' @param filename R type equivalent for C++ type char*
+#' @param overwrite R type equivalent for C++ type bool
+#' @export
+SaveSingleTimeSeriesToNetcdf_R <- function(timeSeries, filename, overwrite) {
+  timeSeries <- cinterop::getExternalXptr(timeSeries)
+  filename <- cinterop::getExternalXptr(filename)
+  overwrite <- cinterop::getExternalXptr(overwrite)
+  SaveSingleTimeSeriesToNetcdf_Rcpp(timeSeries, filename, overwrite)
+}
+
+#' SaveEnsembleTimeSeriesToNetcdf_R
+#'
+#' SaveEnsembleTimeSeriesToNetcdf_R Wrapper function for SaveEnsembleTimeSeriesToNetcdf
+#'
+#' @param collection R type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+#' @param filename R type equivalent for C++ type char*
+#' @param overwrite R type equivalent for C++ type bool
+#' @export
+SaveEnsembleTimeSeriesToNetcdf_R <- function(collection, filename, overwrite) {
+  collection <- cinterop::getExternalXptr(collection)
+  filename <- cinterop::getExternalXptr(filename)
+  overwrite <- cinterop::getExternalXptr(overwrite)
+  SaveEnsembleTimeSeriesToNetcdf_Rcpp(collection, filename, overwrite)
+}
+
+#' SaveEnsembleForecastTimeSeriesToNetcdf_R
+#'
+#' SaveEnsembleForecastTimeSeriesToNetcdf_R Wrapper function for SaveEnsembleForecastTimeSeriesToNetcdf
+#'
+#' @param tsEnsTs R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+#' @param filename R type equivalent for C++ type char*
+#' @param overwrite R type equivalent for C++ type bool
+#' @export
+SaveEnsembleForecastTimeSeriesToNetcdf_R <- function(tsEnsTs, filename, overwrite) {
+  tsEnsTs <- cinterop::getExternalXptr(tsEnsTs)
+  filename <- cinterop::getExternalXptr(filename)
+  overwrite <- cinterop::getExternalXptr(overwrite)
+  SaveEnsembleForecastTimeSeriesToNetcdf_Rcpp(tsEnsTs, filename, overwrite)
+}
+
 #' IsMissingValueItemEnsembleForecastTimeSeries_R
 #'
 #' IsMissingValueItemEnsembleForecastTimeSeries_R Wrapper function for IsMissingValueItemEnsembleForecastTimeSeries
@@ -251,6 +296,21 @@ GetValueFromUnivariateTimeSeries_R <- function(ts, index) {
   index <- cinterop::getExternalXptr(index)
   result <- GetValueFromUnivariateTimeSeries_Rcpp(ts, index)
   return(cinterop::mkExternalObjRef(result, 'double'))
+}
+
+#' TransformEachItem_R
+#'
+#' TransformEachItem_R Wrapper function for TransformEachItem
+#'
+#' @param tsEnsTs R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+#' @param method R type equivalent for C++ type char*
+#' @param methodArgument R type equivalent for C++ type char*
+#' @export
+TransformEachItem_R <- function(tsEnsTs, method, methodArgument) {
+  tsEnsTs <- cinterop::getExternalXptr(tsEnsTs)
+  method <- cinterop::getExternalXptr(method)
+  methodArgument <- cinterop::getExternalXptr(methodArgument)
+  TransformEachItem_Rcpp(tsEnsTs, method, methodArgument)
 }
 
 #' SetValueToUnivariateTimeSeries_R

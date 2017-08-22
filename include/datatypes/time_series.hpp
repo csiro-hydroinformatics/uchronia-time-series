@@ -973,11 +973,10 @@ namespace datatypes
 					throw std::logic_error("Aggregate: target time step must be a multiple of the starting time step");
 				sec_type multiple = deltaNew / delta;
 
-				newTimeStep;
 				size_t targetSize = series.GetLength() / multiple;
 				if (targetSize < 1)
 					throw std::logic_error("Aggregate: source lenght too short to aggregate");
-				SeriesType newTs(0.0, targetSize, series.TimeForIndex(multiple-1));
+				SeriesType newTs(0.0, targetSize, series.TimeForIndex(multiple-1), newTimeStep);
 
 				for (size_t i = 0; i < targetSize; i++)
 				{
@@ -1000,8 +999,46 @@ namespace datatypes
 				return newTs;
 			}
 
+			static SeriesType DisaggregateTimeStep(const SeriesType& series, const string& argument) {
+
+				using sec_type = boost::posix_time::time_duration::sec_type;
+				auto newTimeStep = TimeStep::Parse(argument);
+				sec_type deltaNew = newTimeStep.GetRegularStepDuration().total_seconds();
+				sec_type delta = series.GetTimeStep().GetRegularStepDuration().total_seconds();
+				if (deltaNew > delta)
+					throw std::logic_error("Cannot disaggregate to a target time step coarser than data source");
+				sec_type remainder = delta % deltaNew;
+				if (remainder != 0)
+					throw std::logic_error("Disaggregate: the starting time step must be a multiple of the target time step");
+				sec_type multiple = delta / deltaNew;
+
+				size_t srcSize = series.GetLength();
+				size_t targetSize = series.GetLength() * multiple;
+				if (targetSize < 1)
+					throw std::logic_error("Disaggregate: source lengh is too short to aggregate");
+				auto newStartDate = newTimeStep.AddSteps(series.GetStartDate(), -(multiple - 1));
+				SeriesType newTs(0.0, targetSize, newStartDate, newTimeStep);
+
+				for (size_t i = 0; i < srcSize; i++)
+				{
+					auto val = series.GetValue(i);
+					for (size_t j = 0; j < multiple; j++)
+					{
+						if (series.IsMissingValue(val))
+							newTs.SetValue(i * multiple + j, newTs.GetMissingValue());
+						else
+							newTs.SetValue(i * multiple + j, val / multiple);
+					}
+				}
+				return newTs;
+			}
+
 			static void AggregateTimeStep(SeriesType& series, const string& argument) {
 				series = AggregateTimeStep((const SeriesType&)series, argument);
+			}
+
+			static void DisaggregateTimeStep(SeriesType& series, const string& argument) {
+				series = DisaggregateTimeStep((const SeriesType&)series, argument);
 			}
 
 			static void TransformEachItem(TSeriesEnsemblePtrType& efts, const string& method, const string& methodArgument)
@@ -1017,6 +1054,21 @@ namespace datatypes
 						{
 							PtrSeriesType t = y.Get(j);
 							AggregateTimeStep(*t, methodArgument);
+							if (j == 0) y.SetStartDate(t->GetStartDate());
+						}
+					}
+				}
+				else if (method == string("disaggregate"))
+				{
+					auto n = efts.GetLength();
+					for (size_t i = 0; i < n; i++)
+					{
+						PtrEnsemblePtrType item = efts.GetValue(i);
+						EnsemblePtrType& y = *item;
+						for (size_t j = 0; j < y.Size(); j++)
+						{
+							PtrSeriesType t = y.Get(j);
+							DisaggregateTimeStep(*t, methodArgument);
 							if (j == 0) y.SetStartDate(t->GetStartDate());
 						}
 					}

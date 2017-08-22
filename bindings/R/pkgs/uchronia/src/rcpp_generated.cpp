@@ -133,6 +133,24 @@ XPtr<opaque_pointer_handle> GetDatasetEnsembleForecastTimeSeries_Rcpp(XPtr<opaqu
 }
 
 // [[Rcpp::export]]
+void SaveSingleTimeSeriesToNetcdf_Rcpp(XPtr<opaque_pointer_handle> timeSeries, CharacterVector filename, LogicalVector overwrite)
+{
+    SaveSingleTimeSeriesToNetcdf(timeSeries->get(), filename[0], as<bool>(overwrite));
+}
+
+// [[Rcpp::export]]
+void SaveEnsembleTimeSeriesToNetcdf_Rcpp(XPtr<opaque_pointer_handle> collection, CharacterVector filename, LogicalVector overwrite)
+{
+    SaveEnsembleTimeSeriesToNetcdf(collection->get(), filename[0], as<bool>(overwrite));
+}
+
+// [[Rcpp::export]]
+void SaveEnsembleForecastTimeSeriesToNetcdf_Rcpp(XPtr<opaque_pointer_handle> tsEnsTs, CharacterVector filename, LogicalVector overwrite)
+{
+    SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs->get(), filename[0], as<bool>(overwrite));
+}
+
+// [[Rcpp::export]]
 LogicalVector IsMissingValueItemEnsembleForecastTimeSeries_Rcpp(XPtr<opaque_pointer_handle> series, IntegerVector i)
 {
     auto result = IsMissingValueItemEnsembleForecastTimeSeries(series->get(), as<int>(i));
@@ -162,6 +180,12 @@ NumericVector GetValueFromUnivariateTimeSeries_Rcpp(XPtr<opaque_pointer_handle> 
     auto result = GetValueFromUnivariateTimeSeries(ts->get(), as<int>(index));
     auto x = Rcpp::wrap(result);
     return x;
+}
+
+// [[Rcpp::export]]
+void TransformEachItem_Rcpp(XPtr<opaque_pointer_handle> tsEnsTs, CharacterVector method, CharacterVector methodArgument)
+{
+    TransformEachItem(tsEnsTs->get(), method[0], methodArgument[0]);
 }
 
 // [[Rcpp::export]]

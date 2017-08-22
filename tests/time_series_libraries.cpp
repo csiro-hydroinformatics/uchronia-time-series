@@ -225,6 +225,7 @@ TEST_CASE("Transform time series inplace in an ensemble")
 {
 	using DTH = datatypes::tests::DataTestHelper<double>;
 	using EFTS = datatypes::timeseries::EnsembleForecastTimeSeries<>;
+	using TSPTR = CommonTypes<double>::PtrSeriesType;
 
 	size_t tsEnsTsLength = 7;
 	size_t nEns = 3;
@@ -232,21 +233,57 @@ TEST_CASE("Transform time series inplace in an ensemble")
 	TimeStep leadTstep = TimeStep::GetHourly();
 	ptime start(date(2008, 3, 4));
 
+	// Test the aggregation
 	EFTS efts = DTH::CreateTsEnsembleTs(tsEnsTsLength, nEns, leadLength, start, TimeStep::GetDaily(), leadTstep);
 
 	int testedItem = 3;
 
 	auto fcastStart = efts.GetValue(testedItem)->GetStartDate();
+	EFTS::ElementType beforeEns = efts.GetValue(testedItem);
+	TSPTR beforeTsptr = beforeEns->Get(0);
+	vector<double> expectedAccumulated = { 0,0 };
+	for (size_t i = 0; i < 3; i++)
+	{
+		expectedAccumulated[0] += beforeTsptr->GetValue(i);
+		expectedAccumulated[1] += beforeTsptr->GetValue(i+3);
+	}
+
 	datatypes::timeseries::TimeSeriesOperations<>::TransformEachItem(efts, "accumulate", "03:00:00");
 
-
-	EFTS::ElementType blah;
-	auto fcasts = efts.GetValue(testedItem);
-	auto tsptr = fcasts->Get(0);
-	REQUIRE(tsptr->GetLength() == (leadLength / 3));
-	REQUIRE(tsptr->GetStartDate() == (fcastStart + hours(2)));
+	EFTS::ElementType fcasts = efts.GetValue(testedItem);
 	REQUIRE(fcasts->GetStartDate() == fcastStart + hours(2));
 	REQUIRE(fcasts->Size() == nEns);
+
+	TSPTR tsptr = fcasts->Get(0);
+	REQUIRE(tsptr->GetLength() == (leadLength / 3));
+	REQUIRE(tsptr->GetStartDate() == (fcastStart + hours(2)));
+	REQUIRE(tsptr->GetTimeStep() == leadTstep * 3);
+	REQUIRE(tsptr->GetValue(0) == expectedAccumulated[0]);
+	REQUIRE(tsptr->GetValue(1) == expectedAccumulated[1]);
+
+
+	// Test the disaggregation from 3 hourly to hourly
+	efts = DTH::CreateTsEnsembleTs(tsEnsTsLength, nEns, leadLength / 3, start, TimeStep::GetDaily(), leadTstep * 3);
+
+	fcastStart = efts.GetValue(testedItem)->GetStartDate();
+	beforeEns = efts.GetValue(testedItem);
+	beforeTsptr = beforeEns->Get(0);
+	vector<double> expectedDisag(9);
+	for (size_t i = 0; i < expectedDisag.size(); i++)
+		expectedDisag[i] = beforeTsptr->GetValue(i/3) / 3;
+
+
+	datatypes::timeseries::TimeSeriesOperations<>::TransformEachItem(efts, "disaggregate", "01:00:00");
+
+	fcasts = efts.GetValue(testedItem);
+	tsptr = fcasts->Get(0);
+	REQUIRE(tsptr->GetLength() == (leadLength));
+	REQUIRE(tsptr->GetStartDate() == (fcastStart - hours(2)));
+	REQUIRE(tsptr->GetTimeStep() == leadTstep);
+	REQUIRE(fcasts->GetStartDate() == fcastStart - hours(2));
+	REQUIRE(fcasts->Size() == nEns);
+	for (size_t i = 0; i < expectedDisag.size(); i++)
+		REQUIRE(tsptr->GetValue(i) == expectedDisag[i]);
 
 }
 

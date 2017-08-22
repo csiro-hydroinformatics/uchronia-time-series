@@ -56,6 +56,16 @@ namespace datatypes
 			static GlobalAttributes CreateDefault(const string& catchment);
 		};
 
+		template<typename From, typename To>
+		To GetMetadataFrom(const From& ens)
+		{
+			throw std::logic_error(
+				string("No template specialization found for GetMetadataFrom<From,To> where From=")
+				+ typeid(From).name() +
+				string("and To=")
+				+ typeid(To).name());
+		}
+
 		/** \brief	A class to hold the attributes of a netCDF variable stored in the SWIFT netCDF format*/
 		class DATATYPES_DLL_LIB VariableAttributes
 		{
@@ -2834,6 +2844,12 @@ public:
 			bool CanCreateTimeSeriesEnsembleTimeSeriesStore(const string& dataId);
 		};
 
+
+		//using EFTS = CommonTypes<>::TSeriesEnsemblePtrType;
+		//template<>
+		//GlobalAttributes GetMetadataFrom<EFTS,GlobalAttributes>(const EFTS& ens)
+		//{
+		//}
 
 	}
 }

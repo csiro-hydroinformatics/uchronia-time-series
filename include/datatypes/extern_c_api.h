@@ -206,7 +206,7 @@ extern "C" {
 	// These api entry points are TEMPORARY: they must be phased out.
 	DATATYPES_API void SaveSingleTimeSeriesToNetcdf(TIME_SERIES_PTR timeSeries, char* filename, bool overwrite);
 	DATATYPES_API void SaveEnsembleTimeSeriesToNetcdf(ENSEMBLE_PTR_TIME_SERIES_PTR collection, char* filename, bool overwrite);
-	DATATYPES_API void SaveEnsembleForecastTimeSeriesToNetcdf(ENSEMBLE_FORECAST_TIME_SERIES_PTR , char* filename, bool overwrite);
+	DATATYPES_API void SaveEnsembleForecastTimeSeriesToNetcdf(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, char* filename, bool overwrite);
 
 	DATATYPES_API bool IsMissingValueItemEnsembleForecastTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i);
 

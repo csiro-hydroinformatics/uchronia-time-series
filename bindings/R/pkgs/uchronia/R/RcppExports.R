@@ -2,170 +2,186 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 RegisterExceptionCallback_Pkg <- function() {
-    invisible(.Call('uchronia_RegisterExceptionCallback_Pkg', PACKAGE = 'uchronia_r'))
+    invisible(.Call('_uchronia_RegisterExceptionCallback_Pkg', PACKAGE = 'uchronia_r'))
 }
 
 GetTimeSeriesGeometry_Pkg <- function(timeSeries) {
-    .Call('uchronia_GetTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
+    .Call('_uchronia_GetTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
 }
 
 GetEnsembleForecastTimeSeriesGeometry_Pkg <- function(timeSeries) {
-    .Call('uchronia_GetEnsembleForecastTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
+    .Call('_uchronia_GetEnsembleForecastTimeSeriesGeometry_Pkg', PACKAGE = 'uchronia_r', timeSeries)
 }
 
 GetItemEnsembleForecastTimeSeries_Pkg <- function(series, i) {
-    .Call('uchronia_GetItemEnsembleForecastTimeSeries_Pkg', PACKAGE = 'uchronia_r', series, i)
+    .Call('_uchronia_GetItemEnsembleForecastTimeSeries_Pkg', PACKAGE = 'uchronia_r', series, i)
 }
 
 SetItemEnsembleForecastTimeSeries_Pkg <- function(series, i, timeSeriesEnsemble) {
-    invisible(.Call('uchronia_SetItemEnsembleForecastTimeSeries_Pkg', PACKAGE = 'uchronia_r', series, i, timeSeriesEnsemble))
+    invisible(.Call('_uchronia_SetItemEnsembleForecastTimeSeries_Pkg', PACKAGE = 'uchronia_r', series, i, timeSeriesEnsemble))
 }
 
 GetEnsembleTimeSeries_Pkg <- function(series) {
-    .Call('uchronia_GetEnsembleTimeSeries_Pkg', PACKAGE = 'uchronia_r', series)
+    .Call('_uchronia_GetEnsembleTimeSeries_Pkg', PACKAGE = 'uchronia_r', series)
 }
 
 TimeSeriesToTsInfo_Pkg <- function(timeSeries) {
-    .Call('uchronia_TimeSeriesToTsInfo_Pkg', PACKAGE = 'uchronia_r', timeSeries)
+    .Call('_uchronia_TimeSeriesToTsInfo_Pkg', PACKAGE = 'uchronia_r', timeSeries)
 }
 
 GetDatasetFromLibrary_Pkg <- function(dataLibrary, dataIdentifier) {
-    .Call('uchronia_GetDatasetFromLibrary_Pkg', PACKAGE = 'uchronia_r', dataLibrary, dataIdentifier)
+    .Call('_uchronia_GetDatasetFromLibrary_Pkg', PACKAGE = 'uchronia_r', dataLibrary, dataIdentifier)
 }
 
 GetLastStdExceptionMessage_Rcpp <- function() {
-    .Call('uchronia_GetLastStdExceptionMessage_Rcpp', PACKAGE = 'uchronia_r')
+    .Call('_uchronia_GetLastStdExceptionMessage_Rcpp', PACKAGE = 'uchronia_r')
 }
 
 RegisterExceptionCallback_Rcpp <- function(callback) {
-    invisible(.Call('uchronia_RegisterExceptionCallback_Rcpp', PACKAGE = 'uchronia_r', callback))
+    invisible(.Call('_uchronia_RegisterExceptionCallback_Rcpp', PACKAGE = 'uchronia_r', callback))
 }
 
 DisposeSharedPointer_Rcpp <- function(ptr) {
-    invisible(.Call('uchronia_DisposeSharedPointer_Rcpp', PACKAGE = 'uchronia_r', ptr))
+    invisible(.Call('_uchronia_DisposeSharedPointer_Rcpp', PACKAGE = 'uchronia_r', ptr))
 }
 
 DeleteDoubleArray_Rcpp <- function(value) {
-    invisible(.Call('uchronia_DeleteDoubleArray_Rcpp', PACKAGE = 'uchronia_r', value))
+    invisible(.Call('_uchronia_DeleteDoubleArray_Rcpp', PACKAGE = 'uchronia_r', value))
 }
 
 SetTimeSeriesMissingValueValue_Rcpp <- function(missingValueValue) {
-    invisible(.Call('uchronia_SetTimeSeriesMissingValueValue_Rcpp', PACKAGE = 'uchronia_r', missingValueValue))
+    invisible(.Call('_uchronia_SetTimeSeriesMissingValueValue_Rcpp', PACKAGE = 'uchronia_r', missingValueValue))
 }
 
 LoadEnsembleDataset_Rcpp <- function(libraryIdentifier, dataPath) {
-    .Call('uchronia_LoadEnsembleDataset_Rcpp', PACKAGE = 'uchronia_r', libraryIdentifier, dataPath)
+    .Call('_uchronia_LoadEnsembleDataset_Rcpp', PACKAGE = 'uchronia_r', libraryIdentifier, dataPath)
 }
 
 CreateEnsembleDataset_Rcpp <- function(type) {
-    .Call('uchronia_CreateEnsembleDataset_Rcpp', PACKAGE = 'uchronia_r', type)
+    .Call('_uchronia_CreateEnsembleDataset_Rcpp', PACKAGE = 'uchronia_r', type)
 }
 
 GetEnsembleDatasetDataIdentifiers_Rcpp <- function(dataLibrary) {
-    .Call('uchronia_GetEnsembleDatasetDataIdentifiers_Rcpp', PACKAGE = 'uchronia_r', dataLibrary)
+    .Call('_uchronia_GetEnsembleDatasetDataIdentifiers_Rcpp', PACKAGE = 'uchronia_r', dataLibrary)
 }
 
 GetEnsembleDatasetDataSubIdentifiers_Rcpp <- function(dataLibrary, dataCollectionId) {
-    .Call('uchronia_GetEnsembleDatasetDataSubIdentifiers_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataCollectionId)
+    .Call('_uchronia_GetEnsembleDatasetDataSubIdentifiers_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataCollectionId)
 }
 
 GetEnsembleDatasetDataSummaries_Rcpp <- function(dataLibrary) {
-    .Call('uchronia_GetEnsembleDatasetDataSummaries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary)
+    .Call('_uchronia_GetEnsembleDatasetDataSummaries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary)
 }
 
 EnsembleSizeEnsembleTimeSeries_Rcpp <- function(ensSeries) {
-    .Call('uchronia_EnsembleSizeEnsembleTimeSeries_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
+    .Call('_uchronia_EnsembleSizeEnsembleTimeSeries_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
 }
 
 CreateEnsembleForecastTimeSeries_Rcpp <- function(start, length, timeStepName) {
-    .Call('uchronia_CreateEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', start, length, timeStepName)
+    .Call('_uchronia_CreateEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', start, length, timeStepName)
 }
 
 GetDatasetSingleTimeSeries_Rcpp <- function(dataLibrary, dataId) {
-    .Call('uchronia_GetDatasetSingleTimeSeries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataId)
+    .Call('_uchronia_GetDatasetSingleTimeSeries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataId)
 }
 
 GetDatasetEnsembleTimeSeries_Rcpp <- function(dataLibrary, dataEnsembleId) {
-    .Call('uchronia_GetDatasetEnsembleTimeSeries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataEnsembleId)
+    .Call('_uchronia_GetDatasetEnsembleTimeSeries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataEnsembleId)
 }
 
 GetDatasetEnsembleForecastTimeSeries_Rcpp <- function(dataLibrary, dataId) {
-    .Call('uchronia_GetDatasetEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataId)
+    .Call('_uchronia_GetDatasetEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, dataId)
+}
+
+SaveSingleTimeSeriesToNetcdf_Rcpp <- function(timeSeries, filename, overwrite) {
+    invisible(.Call('_uchronia_SaveSingleTimeSeriesToNetcdf_Rcpp', PACKAGE = 'uchronia_r', timeSeries, filename, overwrite))
+}
+
+SaveEnsembleTimeSeriesToNetcdf_Rcpp <- function(collection, filename, overwrite) {
+    invisible(.Call('_uchronia_SaveEnsembleTimeSeriesToNetcdf_Rcpp', PACKAGE = 'uchronia_r', collection, filename, overwrite))
+}
+
+SaveEnsembleForecastTimeSeriesToNetcdf_Rcpp <- function(tsEnsTs, filename, overwrite) {
+    invisible(.Call('_uchronia_SaveEnsembleForecastTimeSeriesToNetcdf_Rcpp', PACKAGE = 'uchronia_r', tsEnsTs, filename, overwrite))
 }
 
 IsMissingValueItemEnsembleForecastTimeSeries_Rcpp <- function(series, i) {
-    .Call('uchronia_IsMissingValueItemEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', series, i)
+    .Call('_uchronia_IsMissingValueItemEnsembleForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', series, i)
 }
 
 TimeSeriesFromEnsembleOfTimeSeries_Rcpp <- function(collectionTs, index) {
-    .Call('uchronia_TimeSeriesFromEnsembleOfTimeSeries_Rcpp', PACKAGE = 'uchronia_r', collectionTs, index)
+    .Call('_uchronia_TimeSeriesFromEnsembleOfTimeSeries_Rcpp', PACKAGE = 'uchronia_r', collectionTs, index)
 }
 
 TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp <- function(efts, indexInIssueTime, indexInForecastTime) {
-    .Call('uchronia_TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp', PACKAGE = 'uchronia_r', efts, indexInIssueTime, indexInForecastTime)
+    .Call('_uchronia_TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_Rcpp', PACKAGE = 'uchronia_r', efts, indexInIssueTime, indexInForecastTime)
 }
 
 GetValueFromUnivariateTimeSeries_Rcpp <- function(ts, index) {
-    .Call('uchronia_GetValueFromUnivariateTimeSeries_Rcpp', PACKAGE = 'uchronia_r', ts, index)
+    .Call('_uchronia_GetValueFromUnivariateTimeSeries_Rcpp', PACKAGE = 'uchronia_r', ts, index)
+}
+
+TransformEachItem_Rcpp <- function(tsEnsTs, method, methodArgument) {
+    invisible(.Call('_uchronia_TransformEachItem_Rcpp', PACKAGE = 'uchronia_r', tsEnsTs, method, methodArgument))
 }
 
 SetValueToUnivariateTimeSeries_Rcpp <- function(ts, index, value) {
-    invisible(.Call('uchronia_SetValueToUnivariateTimeSeries_Rcpp', PACKAGE = 'uchronia_r', ts, index, value))
+    invisible(.Call('_uchronia_SetValueToUnivariateTimeSeries_Rcpp', PACKAGE = 'uchronia_r', ts, index, value))
 }
 
 GetItemEnsembleTimeSeriesAsStructure_Rcpp <- function(series, i) {
-    .Call('uchronia_GetItemEnsembleTimeSeriesAsStructure_Rcpp', PACKAGE = 'uchronia_r', series, i)
+    .Call('_uchronia_GetItemEnsembleTimeSeriesAsStructure_Rcpp', PACKAGE = 'uchronia_r', series, i)
 }
 
 SetItemEnsembleTimeSeriesAsStructure_Rcpp <- function(collection, i, values) {
-    invisible(.Call('uchronia_SetItemEnsembleTimeSeriesAsStructure_Rcpp', PACKAGE = 'uchronia_r', collection, i, values))
+    invisible(.Call('_uchronia_SetItemEnsembleTimeSeriesAsStructure_Rcpp', PACKAGE = 'uchronia_r', collection, i, values))
 }
 
 CreatePerfectForecastTimeSeries_Rcpp <- function(observations, start, length, timeStepName, offsetForecasts, leadTime) {
-    .Call('uchronia_CreatePerfectForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', observations, start, length, timeStepName, offsetForecasts, leadTime)
+    .Call('_uchronia_CreatePerfectForecastTimeSeries_Rcpp', PACKAGE = 'uchronia_r', observations, start, length, timeStepName, offsetForecasts, leadTime)
 }
 
 ToStructEnsembleTimeSeriesData_Rcpp <- function(ensSeries) {
-    .Call('uchronia_ToStructEnsembleTimeSeriesData_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
+    .Call('_uchronia_ToStructEnsembleTimeSeriesData_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
 }
 
 ToStructSingleTimeSeriesData_Rcpp <- function(timeSeries) {
-    .Call('uchronia_ToStructSingleTimeSeriesData_Rcpp', PACKAGE = 'uchronia_r', timeSeries)
+    .Call('_uchronia_ToStructSingleTimeSeriesData_Rcpp', PACKAGE = 'uchronia_r', timeSeries)
 }
 
 CreateEnsembleTimeSeriesDataFromStruct_Rcpp <- function(ensSeries) {
-    .Call('uchronia_CreateEnsembleTimeSeriesDataFromStruct_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
+    .Call('_uchronia_CreateEnsembleTimeSeriesDataFromStruct_Rcpp', PACKAGE = 'uchronia_r', ensSeries)
 }
 
 CreateSingleTimeSeriesDataFromStruct_Rcpp <- function(timeSeries) {
-    .Call('uchronia_CreateSingleTimeSeriesDataFromStruct_Rcpp', PACKAGE = 'uchronia_r', timeSeries)
+    .Call('_uchronia_CreateSingleTimeSeriesDataFromStruct_Rcpp', PACKAGE = 'uchronia_r', timeSeries)
 }
 
 GetTimeSeriesGeometry_Rcpp <- function(timeSeries, geom) {
-    invisible(.Call('uchronia_GetTimeSeriesGeometry_Rcpp', PACKAGE = 'uchronia_r', timeSeries, geom))
+    invisible(.Call('_uchronia_GetTimeSeriesGeometry_Rcpp', PACKAGE = 'uchronia_r', timeSeries, geom))
 }
 
 GetEnsembleForecastTimeSeriesGeometry_Rcpp <- function(timeSeries, geom) {
-    invisible(.Call('uchronia_GetEnsembleForecastTimeSeriesGeometry_Rcpp', PACKAGE = 'uchronia_r', timeSeries, geom))
+    invisible(.Call('_uchronia_GetEnsembleForecastTimeSeriesGeometry_Rcpp', PACKAGE = 'uchronia_r', timeSeries, geom))
 }
 
 GetTimeSeriesValues_Rcpp <- function(timeSeries, values, arrayLength) {
-    invisible(.Call('uchronia_GetTimeSeriesValues_Rcpp', PACKAGE = 'uchronia_r', timeSeries, values, arrayLength))
+    invisible(.Call('_uchronia_GetTimeSeriesValues_Rcpp', PACKAGE = 'uchronia_r', timeSeries, values, arrayLength))
 }
 
 GetNumTimeSeries_Rcpp <- function() {
-    .Call('uchronia_GetNumTimeSeries_Rcpp', PACKAGE = 'uchronia_r')
+    .Call('_uchronia_GetNumTimeSeries_Rcpp', PACKAGE = 'uchronia_r')
 }
 
 GetProviderTsGeometry_Rcpp <- function(dataLibrary, variableIdentifier, geom) {
-    invisible(.Call('uchronia_GetProviderTsGeometry_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, variableIdentifier, geom))
+    invisible(.Call('_uchronia_GetProviderTsGeometry_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, variableIdentifier, geom))
 }
 
 GetProviderTimeSeriesValues_Rcpp <- function(dataLibrary, variableIdentifier, values, arrayLength) {
-    invisible(.Call('uchronia_GetProviderTimeSeriesValues_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, variableIdentifier, values, arrayLength))
+    invisible(.Call('_uchronia_GetProviderTimeSeriesValues_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, variableIdentifier, values, arrayLength))
 }
 
 GetProviderTimeSeriesIdentifiers_Rcpp <- function(dataLibrary) {
-    .Call('uchronia_GetProviderTimeSeriesIdentifiers_Rcpp', PACKAGE = 'uchronia_r', dataLibrary)
+    .Call('_uchronia_GetProviderTimeSeriesIdentifiers_Rcpp', PACKAGE = 'uchronia_r', dataLibrary)
 }
 

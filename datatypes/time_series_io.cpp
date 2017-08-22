@@ -2208,10 +2208,10 @@ namespace datatypes
 			auto file = CreateNcFilename(dataId);
 			ExceptionUtilities::CheckFileDoesNotExist(file);
 			// DimensionsDefinitions dimDef = geometryProvider->GetDimensions();
-			string units = "";
-			auto v = VariableDefinition::TimeSeriesEnsembleTimeSeries(dataId, units, dataId);
-			map<string, VariableDefinition> varDef;
-			varDef[dataId] = v;
+			//string units = "";
+			//auto v = VariableDefinition::TimeSeriesEnsembleTimeSeries(dataId, units, dataId);
+			//map<string, VariableDefinition> varDef;
+			//varDef[dataId] = v;
 			string ncVarName = dataId;
 			return new NetCdfTimeSeriesEnsembleTimeSeriesStore<double>(file.generic_string(), ncVarName, "", /*writeMode*/ true);
 			//return new NetCdfTimeSeriesEnsembleTimeSeriesStore<double>(file.generic_string(), dimDef, varDef, dataId);

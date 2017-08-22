@@ -259,6 +259,51 @@ def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary, dataId):
     return cinterop.mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
+def SaveSingleTimeSeriesToNetcdf_py(timeSeries, filename, overwrite):
+    """
+    SaveSingleTimeSeriesToNetcdf_py
+    
+    SaveSingleTimeSeriesToNetcdf_py Wrapper function for SaveSingleTimeSeriesToNetcdf
+    
+    :param timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
+    :param filename Python type equivalent for C++ type char*
+    :param overwrite Python type equivalent for C++ type bool
+    :export
+    """
+    timeSeries_xptr = cinterop.getExternalXptr(timeSeries)
+    nativelib.SaveSingleTimeSeriesToNetcdf(timeSeries_xptr, filename, overwrite)
+
+
+def SaveEnsembleTimeSeriesToNetcdf_py(collection, filename, overwrite):
+    """
+    SaveEnsembleTimeSeriesToNetcdf_py
+    
+    SaveEnsembleTimeSeriesToNetcdf_py Wrapper function for SaveEnsembleTimeSeriesToNetcdf
+    
+    :param collection Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+    :param filename Python type equivalent for C++ type char*
+    :param overwrite Python type equivalent for C++ type bool
+    :export
+    """
+    collection_xptr = cinterop.getExternalXptr(collection)
+    nativelib.SaveEnsembleTimeSeriesToNetcdf(collection_xptr, filename, overwrite)
+
+
+def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs, filename, overwrite):
+    """
+    SaveEnsembleForecastTimeSeriesToNetcdf_py
+    
+    SaveEnsembleForecastTimeSeriesToNetcdf_py Wrapper function for SaveEnsembleForecastTimeSeriesToNetcdf
+    
+    :param tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+    :param filename Python type equivalent for C++ type char*
+    :param overwrite Python type equivalent for C++ type bool
+    :export
+    """
+    tsEnsTs_xptr = cinterop.getExternalXptr(tsEnsTs)
+    nativelib.SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs_xptr, filename, overwrite)
+
+
 def IsMissingValueItemEnsembleForecastTimeSeries_py(series, i):
     """
     IsMissingValueItemEnsembleForecastTimeSeries_py
@@ -333,6 +378,21 @@ def GetValueFromUnivariateTimeSeries_py(ts, index):
     ts_xptr = cinterop.getExternalXptr(ts)
     result = nativelib.GetValueFromUnivariateTimeSeries(ts_xptr, index)
     return cinterop.mkExternalObjRef(result, 'double')
+
+
+def TransformEachItem_py(tsEnsTs, method, methodArgument):
+    """
+    TransformEachItem_py
+    
+    TransformEachItem_py Wrapper function for TransformEachItem
+    
+    :param tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+    :param method Python type equivalent for C++ type char*
+    :param methodArgument Python type equivalent for C++ type char*
+    :export
+    """
+    tsEnsTs_xptr = cinterop.getExternalXptr(tsEnsTs)
+    nativelib.TransformEachItem(tsEnsTs_xptr, method, methodArgument)
 
 
 def SetValueToUnivariateTimeSeries_py(ts, index, value):

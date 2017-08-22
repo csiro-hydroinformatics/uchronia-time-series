@@ -463,23 +463,23 @@ void TransformEachItem(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, char* method, 
 void SaveSingleTimeSeriesToNetcdf(TIME_SERIES_PTR timeSeries, char* filename, bool overwrite)
 {
 	TRY_START
+		throw std::logic_error("SaveSingleTimeSeriesToNetcdf not implemented");
 		INTERCEPT_STD_EXCEPTION
 }
 void SaveEnsembleTimeSeriesToNetcdf(ENSEMBLE_PTR_TIME_SERIES_PTR collection, char* filename, bool overwrite) 
 {
 	TRY_START
-		throw std::logic_error("dimension from ensemble time series not implemented");
-	throw std::logic_error("dimension from ensemble time series not implemented");
+	throw std::logic_error("SaveEnsembleTimeSeriesToNetcdf not implemented");
 
-	//	auto ens = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(collection);
+	//MTSPTR ens = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(collection);
 	//datatypes::timeseries::DimensionsFromSeries(*ens);
-	//	string fn(filename);
-	//	size_t nEns = ens->Size();
+	//string fn(filename);
+	//size_t nEns = ens->Size();
 	//vector<double> leadTimeVar;
 	//string timeUnits;
 	//vector<double> timeVar;
 	//vector<string> stationIds;
-	//	std::map < string, VariableDefinition >  varDefinitions;
+	//std::map < string, VariableDefinition >  varDefinitions;
 	//GlobalAttributes globalAttributes;
 	//string ncVarName;
 	//string identifier = "";
@@ -493,16 +493,36 @@ void SaveEnsembleTimeSeriesToNetcdf(ENSEMBLE_PTR_TIME_SERIES_PTR collection, cha
 		INTERCEPT_STD_EXCEPTION
 }
 
-void SaveEnsembleForecastTimeSeriesToNetcdf(ENSEMBLE_FORECAST_TIME_SERIES_PTR, char* filename, bool overwrite)
+void SaveEnsembleForecastTimeSeriesToNetcdf(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, char* filename, bool overwrite)
 {
 	TRY_START
-		throw std::logic_error("dimension from ensemble time series not implemented");
-	INTERCEPT_STD_EXCEPTION
+		EFTSPTR ens = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(tsEnsTs);
+	DimensionsDefinitions dims = DimensionsFromSeries(*ens);
+	string fn(filename);
+	//size_t nEns = ens->Size();
+	//vector<double> leadTimeVar;
+	//string timeUnits;
+	//vector<double> timeVar;
+	//vector<string> stationIds;
+	//std::map < string, VariableDefinition >  varDefinitions;
+	//GlobalAttributes globalAttributes;
+	//string ncVarName;
+	//string identifier = "";
+	//string leadTimeUnits = "";
+
+	string units(""); // shall come from tsEnsTs "later"
+	string name("data_name");
+	string longName("long name");
+	auto v = VariableDefinition::TimeSeriesEnsembleTimeSeries(name, units, longName);
+	map<string, VariableDefinition> varDef;
+	varDef[name] = v;
+
+	GlobalAttributes gattr = GetMetadataFrom<EFTS, GlobalAttributes>(*ens);
+	string ncVarName("TODO");
+	NetCdfTimeSeriesEnsembleTimeSeriesStore<double> store(fn, dims, varDef, gattr, ncVarName);
+	store.SetSeries("", ens);
+		INTERCEPT_STD_EXCEPTION
 }
-
-
-
-
 
 #undef DATATYPES_TIME_SERIES_DOUBLE
 #undef DATATYPES_TIME_SERIES_DOUBLE_PTR
