@@ -47,8 +47,7 @@ library(uchronia)
 `uchronia` includes facilities to access time series from a "library", akin to what you would do to manage books. One way to describe such a library is to load a text description file written in the YAML format.
 
 ```{r}
-# docDataPath <- Sys.getenv('SWIFT_SAMPLE_DATA_DIR') # swift::sampleDataDir()
-sampleDataDir <- 'C:/STSF/sample/documentation'
+sampleDataDir <- uchronia::sampleDataDir()
 dataLibraryFile <- file.path(sampleDataDir, 'time_series_library.yaml')
 stopifnot(file.exists(dataLibraryFile))
 ```

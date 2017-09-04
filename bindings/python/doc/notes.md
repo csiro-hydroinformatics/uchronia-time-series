@@ -11,6 +11,37 @@ As of 2017-07-10 the following high level calls are possible to generate/update 
 
 ## Generating code:
 
+### Preprocessing C API files to extract C code suitable for CFFI
+
+The R package `capigen` has some facilities to help extract C functions and struct definitions for Pytnon interop via CFFI. For now this is not fully streamlined but a lot of tedium is already hidden in functions. For now:
+
+```r
+library(capigen)
+
+
+if(Sys.info()['sysname'] == 'Windows') {
+    uchronia_root <- "c:/src/csiro/stash/datatypes"
+    preprocessed_cpp_file <- "c:/tmp/uchronia_c_api.cpp"
+} else {
+    uchronia_root <- "/home/per202/src/csiro/stash/per202/datatypes"
+    preprocessed_cpp_file <- "~/tmp/uchronia_c_api.cpp"
+}
+
+include_dirs <- file.path(uchronia_root, "include/datatypes")
+if(Sys.info()['sysname'] == 'Windows') {
+    include_dirs <- c(include_dirs, 'c:/local/include')
+}
+
+api_importer_file <- file.path(uchronia_root, "bindings/codegen/api_importer.cpp")
+uchronia_py_pkg_dir <- file.path(uchronia_root, "bindings/python/uchronia")
+uchronia_cdefs_dir <- file.path(uchronia_root, "bindings/python/uchronia/data")
+
+preprocess_result <- apply_c_preprocessor(include_dirs, api_importer_file, preprocessed_cpp_file)
+create_cffi_cdefs(preprocessed_cpp_file, outdir=uchronia_cdefs_dir, pattern_start_structs="typedef struct _date_time_to_second", extern_c_start_match='char.+GetLastStdExceptionMessage.*' , extern_c_end_match='^\\}')
+```
+
+Then we can generate bindings including the python wrappers. 
+
 ```r
 library(capigen)
 load_wrapper_gen_lib('c:/src/github_jm/rcpp-wrapper-generation')
@@ -27,22 +58,6 @@ generate_uchronia_python_all_wrappers(uchroniaSrcPath)
 # Diving into more details
 
 This section is a legacy capture of steps leading to the above.
-
-## Preprocessing C API files to extract C code suitable for CFFI
-
-```r
-library(capigen)
-
-uchronia_root <- "/home/per202/src/csiro/stash/per202/datatypes"
-include_dirs <- file.path(uchronia_root, "include/datatypes")
-api_importer_file <- file.path(uchronia_root, "bindings/codegen/api_importer.cpp")
-uchronia_py_pkg_dir <- file.path(uchronia_root, "bindings/python/uchronia")
-uchronia_cdefs_dir <- file.path(uchronia_root, "bindings/python/uchronia/data")
-preprocessed_cpp_file <- "~/tmp/uchronia_c_api.cpp"
-
-preprocess_result <- apply_c_preprocessor(include_dirs, api_importer_file, preprocessed_cpp_file)
-create_cffi_cdefs(preprocessed_cpp_file, outdir=uchronia_cdefs_dir, pattern_start_structs="interop_struct.h")
-```
 
 ## A minimal, low level test
 

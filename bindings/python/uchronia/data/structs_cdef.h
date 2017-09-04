@@ -1,28 +1,3 @@
-// namespace std
-// {
-// typedef long unsigned int size_t;
-// typedef long int ptrdiff_t;
-// typedef decltype(nullptr) nullptr_t;
-// }
-// namespace std
-// {
-// inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
-// }
-// namespace __gnu_cxx
-// {
-// inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
-// }
-// typedef long int ptrdiff_t;
-// typedef long unsigned int size_t;
-// typedef struct {
-// long long __max_align_ll __attribute__((__aligned__(__alignof__(long long))));
-// long double __max_align_ld __attribute__((__aligned__(__alignof__(long double))));
-// } max_align_t;
-// typedef decltype(nullptr) nullptr_t;
-// namespace std
-// {
-// using ::max_align_t;
-// }
 typedef struct _date_time_to_second
 {
 int year;
