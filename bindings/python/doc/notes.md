@@ -55,6 +55,19 @@ roxy_uchronia()
 generate_uchronia_python_all_wrappers(uchroniaSrcPath)
 ```
 
+# Installing the packge
+
+```bat
+python setup.py build_ext --inplace
+python setup.py develop --install-dir c:\local\python-pkgs
+```
+
+# Getting started
+
+```py
+
+```
+
 # Diving into more details
 
 This section is a legacy capture of steps leading to the above.
