@@ -287,3 +287,68 @@ TEST_CASE("Transform time series inplace in an ensemble")
 
 }
 
+TEST_CASE("ts ens ts descriptions via yaml file", "[Data handling]")
+{
+	// Addresses https://jira.csiro.au/browse/WIRADA-448 , potentially broader scope.
+
+	using namespace datatypes::timeseries;
+	using datatypes::utils::StringProcessing;
+	using std::string;
+	using std::vector;
+	using namespace boost::filesystem;
+
+	const string filepath = DatatypesTestPath("ts_ens_ts_data_descriptors_diff_values.yaml");
+
+	path p(filepath);
+	REQUIRE(boost::filesystem::exists(p));
+
+	TimeSeriesLibrary tsl = TimeSeriesLibraryFactory::LoadTimeSeriesLibrary(filepath);
+
+	string correct_start("correct_start");
+	string first_value_missing("first_value_missing");
+	string valid_issue_forecast_start("valid_issue_forecast_start");
+
+	EnsembleForecastTimeSeries<TTimeSeries<double>>* rain_fcast_ens_data = tsl.GetTimeSeriesEnsembleTimeSeries(correct_start);
+	ptime firstIssueTime = datatypes::utils::CreateTime(2010, 8, 1, 9, 0, 0);
+	REQUIRE(rain_fcast_ens_data->GetLength() == 14);
+	REQUIRE(rain_fcast_ens_data->GetStartDate() == firstIssueTime);
+	REQUIRE(rain_fcast_ens_data->GetEndDate() == firstIssueTime + days(14 - 1));
+	REQUIRE(rain_fcast_ens_data->GetTimeStep() == TimeStep::GetDaily());
+
+	REQUIRE(rain_fcast_ens_data->GetValue(0)->GetStartDate() == firstIssueTime);
+	REQUIRE(rain_fcast_ens_data->GetValue(0)->Get(0)->GetStartDate() == firstIssueTime);
+
+	delete rain_fcast_ens_data;
+
+	rain_fcast_ens_data = tsl.GetTimeSeriesEnsembleTimeSeries(first_value_missing);
+	firstIssueTime = datatypes::utils::CreateTime(2010, 7, 31, 9, 0, 0);
+	REQUIRE(rain_fcast_ens_data->GetLength() == 14);
+	REQUIRE(rain_fcast_ens_data->GetStartDate() == firstIssueTime);
+	REQUIRE(rain_fcast_ens_data->GetEndDate() == firstIssueTime + days(14 - 1));
+	REQUIRE(rain_fcast_ens_data->GetTimeStep() == TimeStep::GetDaily());
+	REQUIRE(rain_fcast_ens_data->GetValue(0) == nullptr);
+	REQUIRE(rain_fcast_ens_data->GetValue(1) != nullptr);
+
+	REQUIRE(rain_fcast_ens_data->GetValue(1)->GetStartDate() == firstIssueTime + days(1));
+	REQUIRE(rain_fcast_ens_data->GetValue(1)->Get(0)->GetStartDate() == firstIssueTime + days(1));
+
+
+	delete rain_fcast_ens_data;
+
+	// Now we have a case where the issue forecast instant in the data descriptor is one hour before the issue forecast time in the file.
+	rain_fcast_ens_data = tsl.GetTimeSeriesEnsembleTimeSeries(valid_issue_forecast_start);
+	firstIssueTime = datatypes::utils::CreateTime(2010, 8, 1, 8, 0, 0);
+	REQUIRE(rain_fcast_ens_data->GetLength() == 14);
+	REQUIRE(rain_fcast_ens_data->GetStartDate() == firstIssueTime);
+	REQUIRE(rain_fcast_ens_data->GetEndDate() == firstIssueTime + days(14 - 1));
+	REQUIRE(rain_fcast_ens_data->GetTimeStep() == TimeStep::GetDaily());
+
+	REQUIRE(rain_fcast_ens_data->GetValue(0)->GetStartDate() == firstIssueTime + hours(1));
+	REQUIRE(rain_fcast_ens_data->GetValue(0)->Get(0)->GetStartDate() == firstIssueTime + hours(1));
+
+
+	delete rain_fcast_ens_data;
+
+
+
+}

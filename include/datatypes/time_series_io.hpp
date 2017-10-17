@@ -2796,8 +2796,8 @@ public:
 			static TimeSeriesLibrary CreateLibrary(const TimeSeriesLibraryDescription& description);
 			static TimeSeriesLibrary* CreateLibraryPtr(const TimeSeriesLibraryDescription& description);
 
-			static TimeSeriesLibrary LoadTimeSeriesLibrary(const string& filepath, const string& dataPath);
-			static TimeSeriesLibrary* LoadTimeSeriesLibraryPtr(const string& filepath, const string& dataPath);
+			static TimeSeriesLibrary LoadTimeSeriesLibrary(const string& filepath, const string& dataPath="");
+			static TimeSeriesLibrary* LoadTimeSeriesLibraryPtr(const string& filepath, const string& dataPath="");
 
 			static TimeSeriesLibrary* CreateTimeSeriesLibraryPtr(const string& type);
 

@@ -81,6 +81,9 @@ rm(snc)
 # creating files for testing ensemble retrospective forecasts time series on multiple netCDF files
 datetxtformat <- "%Y%m%d%H"
 
+nEns <- 3
+nLead <- 4
+
 fileStampDates <- ISOdate(year=2010, month=08, day=01, hour = 00, min = 0, sec = 0, tz = "UTC")
 fileStampDates <- fileStampDates + days(0:13)
 
