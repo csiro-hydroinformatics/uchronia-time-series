@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Rcpp.h>
+#include <cinterop/rcpp_strict_r_headers.hpp>
 
 #ifndef USING_DATATYPES_CORE
 #define USING_DATATYPES_CORE

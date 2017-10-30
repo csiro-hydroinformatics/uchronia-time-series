@@ -1,5 +1,4 @@
 #include <string>
-#include "uchronia.h"
 #include "rcpp_custom.h"
 
 using namespace Rcpp;

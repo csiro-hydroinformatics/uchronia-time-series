@@ -167,7 +167,9 @@ namespace datatypes {
 
 			static TsEnsembleValueFunc DefaultMtsGen()
 			{
-				return CreateMtsGen(3 /*ensSize*/, 5 /*tsLength*/);
+				const size_t DefaultTestEnsembleSize = 3;
+				const size_t DefaultTestTimeseriesLength = 5;
+				return CreateMtsGen(DefaultTestEnsembleSize /*ensSize*/, DefaultTestTimeseriesLength /*tsLength*/);
 			}
 
 			static TSeriesEnsemblePtrType CreateTsEnsembleTs(
