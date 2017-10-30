@@ -1,0 +1,31 @@
+streamflow_forecasts_ens_station_15:
+  Type: ts_ensemble_ts
+  Id: ovens_streamflow_forecasts_ens_15
+  TimeStep: 24:00:00
+  Start: 2010-08-01T21:00:00
+  Length: 2153
+  EnsembleSize: 1000
+  EnsembleLength: 218
+  EnsembleTimeStep: 01:00:00
+  Storage:
+    Type: multiple_nc_files_filename_date_pattern
+    File: ./ovens/ensemble/Streamflow_forecasts_v2_{0}2100.nc
+    Var: q_fcast_ens
+    Identifier: 15
+    Index: 0
+streamflow_forecasts_ens_station_13:
+  Type: ts_ensemble_ts
+  Id: ovens_streamflow_forecasts_ens_13
+  TimeStep: 24:00:00
+  Start: 2010-08-01T21:00:00
+  Length: 2133
+  EnsembleSize: 1000
+  EnsembleLength: 218
+  EnsembleTimeStep: 01:00:00
+  Storage:
+    Type: multiple_nc_files_filename_date_pattern
+    File: ./ovens/ensemble/Streamflow_forecasts_v2_{0}2100.nc
+    Var: q_fcast_ens
+    Identifier: 13
+    Index: 0
+
