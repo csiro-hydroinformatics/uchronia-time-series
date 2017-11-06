@@ -23,7 +23,10 @@ namespace datatypes
 
 		template <typename T>
 		struct DefaultMissingValuePolicyTypeFactory	{
-			typedef typename IfThenElse<std::is_pointer<T>::value, NullPointerIsMissingPolicy<T>, DefaultMissingFloatingPointPolicy<T>>::ResultT type;
+			typedef typename IfThenElse<
+				std::is_pointer<T>::value, 
+				NullPointerIsMissingPolicy<T>, 
+				DefaultMissingFloatingPointPolicy<T>>::ResultT type;
 		};
 		
 		/**
@@ -93,7 +96,7 @@ namespace datatypes
 
 		public:
 
-			inline bool IsMissingValue(T value) const { return this->mvp->IsMissingValue(value); }
+			inline bool IsMissingValue(const T& value) const { return this->mvp->IsMissingValue(value); }
 
 			inline T GetMissingValue() const { return this->mvp->GetMissingValue(); }
 

@@ -170,19 +170,56 @@ class SpatialGrid
 private:
 	std::vector<double> data;
 public:
+	bool isMissing;
+	SpatialGrid(bool isMissing = false) { this->isMissing = isMissing; }
+	SpatialGrid& operator=(SpatialGrid&& src) {
+		if (&src == this) {
+			return *this;
+		}
+		std::swap(this->data, src.data);
+		this->isMissing = src.isMissing;
+		this->easting = src.easting;
+		this->northing = src.northing;
+		return *this;
+	}
+	SpatialGrid& operator=(const SpatialGrid& src) {
+		if (&src == this) {
+			return *this;
+		}
+		this->data = src.data;
+		this->easting = src.easting;
+		this->northing = src.northing;
+		return *this;
+	}
+	SpatialGrid(SpatialGrid&& src) { *this = src; }
+	SpatialGrid(const SpatialGrid& src) { *this = src; }
 	double easting, northing;
 	SpatialGrid operator+(const SpatialGrid& rhs) const {/*TODO*/ return SpatialGrid(); }
 	SpatialGrid operator+(double rhs) const {/*TODO*/ return SpatialGrid(); }
 };
 
-TEST_CASE("Extensibility of templated time series")
+class SpatialGridMissingValuePolicy
+	: public MissingValuePolicy<SpatialGrid>
 {
-	using SpatialTs = TTimeSeries<SpatialGrid>;
+private:
+	//const T missingValue = (T)(DEFAULT_MISSING_DATA_VALUE);
+public:
+	inline bool IsMissingValue(const SpatialGrid& a) const { return (a.isMissing); };
+	inline SpatialGrid GetMissingValue() const { return SpatialGrid(true); };
+	MissingValuePolicy<SpatialGrid>* Clone() const { return new SpatialGridMissingValuePolicy(); };
+};
 
-	auto start = ptime(date(2017, 1, 1));
-	SpatialTs oneWeek(7, start, TimeStep::GetDaily());
-	SpatialGrid val = oneWeek[start + days(2)];
-	SpatialTs other = oneWeek + val;
+
+
+TEST_CASE("Proof of concept extensibility of templated time series to spatial data")
+{
+	// This is a placeholder for 
+	// https://jira.csiro.au/browse/WIRADA-478
+	//using SpatialTs = TTimeSeries<SpatialGrid>;
+	//auto start = ptime(date(2017, 1, 1));
+	//SpatialTs oneWeek(7, start, TimeStep::GetDaily(), nullptr, new SpatialGridMissingValuePolicy());
+	//SpatialGrid val = oneWeek[start + days(2)];
+	//SpatialTs other = oneWeek + val;
 
 }
 
