@@ -221,12 +221,6 @@ public:
 class SpatialGridMissingValuePolicy
 	: public MissingValuePolicy<SpatialGrid>
 {
-<<<<<<< HEAD
-	//using SpatialTs = TTimeSeries<SpatialGrid>;
-
-	//auto start = ptime(date(2017, 1, 1));
-	//SpatialTs oneWeek(7, start, TimeStep::GetDaily());
-=======
 private:
 	//const T missingValue = (T)(DEFAULT_MISSING_DATA_VALUE);
 public:
@@ -244,7 +238,6 @@ TEST_CASE("Proof of concept extensibility of templated time series to spatial da
 	//using SpatialTs = TTimeSeries<SpatialGrid>;
 	//auto start = ptime(date(2017, 1, 1));
 	//SpatialTs oneWeek(7, start, TimeStep::GetDaily(), nullptr, new SpatialGridMissingValuePolicy());
->>>>>>> feature/wirada-478
 	//SpatialGrid val = oneWeek[start + days(2)];
 	//SpatialTs other = oneWeek + val;
 
