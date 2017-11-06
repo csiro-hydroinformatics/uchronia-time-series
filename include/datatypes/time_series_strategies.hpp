@@ -76,7 +76,7 @@ namespace datatypes
 		{
 		public:
 			virtual ~MissingValuePolicy() {}
-			virtual bool IsMissingValue(T a) const = 0;
+			virtual bool IsMissingValue(const T& a) const = 0;
 			virtual T GetMissingValue() const = 0;
 			virtual MissingValuePolicy* Clone() const = 0;
 		};
@@ -88,7 +88,7 @@ namespace datatypes
 		private:
 			const T missingValue = (T)(DEFAULT_MISSING_DATA_VALUE);
 		public:
-			inline bool IsMissingValue(T a) const { return (a == missingValue); };
+			inline bool IsMissingValue(const T& a) const { return (a == missingValue); };
 			inline T GetMissingValue() const { return missingValue; };
 			MissingValuePolicy<T>* Clone() const { return new DefaultMissingFloatingPointPolicy<T>(); };
 		};
@@ -98,7 +98,7 @@ namespace datatypes
 			: public MissingValuePolicy<T>
 		{
 		public:
-			inline bool IsMissingValue(T a) const { return (a == nullptr); };
+			inline bool IsMissingValue(const T& a) const { return (a == nullptr); };
 			inline T GetMissingValue() const { return nullptr; };
 			MissingValuePolicy<T>* Clone() const { return new NullPointerIsMissingPolicy<T>(); };
 		};
@@ -111,7 +111,7 @@ namespace datatypes
 		private:
 			const T missingValue = (T)(DEFAULT_MISSING_DATA_VALUE);
 		public:
-			inline bool IsMissingValue(T a) const { return (a < T()); };
+			inline bool IsMissingValue(const T& a) const { return (a < T()); };
 			inline T GetMissingValue() const { return missingValue; };
 			MissingValuePolicy<T>* Clone() const { return new NegativeIsMissingFloadingPointPolicy<T>(); };
 		};
