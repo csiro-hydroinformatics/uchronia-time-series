@@ -1,8 +1,8 @@
 Package: uchronia
 Type: Package
 Title: Handling large multidimensional time series
-Version: 0.3-2
-Date: 2017-08-09
+Version: 0.3-3
+Date: 2017-11-07
 Authors@R: c( person("Jean-Michel", "Perraud", email =
     "jean-michel.perraud@csiro.au", role = c("aut", "cre")))
 Author: Jean-Michel Perraud [aut, cre]
