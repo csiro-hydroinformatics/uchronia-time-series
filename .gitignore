@@ -123,3 +123,4 @@ datatypes/lib_paths.props
 *.rda
 *.opendb
 *.o
+Solutions/.vs/
