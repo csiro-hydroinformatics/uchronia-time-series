@@ -261,6 +261,8 @@ extern "C" {
 	DATATYPES_API void GetProviderTsGeometry(TIME_SERIES_PROVIDER_PTR dataLibrary, const char* variableIdentifier, TS_GEOMETRY_PTR geom);
 	DATATYPES_API void GetProviderTimeSeriesValues(TIME_SERIES_PROVIDER_PTR dataLibrary, const char* variableIdentifier, double * values, int arrayLength);
 	DATATYPES_API char** GetProviderTimeSeriesIdentifiers(TIME_SERIES_PROVIDER_PTR dataLibrary, int* size);
+	DATATYPES_API TIME_SERIES_PTR TimeSeriesFromProviderTs(TIME_SERIES_PROVIDER_PTR dataLibrary, const char* variableIdentifier);
+
 
 	////////////////////////////////
 	// Obsolete and deprecated functions

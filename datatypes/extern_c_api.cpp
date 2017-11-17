@@ -123,7 +123,7 @@ void GetProviderTsGeometry(TIME_SERIES_PROVIDER_PTR dataLibrary, const char* var
 {
 	TRY_START
 		string varId(variableIdentifier);
-	TimeSeries* ts = dataLibrary->get_ptr()->GetSingle(varId);
+	TimeSeries* ts = TIME_SERIES_PROVIDER_DYNCAST(dataLibrary)->GetSingle(varId);
 	FillTsGeometry(ts, variableIdentifier, geom);
 	delete ts;
 	INTERCEPT_STD_EXCEPTION
@@ -133,7 +133,7 @@ void GetProviderTimeSeriesValues(TIME_SERIES_PROVIDER_PTR dataLibrary, const cha
 {
 	TRY_START
 		string varId(variableIdentifier);
-	TimeSeries* ts = dataLibrary->get_ptr()->GetSingle(varId);
+	TimeSeries* ts = TIME_SERIES_PROVIDER_DYNCAST(dataLibrary)->GetSingle(varId);
 	CopyTimeSeriesValues(ts, values, arrayLength);
 	delete ts;
 	INTERCEPT_STD_EXCEPTION
@@ -142,8 +142,17 @@ void GetProviderTimeSeriesValues(TIME_SERIES_PROVIDER_PTR dataLibrary, const cha
 char** GetProviderTimeSeriesIdentifiers(TIME_SERIES_PROVIDER_PTR dataLibrary, int* size)
 {
 	TRY_START
-		vector<string> ids = dataLibrary->get_ptr()->GetIdentifiers();
+		vector<string> ids = TIME_SERIES_PROVIDER_DYNCAST(dataLibrary)->GetIdentifiers();
 	return StrVecToChars(size, ids);
+	INTERCEPT_STD_EXCEPTION
+}
+
+TIME_SERIES_PTR TimeSeriesFromProviderTs(TIME_SERIES_PROVIDER_PTR dataLibrary, const char* variableIdentifier)
+{
+	TRY_START
+		TimeSeriesProvider<double>* mts = TIME_SERIES_PROVIDER_DYNCAST(dataLibrary);
+	TS* tsPtr = mts->GetSingle(string(variableIdentifier));
+	return WRAP_TIME_SERIES_PTR(tsPtr);
 	INTERCEPT_STD_EXCEPTION
 }
 

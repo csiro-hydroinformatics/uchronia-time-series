@@ -185,3 +185,7 @@ GetProviderTimeSeriesIdentifiers_Rcpp <- function(dataLibrary) {
     .Call('_uchronia_GetProviderTimeSeriesIdentifiers_Rcpp', PACKAGE = 'uchronia_r', dataLibrary)
 }
 
+TimeSeriesFromProviderTs_Rcpp <- function(dataLibrary, variableIdentifier) {
+    .Call('_uchronia_TimeSeriesFromProviderTs_Rcpp', PACKAGE = 'uchronia_r', dataLibrary, variableIdentifier)
+}
+

@@ -309,3 +309,11 @@ CharacterVector GetProviderTimeSeriesIdentifiers_Rcpp(XPtr<opaque_pointer_handle
         return to_custom_character_vector<CharacterVector>(values, size, true);
 }
 
+// [[Rcpp::export]]
+XPtr<opaque_pointer_handle> TimeSeriesFromProviderTs_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector variableIdentifier)
+{
+    auto result = TimeSeriesFromProviderTs(dataLibrary->get(), variableIdentifier[0]);
+    auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
+    return x;
+}
+

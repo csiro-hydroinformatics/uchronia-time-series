@@ -541,6 +541,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// TimeSeriesFromProviderTs_Rcpp
+XPtr<opaque_pointer_handle> TimeSeriesFromProviderTs_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector variableIdentifier);
+RcppExport SEXP _uchronia_TimeSeriesFromProviderTs_Rcpp(SEXP dataLibrarySEXP, SEXP variableIdentifierSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type dataLibrary(dataLibrarySEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type variableIdentifier(variableIdentifierSEXP);
+    rcpp_result_gen = Rcpp::wrap(TimeSeriesFromProviderTs_Rcpp(dataLibrary, variableIdentifier));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_uchronia_RegisterExceptionCallback_Pkg", (DL_FUNC) &_uchronia_RegisterExceptionCallback_Pkg, 0},
@@ -589,6 +601,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_uchronia_GetProviderTsGeometry_Rcpp", (DL_FUNC) &_uchronia_GetProviderTsGeometry_Rcpp, 3},
     {"_uchronia_GetProviderTimeSeriesValues_Rcpp", (DL_FUNC) &_uchronia_GetProviderTimeSeriesValues_Rcpp, 4},
     {"_uchronia_GetProviderTimeSeriesIdentifiers_Rcpp", (DL_FUNC) &_uchronia_GetProviderTimeSeriesIdentifiers_Rcpp, 1},
+    {"_uchronia_TimeSeriesFromProviderTs_Rcpp", (DL_FUNC) &_uchronia_TimeSeriesFromProviderTs_Rcpp, 2},
     {NULL, NULL, 0}
 };
 

@@ -217,7 +217,12 @@ tsIndex <- function(geom) {
   stopifnot(is(geom, "RegularTimeSeriesGeometry"))
   len <- geom@Length
   tssec <- geom@TimeStepSeconds
-  return(geom@Start + 0:(len-1) * tssec)
+  # we need to make sure we work with numeric values, not integers, here, otherwise 
+  # we will quickly bump into integer overflow. Ouch. Compare:
+  # len <- 29618
+  # tail(0:(len - 1) * tssec)
+  # tail(0:(len - 1) * as.numeric(tssec))
+  return(geom@Start + 0:(len-1) * as.numeric(tssec))
 }
 
 #' Get the time index of a time series

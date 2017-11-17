@@ -523,3 +523,17 @@ GetProviderTimeSeriesIdentifiers_R <- function(dataLibrary)
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
 
+#' TimeSeriesFromProviderTs_R
+#'
+#' TimeSeriesFromProviderTs_R Wrapper function for TimeSeriesFromProviderTs
+#'
+#' @param dataLibrary R type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
+#' @param variableIdentifier R type equivalent for C++ type const char*
+#' @export
+TimeSeriesFromProviderTs_R <- function(dataLibrary, variableIdentifier) {
+  dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+  variableIdentifier <- cinterop::getExternalXptr(variableIdentifier)
+  result <- TimeSeriesFromProviderTs_Rcpp(dataLibrary, variableIdentifier)
+  return(cinterop::mkExternalObjRef(result, 'TIME_SERIES_PTR'))
+}
+
