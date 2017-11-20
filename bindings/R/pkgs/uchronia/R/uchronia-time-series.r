@@ -348,7 +348,7 @@ mkSeriesRegularTstep <- function(startDate, x, isMissingFunc= function(val){val 
   }
   dimFunc <- getDataDimensionFunction(x)
   n <- dimFunc(x)
-  xts(x, startDate+(0:(n-1))*deltaTSec)
+  xts(x, createTimeSeriesIndex(startDate, n, deltaTSec))
 }
 
 #' Make UTC time series in a serializable form

@@ -213,16 +213,22 @@ asUchroniaData <- function(rData) {
   }
 }
 
-tsIndex <- function(geom) {
-  stopifnot(is(geom, "RegularTimeSeriesGeometry"))
-  len <- geom@Length
-  tssec <- geom@TimeStepSeconds
+createTimeSeriesIndex <- function(startDate, n, deltaTSec=as.numeric(3600)) {
+  stopifnot(is(startDate, "POSIXct"))
   # we need to make sure we work with numeric values, not integers, here, otherwise 
   # we will quickly bump into integer overflow. Ouch. Compare:
   # len <- 29618
   # tail(0:(len - 1) * tssec)
   # tail(0:(len - 1) * as.numeric(tssec))
-  return(geom@Start + 0:(len-1) * as.numeric(tssec))
+  return(startDate+(0:(n-1))*as.numeric(deltaTSec))
+}
+
+
+tsIndex <- function(geom) {
+  stopifnot(is(geom, "RegularTimeSeriesGeometry"))
+  len <- geom@Length
+  tssec <- geom@TimeStepSeconds
+  createTimeSeriesIndex(geom@Start, len, as.numeric(tssec))
 }
 
 #' Get the time index of a time series
