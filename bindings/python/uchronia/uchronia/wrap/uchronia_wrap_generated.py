@@ -657,3 +657,18 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary):
     result = nativelib.GetProviderTimeSeriesIdentifiers(dataLibrary)
     return(cinterop.mkExternalObjRef(result,'dummytype'))
 
+def TimeSeriesFromProviderTs_py(dataLibrary, variableIdentifier):
+    """
+    TimeSeriesFromProviderTs_py
+    
+    TimeSeriesFromProviderTs_py Wrapper function for TimeSeriesFromProviderTs
+    
+    :param dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
+    :param variableIdentifier Python type equivalent for C++ type const char*
+    :export
+    """
+    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
+    result = nativelib.TimeSeriesFromProviderTs(dataLibrary_xptr, variableIdentifier)
+    return cinterop.mkExternalObjRef(result, 'TIME_SERIES_PTR')
+
+

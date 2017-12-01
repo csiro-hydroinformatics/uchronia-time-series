@@ -12,14 +12,15 @@ A package to handle multidimensional time series and ensemble thereof
 \tabular{ll}{
 Package: \tab uchronia \cr
 Type: \tab Package\cr
-Version: \tab 0.3.3 \cr
-Date: \tab 2017-11-07 \cr
-Release Notes: \tab Add feature to transform each item in an ensemble forecast time series, with aggregation/disaggregation for now. Normal maintenance and tidy ups \cr
+Version: \tab 0.3.4 \cr
+Date: \tab 2017-12-01 \cr
+Release Notes: \tab Fix cases where constructing time series spanning multiple decades. R integer mode is too limited so cast time step to numerics. Add api entry for time series retrieval from provider time series. \cr
 License: \tab LGPL-3 \cr
 }
 
 \tabular{lll}{
 Version \tab Date \tab Notes \cr
+0.3.3 \tab 2017-11-07 \tab Add feature to transform each item in an ensemble forecast time series, with aggregation/disaggregation for now. Normal maintenance and tidy ups \cr
 0.3.2 \tab 2017-08-09 \tab Added features needed for RPP for interop from/to R. Enhanced some of the C API \cr
 0.3.1 \tab 2017-07-21 \tab Added features needed for RPP. Enhanced some of the C API. \cr
 0.2.2 \tab 2017-06-22 \tab Minor functions added. Note that the R package itself (i.e. not the C++ library) is still new and much documentation remains to be written/ported from other packages. \cr
