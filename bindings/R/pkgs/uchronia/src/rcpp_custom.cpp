@@ -118,7 +118,7 @@ Rcpp::S4 wrap_xptr(const XPtr<opaque_pointer_handle>& xptr, const string& type =
 Rcpp::S4 GetDatasetFromLibrary_Pkg(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataIdentifier)
 {
 	time_series_dimensions_description* desc = GetDataDimensionsDescription(dataLibrary->get(), dataIdentifier[0]);
-	size_t dimensions = desc->num_dimensions;
+	size_t dimensions = static_cast<size_t>(desc->num_dimensions);
 	DisposeDataDimensionsDescriptions(desc);
 	switch (dimensions)
 	{

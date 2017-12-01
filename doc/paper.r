@@ -26,6 +26,7 @@ which(is.na(blah))
 swift::plotXtsQuantiles(blah[1:218,])
 
 
+
 swiftr_dev() 
 library(swift)
 
@@ -49,10 +50,19 @@ print(geometryOf(tsEnsTs))
 # etc.
 fcast_times <- timeIndex(tsEnsTs)
 fcast_ind <- 200
+
+leadTimeCutoff <- 144 # just looks good enough - no other reason
 fcast <- getItem(tsEnsTs, i=fcast_ind, convertToXts = TRUE)
-plotXtsQuantiles(fcast[1:144,], title=paste("Streamflow forecast issue time ", fcast_times[fcast_ind]), xlabel='Lead time', ylabel='m3/s')
 geometryOf(fcast)
 
+plotEnsFcast <- function(fcast_ind) {
+  fcast <- getItem(tsEnsTs, i=fcast_ind, convertToXts = TRUE)
+  plotXtsQuantiles(fcast[1:leadTimeCutoff,], title=paste("Streamflow forecast issue time ", fcast_times[fcast_ind]), xlabel='Lead time', ylabel='m3/s')
+}
+
+plotEnsFcast(200)
+
+# For the modsim presentation - illustrating what an ensemble forecast time series is:
 
 
 GetEnsembleDatasetDataSummaries_R(data_lib)
