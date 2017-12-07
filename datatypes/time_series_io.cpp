@@ -759,6 +759,8 @@ namespace datatypes
 				char * tempchars;
 				tempchars = new char[size + 1];
 				code = nc_get_att_text(ncid, timeVarId, kUnitsAttName.c_str(), tempchars);
+				// make sure the string is null temrinated. Had issues where it is otherwise in files. May be more complicated story too.
+				tempchars[size] = '\0';
 
 				string units(tempchars);
 				delete[] tempchars;
