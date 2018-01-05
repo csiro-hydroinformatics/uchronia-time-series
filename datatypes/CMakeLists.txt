@@ -16,10 +16,10 @@ find_package (YAMLCPP REQUIRED)
 
 ## section: include directory
 INCLUDE_DIRECTORIES(
+	../include
     ${Boost_INCLUDE_DIRS}
     ${NETCDF_INCLUDE_DIRS}
 	${YAMLCPP_INCLUDE_DIRS}
-	../include
 )
 
 
