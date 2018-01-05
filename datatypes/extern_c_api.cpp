@@ -24,6 +24,10 @@ using TS = TimeSeries;
 using TSPTR = TS*;
 using TSL = TimeSeriesLibrary;
 
+
+// As we use the macro INTERCEPT_STD_EXCEPTION at compilation time we get lots of warnings.
+#pragma warning( disable: 4715)
+
 /***********************
 * FUNCTIONS NOT EXPORTED
 ************************/
@@ -252,7 +256,7 @@ int EnsembleSizeEnsembleTimeSeries(ENSEMBLE_PTR_TIME_SERIES_PTR ensSeries)
 {
 	TRY_START
 		MTSPTR d = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(ensSeries);
-	return d->Size();
+	return static_cast<int>(d->Size());
 	INTERCEPT_STD_EXCEPTION
 }
 

@@ -11,7 +11,7 @@ using namespace datatypes::timeseries;
 template<typename Tts>
 static void ToTimeSeriesGeomStruct(const Tts& ts, regular_time_series_geometry& g)
 {
-	g.length = ts.GetLength();
+	g.length = static_cast<int>(ts.GetLength());
 	ptime startpt = ts.GetStartDate();
 	g.time_step_seconds = ts.GetTimeStep().GetTimeStepDuration(startpt).total_seconds();
 	to_date_time_to_second(startpt, g.start);

@@ -1803,7 +1803,7 @@ namespace datatypes
 				if (identifier == string(""))
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Cannot get a time series if no identifier is provided.");
 
-				int index = this->IndexForIdentifier(identifier);
+				int index = static_cast<int>(this->IndexForIdentifier(identifier));
 				if(index < 0)
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Index not found for data identifier: " + identifier);
 

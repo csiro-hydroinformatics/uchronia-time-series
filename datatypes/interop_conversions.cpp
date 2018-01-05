@@ -91,7 +91,7 @@ TimeSeriesEnsemble<TimeSeries> MultiTsFromMultiTimeSeriesData(const multi_regula
 
 void CopyToMultiTimeSeriesData(const TimeSeriesEnsemble<TimeSeries>& mts, multi_regular_time_series_data& result)
 {
-	result.ensemble_size = mts.Size();
+	result.ensemble_size = static_cast<int>(mts.Size());
 	auto ts = mts.Get(0);
 	ToTimeSeriesGeomStruct<TimeSeries>(ts, result.time_series_geometry);
 	result.numeric_data = ToRawData(mts);
@@ -150,7 +150,7 @@ time_series_dimensions_description* ToTimeSeriesDimensionDescriptions(vector<Dat
 {
 	time_series_dimensions_description* res = new time_series_dimensions_description();
 	res->dimensions = new time_series_dimension_description[mts.size()];
-	res->num_dimensions = mts.size();
+	res->num_dimensions = static_cast<int>(mts.size());
 	for (size_t i = 0; i < mts.size(); i++)
 	{
 		res->dimensions[i].dimension_type = STRDUP(mts[i].DimensionType.c_str());

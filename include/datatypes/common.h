@@ -327,6 +327,12 @@ namespace datatypes
 			U::Dispose(v);
 		}
 
+		/**
+		 * \class	bad_lexical_cast
+		 *
+		 * \brief	A bad_lexical_cast that inherits from std::exception, unlike Boost's. Needed for graceful C API interop.
+		 */
+
 		class DATATYPES_DLL_LIB bad_lexical_cast : public std::invalid_argument
 		{
 		public:
@@ -364,7 +370,7 @@ namespace datatypes
 				try {
 					return boost::lexical_cast<Target>(strId);
 				}
-				catch (boost::bad_lexical_cast& c)
+				catch (boost::bad_lexical_cast&)
 				{
 					throw datatypes::utils::bad_lexical_cast(string("Failed to convert '") + strId + string("' via a lexical cast to a ") + string(typeid(Target).name()));
 				}
