@@ -65,7 +65,7 @@ TEST_CASE("Retrieving", "[uchronia]")
 
 	REQUIRE(StringProcessing::SetEquals(ids, TestDataLocationHelper::TestTsLibraryIdentifiers()));
 
-	auto streq = [&](char* a, char* b) 
+	auto streq = [&](const char* a, const char* b) 
 	{
 		REQUIRE(string(a) == string(b));		
 	};
@@ -91,6 +91,14 @@ TEST_CASE("Retrieving", "[uchronia]")
 	delete ds;
 }
 
+using DTH = datatypes::tests::DataTestHelper<double>;
+using EFTS = datatypes::timeseries::EnsembleForecastTimeSeries<>;
+using MTSPTR = EFTS::ElementType;
+using MTS = std::remove_pointer<MTSPTR>::type;
+using TS = datatypes::timeseries::TimeSeries;
+using TSPTR = TS*;
+using TSL = datatypes::timeseries::TimeSeriesLibrary;
+
 TEST_CASE("Converting to and from uchronia time series")
 {
 
@@ -110,10 +118,6 @@ TEST_CASE("Converting to and from uchronia time series")
 	//tsObs <- uchronia::TimeSeriesFromEnsembleOfTimeSeries_R(tsObservations, 0)
 	//
 	ptime start(date(2008, 3, 4));
-	using DTH = datatypes::tests::DataTestHelper<double>;
-	using EFTS = datatypes::timeseries::EnsembleForecastTimeSeries<>;
-	using MTSPTR = EFTS::ElementType;
-	using MTS = std::remove_pointer<MTSPTR>::type;
 
 	size_t nFcasts = 4;
 	size_t offsetForecasts = 1;
@@ -143,17 +147,13 @@ TEST_CASE("Converting to and from uchronia time series")
 		// Further testing for values is covered in the other unit test application and not duplicated here.
 	}
 
-	delete tsPtr;
-	delete fcastObs;
+	delete (scast<TS>(tsPtr));
+	delete (scast<EFTS>(fcastObs));
 
 }
 TEST_CASE("time series of ensembles of time series: items with missing values")
 {
 	ptime start(date(2008, 3, 4));
-	using DTH = datatypes::tests::DataTestHelper<double>;
-	using EFTS = datatypes::timeseries::EnsembleForecastTimeSeries<>;
-	using MTSPTR = EFTS::ElementType;
-	using MTS = std::remove_pointer<MTSPTR>::type;
 
 	size_t nFcasts = 4;
 	size_t offsetForecasts = 1;
@@ -189,6 +189,6 @@ TEST_CASE("time series of ensembles of time series: items with missing values")
 	REQUIRE(mdt->ensemble_size == ensSize);
 	DisposeMultiTimeSeriesData(mdt);
 
-	delete tsEnsTs;
+	delete (scast<TS>(tsEnsTs));
 
 }
