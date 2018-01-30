@@ -66,6 +66,7 @@ getDataSetIds <- function(dataLibrary) {
 }
 
 #' @export
+#' @importFrom xts as.xts
 `as.xts.ExternalObjRef` <-
 function(x, ...) {
   return(asXts(x))
@@ -200,7 +201,7 @@ toUchroniaSeries <- function(tsInfo) {
 #' (umts <- asUchroniaData(mts))
 #' asXts(umts)
 #' }
-#' @import cinterop
+#' @importFrom cinterop isExternalObjRef
 #' @export
 asUchroniaData <- function(rData) {
   if(xts::is.xts(rData)) {

@@ -5,14 +5,15 @@
 #' \tabular{ll}{
 #' Package: \tab uchronia \cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.3.5 \cr
-#' Date: \tab 2017-12-22 \cr
-#' Release Notes: \tab Fox: Workaround for netCDF files where the ANSI string for units are not null-terminated \cr
+#' Version: \tab 0.4.0 \cr
+#' Date: \tab 2018-01-30 \cr
+#' Release Notes: \tab Start to include visualisations using ggplot2: plotXtsQuantiles \cr
 #' License: \tab LGPL-3 \cr
 #' }
 #'
 #' \tabular{lll}{
 #' Version \tab Date \tab Notes \cr
+#' 0.3.5 \tab 2017-12-22 \tab Fix: Workaround for netCDF files where the ANSI string for units are not null-terminated. \cr
 #' 0.3.4 \tab 2017-12-01 \tab Fix cases where constructing time series spanning multiple decades. R integer mode is too limited so cast time step to numerics. Add api entry for time series retrieval from provider time series. \cr
 #' 0.3.3 \tab 2017-11-07 \tab Add feature to transform each item in an ensemble forecast time series, with aggregation/disaggregation for now. Normal maintenance and tidy ups \cr
 #' 0.3.2 \tab 2017-08-09 \tab Added features needed for RPP for interop from/to R. Enhanced some of the C API \cr
@@ -21,8 +22,6 @@
 #' 0.2.1 \tab 2017-05-26 \tab First version with port of all features from SWIFT, and succinct vignette \cr
 #' }
 #'
-#' @import xts
-#' @import lubridate
 #' @import msvs
 #' @import cinterop
 #'

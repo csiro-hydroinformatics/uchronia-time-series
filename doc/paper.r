@@ -57,7 +57,10 @@ geometryOf(fcast)
 
 plotEnsFcast <- function(fcast_ind) {
   fcast <- getItem(tsEnsTs, i=fcast_ind, convertToXts = TRUE)
-  plotXtsQuantiles(fcast[1:leadTimeCutoff,], title=paste("Streamflow forecast issue time ", fcast_times[fcast_ind]), xlabel='Lead time', ylabel='m3/s')
+  # 2018-01 Ported to uchronia  
+  plotXtsQuantiles(fcast[1:leadTimeCutoff,], probs = data.frame(low=c(.05, .1, .25), high=c(0.95, .9, 0.75)), 
+   title=paste("Streamflow forecast issue time ", fcast_times[fcast_ind]), xlabel='Lead time', ylabel='m3/s') +
+    ggplot2::scale_fill_brewer(palette="Blues")
 }
 
 plotEnsFcast(200)

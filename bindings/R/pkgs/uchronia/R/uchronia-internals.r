@@ -96,7 +96,7 @@ dateTimeIso8601Format <- function(toSeconds=TRUE, toMinutes=TRUE, toHours=TRUE) 
   return(dateIso8601Format())
 }
 
-#' @import lubridate
+#' @importFrom lubridate tz seconds
 basicTimeSeriesInfo <- function(header='uchronia time series:', spanInfo, bnbt = '\n\t', newline = '\n') {
   return(paste0(header, 
   bnbt, makeTextDate(spanInfo@Start, tz=lubridate::tz(spanInfo@Start)) , 

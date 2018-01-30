@@ -13,10 +13,11 @@
 #' ensTs <- xts(d, order.by=lubridate::origin + 0:(n-1) * 3600)
 #' xtsApply(ensTs)
 #' }
-#' @import xts
+#' @importFrom xts xts
+#' @importFrom zoo index
 #' @export
 xtsApply <- function(tSeries, func=function(x){ quantile(x, probs = c(0.05, 0.5, 0.95)) } )
 {
-  stopifnot(is.xts(tSeries))
-  xts(t(apply(tSeries, func, MARGIN=1)), order.by=zoo::index(tSeries))
+  stopifnot(xts::is.xts(tSeries))
+  xts::xts(t(apply(tSeries, func, MARGIN=1)), order.by=zoo::index(tSeries))
 }
