@@ -14,6 +14,7 @@ using namespace datatypes::timeseries;
 #define ENSEMBLE_FORECAST_TIME_SERIES_DOUBLE EnsembleForecastTimeSeries<DATATYPES_TIME_SERIES_DOUBLE>
 
 #define TS_GEOMETRY_PTR  regular_time_series_geometry*
+#define MULTI_REGULAR_SERIES_STRUCT_PTR multi_regular_time_series_data*
 #define DATE_TIME_INFO_PTR  date_time_to_second*
 
 ///////////////////////////////////////////////
