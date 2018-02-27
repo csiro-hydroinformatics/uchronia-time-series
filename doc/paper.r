@@ -60,7 +60,8 @@ plotEnsFcast <- function(fcast_ind) {
   # 2018-01 Ported to uchronia  
   plotXtsQuantiles(fcast[1:leadTimeCutoff,], probs = data.frame(low=c(.05, .1, .25), high=c(0.95, .9, 0.75)), 
    title=paste("Streamflow forecast issue time ", fcast_times[fcast_ind]), xlabel='Lead time', ylabel='m3/s') +
-    ggplot2::scale_fill_brewer(palette="Blues")
+    ggplot2::scale_fill_brewer(palette="Blues") +
+    ggplot2::theme_light()
 }
 
 plotEnsFcast(200)
@@ -92,5 +93,30 @@ fcast_times <- timeIndex(tsEnsTs)
 fcast_ind <- 200
 fcast <- getItem(tsEnsTs, i=fcast_ind, convertToXts = TRUE)
 plotXtsQuantiles(fcast[1:144,], title=paste("Streamflow forecast issue time ", fcast_times[fcast_ind]), xlabel='Lead time', ylabel='m3/s')
+
+###################
+# Hepex 2018
+###################
+
+simulation <- swift::loadSimulation('./Ovens.json')
+swift::warmup(simulation, start, warmupTo)
+dataLibrary <- uchronia::sampleTimeSeriesLibrary('Ovens')
+precipIds <- paste('subarea', getSubareaIds(simulation), 'P', sep='.')
+inputMap <- list(rain_fcast_ens=precipIds)
+ems <- createEnsembleForecastSimulation(simulation, 
+                                          dataLibrary, 
+                                          warmupTo,
+                                          endDate,
+                                          inputMap,
+                                          leadLength,
+                                          ensSize,
+                                          24)
+recordState(ems, outflowId)
+execSimulation(ems)
+forecasts <- getRecordedEnsembleForecast(ems, outflowId)
+plotXtsQuantiles(forecasts[[1]]) + 
+      ggplot2::scale_fill_brewer(palette="Blues") +
+      ggplot2::theme_light()
+
 
 

@@ -23,7 +23,7 @@ ensSize <- 2
 set.seed(1)
 x <- matrix(rnorm(n=len*ensSize), ncol=ensSize)
 ind <- lubridate::origin + (1:len) * lubridate::days(1)
-(mts <- xts(x, ind))
+(mts <- xts::xts(x, ind))
 (umts <- asUchroniaData(mts))
 asXts(umts)
 }
