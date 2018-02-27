@@ -317,9 +317,9 @@ namespace datatypes
 				this->timeStep = nca.GetTimeStep();
 				// TODO: should we allow ctor arguments to override the file information?
 				this->start = nca.GetStart();
-				this->length = nca.GetTimeLength();
-				this->ensembleSize = nca.GetEnsembleSize();
-				this->ensembleLength = nca.GetLeadTimeCount();
+				this->length = static_cast<int>(nca.GetTimeLength());
+				this->ensembleSize = static_cast<int>(nca.GetEnsembleSize());
+				this->ensembleLength = static_cast<int>(nca.GetLeadTimeCount());
 				// for SWIFT netCDF v1.x, same time step as the main one.
 				// TODO for SWIFT netCDF v2, not valid assumption
 				this->ensembleTimeStep = this->timeStep;

@@ -33,7 +33,33 @@ This document was generated from an R markdown file on `r as.character(Sys.time(
 
 # Purpose
 
-`uchronia` is a package to handle time series of varying geometry and dimensionality, using a C++ library for efficient handling "under the hood", but with conversion to `xts` time series in R when suitable. `uchronia` R package also has sibling in Python and MATLAB.
+`uchronia` is a package to handle time series of varying geometry and dimensionality, using a C++ library for efficient handling "under the hood", but with conversion to `xts` time series in R when suitable. `uchronia` R package also has siblings in Python and MATLAB.
 
-PLACEHOLDER TODO a vignette that does not rely on loading data but creating/manipulating live in-memory data.
+# Creating multidimensional time series
 
+The R package `xts` has good facilities for representing univariate and multivariate time series. Uchronia also can represent both. The present R package has a bidirectional conversions, and a presentation to users in `xts` form is actually sought whenever possible.
+
+```{r}
+set.seed(1)
+len <- 24
+ensSize <- 10
+x <- matrix(rnorm(n=len*ensSize), ncol=ensSize)
+ind <- lubridate::origin + (1:len) * lubridate::hours(1)
+(mts <- xts::xts(x, ind))
+(umts <- asUchroniaData(mts))
+asXts(umts)
+```
+
+However `xts` is lacking in representing concepts such as "time series of ensemble of time series" (note that this situation may change by the time you read this!). This type of data is essential in ensemble forecast modelling techniques. 
+
+```{r}
+n <- 31
+tensts <- createEnsembleForecastTimeSeries(tsStartEns=lubridate::origin, n, timeStep = "daily")
+getItem(tensts, 1)
+setItem(tensts, 1, mts)
+# TODO: should be able to also do:
+# setItem(tensts, 1, umts)
+str(getItem(tensts, 1))
+z <- getItem(tensts, 1, convertToXts=FALSE)
+str(z)
+```

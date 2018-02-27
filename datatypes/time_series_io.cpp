@@ -10,6 +10,9 @@
 #include "datatypes/time_series_store.hpp"
 #include "datatypes/datatypes_test_helpers.h"
 
+// quite a few functions in this file throw exceptions as fallback. 
+#pragma warning( disable: 4715)
+
 namespace datatypes
 {
 	namespace timeseries
@@ -480,7 +483,7 @@ namespace datatypes
 					if (timeStepAxis.total_seconds() == 0)
 					{
 						double by = 1.0;//Irregular time steps cannot work with multiples of themselves like regular time steps can, so this is always 1
-						double offset = timeStep.GetOffset(origin, start);
+						double offset = static_cast<double>(timeStep.GetOffset(origin, start));
 						return datatypes::utils::SeqVec<double>(offset, by, length);
 					}
 					else

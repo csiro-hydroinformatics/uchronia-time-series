@@ -299,7 +299,6 @@ subIdentifiers <- function(dataLibrary, identifier) {
 #' \dontrun{
 #' mkHourlySeries(lubridate::origin, -2:3/3.0)
 #' }
-#' @import xts
 mkHourlySeries <- function(startDate, x, isMissingFunc= function(val){val < 0}) {
   mkSeriesRegularTstep(startDate, x, isMissingFunc=isMissingFunc, deltaTSec=3600)
 }
@@ -317,7 +316,6 @@ mkHourlySeries <- function(startDate, x, isMissingFunc= function(val){val < 0}) 
 #' \dontrun{
 #' mkDailySeries(lubridate::origin, -2:3/3.0)
 #' }
-#' @import xts
 mkDailySeries <- function (startDate, x, isMissingFunc = function(val) {val < 0}) {
   mkSeriesRegularTstep(startDate, x, isMissingFunc=isMissingFunc, deltaTSec=3600*24)
 }
@@ -337,7 +335,7 @@ mkDailySeries <- function (startDate, x, isMissingFunc = function(val) {val < 0}
 #' mkSeriesRegularTstep(lubridate::origin, -2:3/3.0, deltaTSec=600)
 #' }
 #' @export
-#' @import xts
+#' @importFrom xts xts
 mkSeriesRegularTstep <- function(startDate, x, isMissingFunc= function(val){val < 0}, deltaTSec=3600) {
   # POSIXct[1:1], format: "1999-12-31 12:00:00"
   # [1] "1999-12-31 12:00:00 UTC"
@@ -348,7 +346,7 @@ mkSeriesRegularTstep <- function(startDate, x, isMissingFunc= function(val){val 
   }
   dimFunc <- getDataDimensionFunction(x)
   n <- dimFunc(x)
-  xts(x, createTimeSeriesIndex(startDate, n, deltaTSec))
+  xts::xts(x, createTimeSeriesIndex(startDate, n, deltaTSec))
 }
 
 #' Make UTC time series in a serializable form
@@ -384,7 +382,7 @@ serializableTs <- function(series) {
 #' @param varData a list with integer form of UTC POSIXct date stamps ('utcInt'), and series values ('x') as vector or matrix, and column names ('name') where name's value can be NULL.
 #' @return an xts time series with UTC time indexing
 #' @export
-#' @import xts
+#' @importFrom xts xts
 deserializeSampleSeries <- function(varData) {
   s <- varData$utcInt
   class(s) <- c('POSIXct', 'POSIXt') # important to set both
@@ -393,7 +391,7 @@ deserializeSampleSeries <- function(varData) {
   if(!is.numeric(x))  { stop(paste0('data is not a numeric mode: ', class(x)))}  
   dimFunc <- getDataDimensionFunction(x)
   if(dimFunc(x) != length(s)) stop('data and time indexing information have different length')
-  res <- xts(x, s)
+  res <- xts::xts(x, s)
   if('name' %in% names(varData)) {
     names(res) <- varData$name
   }
