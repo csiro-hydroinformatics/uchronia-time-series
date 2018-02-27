@@ -12,14 +12,15 @@ A package to handle multidimensional time series and ensemble thereof
 \tabular{ll}{
 Package: \tab uchronia \cr
 Type: \tab Package\cr
-Version: \tab 0.4.0 \cr
-Date: \tab 2018-01-30 \cr
-Release Notes: \tab Start to include visualisations using ggplot2: plotXtsQuantiles \cr
+Version: \tab 0.4.1 \cr
+Date: \tab 2018-02-27 \cr
+Release Notes: \tab Build against a version of the datatypes library with a changed API (no refernce ''&) \cr
 License: \tab LGPL-3 \cr
 }
 
 \tabular{lll}{
 Version \tab Date \tab Notes \cr
+0.4.0 \tab 2018-01-30 \tab Start to include visualisations using ggplot2: plotXtsQuantiles. \cr
 0.3.5 \tab 2017-12-22 \tab Fix: Workaround for netCDF files where the ANSI string for units are not null-terminated. \cr
 0.3.4 \tab 2017-12-01 \tab Fix cases where constructing time series spanning multiple decades. R integer mode is too limited so cast time step to numerics. Add api entry for time series retrieval from provider time series. \cr
 0.3.3 \tab 2017-11-07 \tab Add feature to transform each item in an ensemble forecast time series, with aggregation/disaggregation for now. Normal maintenance and tidy ups \cr

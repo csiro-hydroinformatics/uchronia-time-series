@@ -7,7 +7,7 @@
 CreateSingleTimeSeriesDataFromStruct_R(timeSeries)
 }
 \arguments{
-\item{timeSeries}{R type equivalent for C++ type const multi_regular_time_series_data&}
+\item{timeSeries}{R type equivalent for C++ type const multi_regular_time_series_data*}
 }
 \description{
 CreateSingleTimeSeriesDataFromStruct_R Wrapper function for CreateSingleTimeSeriesDataFromStruct

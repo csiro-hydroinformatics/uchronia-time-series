@@ -11,7 +11,7 @@ SetItemEnsembleTimeSeriesAsStructure_R(collection, i, values)
 
 \item{i}{R type equivalent for C++ type int}
 
-\item{values}{R type equivalent for C++ type const multi_regular_time_series_data&}
+\item{values}{R type equivalent for C++ type const multi_regular_time_series_data*}
 }
 \description{
 SetItemEnsembleTimeSeriesAsStructure_R Wrapper function for SetItemEnsembleTimeSeriesAsStructure

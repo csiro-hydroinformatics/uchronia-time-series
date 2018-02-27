@@ -7,7 +7,7 @@
 CreateEnsembleTimeSeriesDataFromStruct_R(ensSeries)
 }
 \arguments{
-\item{ensSeries}{R type equivalent for C++ type const multi_regular_time_series_data&}
+\item{ensSeries}{R type equivalent for C++ type const multi_regular_time_series_data*}
 }
 \description{
 CreateEnsembleTimeSeriesDataFromStruct_R Wrapper function for CreateEnsembleTimeSeriesDataFromStruct

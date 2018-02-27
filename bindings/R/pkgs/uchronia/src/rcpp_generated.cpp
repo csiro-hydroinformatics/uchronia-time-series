@@ -205,9 +205,9 @@ XPtr<opaque_pointer_handle> GetItemEnsembleTimeSeriesAsStructure_Rcpp(XPtr<opaqu
 // [[Rcpp::export]]
 void SetItemEnsembleTimeSeriesAsStructure_Rcpp(XPtr<opaque_pointer_handle> collection, IntegerVector i, const Rcpp::S4& values)
 {
-    multi_regular_time_series_data values_tsd = cinterop::timeseries::to_multi_regular_time_series_data(values);
-    SetItemEnsembleTimeSeriesAsStructure(collection->get(), as<int>(i), values_tsd);
-    cinterop::disposal::dispose_of<multi_regular_time_series_data>(values_tsd);
+    auto values_tsd_ptr_x = cinterop::timeseries::to_multi_regular_time_series_data(values); multi_regular_time_series_data* values_tsd_ptr = &values_tsd_ptr_x;
+    SetItemEnsembleTimeSeriesAsStructure(collection->get(), as<int>(i), values_tsd_ptr);
+    cinterop::disposal::dispose_of<multi_regular_time_series_data>(values_tsd_ptr_x);
 }
 
 // [[Rcpp::export]]
@@ -239,9 +239,9 @@ XPtr<opaque_pointer_handle> ToStructSingleTimeSeriesData_Rcpp(XPtr<opaque_pointe
 // [[Rcpp::export]]
 XPtr<opaque_pointer_handle> CreateEnsembleTimeSeriesDataFromStruct_Rcpp(const Rcpp::S4& ensSeries)
 {
-    multi_regular_time_series_data ensSeries_tsd = cinterop::timeseries::to_multi_regular_time_series_data(ensSeries);
-    auto result = CreateEnsembleTimeSeriesDataFromStruct(ensSeries_tsd);
-    cinterop::disposal::dispose_of<multi_regular_time_series_data>(ensSeries_tsd);
+    auto ensSeries_tsd_ptr_x = cinterop::timeseries::to_multi_regular_time_series_data(ensSeries); multi_regular_time_series_data* ensSeries_tsd_ptr = &ensSeries_tsd_ptr_x;
+    auto result = CreateEnsembleTimeSeriesDataFromStruct(ensSeries_tsd_ptr);
+    cinterop::disposal::dispose_of<multi_regular_time_series_data>(ensSeries_tsd_ptr_x);
     auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }
@@ -249,9 +249,9 @@ XPtr<opaque_pointer_handle> CreateEnsembleTimeSeriesDataFromStruct_Rcpp(const Rc
 // [[Rcpp::export]]
 XPtr<opaque_pointer_handle> CreateSingleTimeSeriesDataFromStruct_Rcpp(const Rcpp::S4& timeSeries)
 {
-    multi_regular_time_series_data timeSeries_tsd = cinterop::timeseries::to_multi_regular_time_series_data(timeSeries);
-    auto result = CreateSingleTimeSeriesDataFromStruct(timeSeries_tsd);
-    cinterop::disposal::dispose_of<multi_regular_time_series_data>(timeSeries_tsd);
+    auto timeSeries_tsd_ptr_x = cinterop::timeseries::to_multi_regular_time_series_data(timeSeries); multi_regular_time_series_data* timeSeries_tsd_ptr = &timeSeries_tsd_ptr_x;
+    auto result = CreateSingleTimeSeriesDataFromStruct(timeSeries_tsd_ptr);
+    cinterop::disposal::dispose_of<multi_regular_time_series_data>(timeSeries_tsd_ptr_x);
     auto x = XPtr<opaque_pointer_handle>(new opaque_pointer_handle(result));
     return x;
 }

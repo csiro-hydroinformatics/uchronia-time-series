@@ -40,6 +40,7 @@ This document was generated from an R markdown file on `r as.character(Sys.time(
 The R package `xts` has good facilities for representing univariate and multivariate time series. Uchronia also can represent both. The present R package has a bidirectional conversions, and a presentation to users in `xts` form is actually sought whenever possible.
 
 ```{r}
+library(uchronia)
 set.seed(1)
 len <- 24
 ensSize <- 10

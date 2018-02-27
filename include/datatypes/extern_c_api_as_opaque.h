@@ -14,3 +14,4 @@
 
 #define TS_GEOMETRY_PTR void*
 #define DATE_TIME_INFO_PTR void*
+#define MULTI_REGULAR_SERIES_STRUCT_PTR void*
