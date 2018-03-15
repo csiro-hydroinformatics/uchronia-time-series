@@ -124,3 +124,6 @@ datatypes/lib_paths.props
 *.opendb
 *.o
 Solutions/.vs/
+
+*.VC.db
+*.dll
