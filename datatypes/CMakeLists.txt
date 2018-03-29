@@ -14,8 +14,8 @@ list(APPEND CMAKE_MODULE_PATH "/data/projects/hydroforecast/usr/local/share/cmak
 # Set install dir for lib
 set(INSTALL_LIB_DIR lib CACHE PATH "/usr/lib")
 
-set(NETCDF_INCLUDE_DIR "/usr/local/include")
-set(NETCDF_LIBRARY "/usr/local/lib64")
+set(NETCDF_INCLUDE_DIR "/usr/local/include/")
+set(NETCDF_LIBRARY "/usr/local/lib64/libnetcdf.so")
 find_package (NetCDF REQUIRED)
 
 find_package (YAMLCPP REQUIRED)

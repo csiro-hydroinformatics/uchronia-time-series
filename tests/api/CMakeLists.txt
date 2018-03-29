@@ -12,6 +12,8 @@ else()
     list(APPEND CMAKE_MODULE_PATH "/data/projects/hydroforecast/usr/local/share/cmake/Modules") # Pearcey
 endif()
 
+set(NETCDF_INCLUDE_DIR "/usr/local/include/")
+set(NETCDF_LIBRARY "/usr/local/lib64/libnetcdf.so")
 find_package (NetCDF REQUIRED)
 
 find_package(Boost 1.48.0 COMPONENTS filesystem system date_time REQUIRED)
