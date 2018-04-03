@@ -23,7 +23,7 @@ appendStartupMsg <- function(msg) {
   tryCatch(library.dynam('uchronia_r', pkgname, libname),  
     error = function(e) { 
       if(Sys.info()['sysname'] == 'Windows') {
-        cat("Error loading shared library.\nYou may need to set up an environment variable LIBRARY_PATH.\nSee SWIFT documentation at [link TODO]\n") ; 
+        cat("Error loading shared library.\nYou may need to set up an environment variable LIBRARY_PATH.\nSee documentation at https://github.com/jmp75/streamflow-forecasting-tools-onboard/blob/master/doc/install_windows.md#adding-environment-variable-library_path\n") ; 
       } ; 
       stop(e) 
     } 
