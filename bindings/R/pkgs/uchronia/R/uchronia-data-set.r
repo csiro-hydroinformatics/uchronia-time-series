@@ -259,7 +259,6 @@ timeIndex <- function(tsInfo) {
   }
 }
 
-
 marshaledTimeSeriesToXts <- function(tsInfo) {
   stopifnot(is.list(tsInfo))
   if (!setequal( c('Start','tzone','Data','TimeStep'), names(tsInfo) )) {
@@ -268,7 +267,12 @@ marshaledTimeSeriesToXts <- function(tsInfo) {
   s <- tsInfo[['Start']]
   if(!is(s, 'POSIXct')) {stop('the Start component of the list must be a POSIXct')}
   timeZone <- tsInfo[['tzone']]
-  lubridate::tz(s) <- timeZone 
+  # I am discontinuing the use of lubridate::ts
+  # as it is possibly a root cause of https://jira.csiro.au/browse/WIRADA-504 
+  # as of lubridate version 1.7.2
+  # lubridate::tz(s) <- timeZone 
+  # instead using:
+  attr(s, 'tzone') <- timeZone
   values <- tsInfo[['Data']]
   tStep <- tsInfo[['TimeStep']]
   if(is.character(tStep)) {
