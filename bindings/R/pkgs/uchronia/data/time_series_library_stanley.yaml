@@ -1,0 +1,40 @@
+rain_fcast_ens:
+  Type: ts_ensemble_ts
+  Id: rain_fcast_ens
+  TimeStep: 24:00:00
+  Start: 2010-08-01T00:00:00
+  Length: 1249
+  # ForecastStartOffset: +00:00:00
+  EnsembleSize: 1
+  EnsembleLength: 80
+  EnsembleTimeStep: 01:00:00
+  Storage:
+    Type: single_nc_file
+    File: ./Stanley/ACCESSG00Z/3h/Stanley_ACCESSG00Z_3_2010080100_2013123100.nc
+    Var: rain_fcast_ens
+    Identifier: 1
+    Index: 0
+rain_obs_collection:
+  Type: single_collection
+  Id: rain_obs_collection
+  Storage:
+    Type: single_nc_file
+    File: ./Stanley/Obs/1h/Stanley_rain_utc_centro.nc
+    Var: rain_der
+rpp_output:
+  Type: ts_ensemble_ts
+  Id: rpp_output
+  TimeStep: 24:00:00
+  # the data for rainfall is deliberately set to start forecast not at midnight even if the file name stamp is so
+  Start: 2010-08-01T00:00:00
+  Length: 31
+  EnsembleSize: 1000
+  EnsembleLength: 80
+  EnsembleTimeStep: 01:00:00
+  Storage:
+    Type: multiple_nc_files_filename_date_pattern
+    File: ./Stanley/RPPe_ACCESSG00Z_Obs/3h/Stanley_RPP_ACCESSG00Z_Obs_3_{0}00.nc
+    Var: rain_fcast_ens
+    Identifier: 1
+    Index: 0
+
