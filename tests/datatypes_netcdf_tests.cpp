@@ -520,6 +520,47 @@ TEST_CASE("Write and read a single netcdf time series file")
 	delete outputTs;
 }
 
+TEST_CASE("Write and read two series with a single netcdf time series file")
+{
+	auto temp = FileSystemHelper::GetTempFile("single_%%%%%%%%%%%%.nc");
+	std::string testFilePath = temp.generic_string();
+	TempFileCleaner cleaner(testFilePath);
+
+	size_t numberOfTimeSteps = 10;
+	auto inputTimeSeriesDataA = DTH::SeqVec(1, 1, numberOfTimeSteps);
+	auto inputTimeSeriesDataB = DTH::SeqVec(11, 1, numberOfTimeSteps);
+	ptime startDate = from_iso_string("20000101T000000");
+
+	TimeStep timeStep = TimeStep::GetHourly();
+
+	TTimeSeries<double> inputTsA(inputTimeSeriesDataA, startDate, timeStep);
+	TTimeSeries<double> inputTsB(inputTimeSeriesDataB, startDate, timeStep);
+
+	std::map<string, TTimeSeries<double>*> data;
+	data["A"] = &inputTsA;
+	data["B"] = &inputTsB;
+
+	std::map<string, string> idMap;
+	idMap["A"] = "1";
+	idMap["B"] = "2";
+
+	string varOneName = "q_sim";
+	TimeSeriesIOHelper<double>::Write(varOneName, data, idMap, testFilePath);
+
+	NetCdfSingleSeriesStore<double> readSeries(testFilePath, varOneName, "1");
+	REQUIRE_EQUAL(0, readSeries.GetEnsembleSize());
+	REQUIRE_EQUAL(0, readSeries.GetLeadTimeCount());
+	REQUIRE_EQUAL(numberOfTimeSteps, readSeries.GetTimeLength());
+
+	TTimeSeries<double>* outputTs = nullptr;
+	outputTs = readSeries.Read();
+	REQUIRE(DTH::AreEqual(outputTs, &inputTsA));
+	REQUIRE_EQUAL(numberOfTimeSteps, outputTs->GetLength());
+	REQUIRE_EQUAL(startDate, outputTs->GetStartDate());
+	REQUIRE_EQUAL(timeStep.GetName(), outputTs->GetTimeStep().GetName());
+	delete outputTs;
+}
+
 TEST_CASE("Write and read an ensemble netcdf file")
 {
 	auto temp = FileSystemHelper::GetTempFile("ensemble_%%%%%%%%%%%%.nc");
