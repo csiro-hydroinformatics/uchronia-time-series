@@ -1605,6 +1605,16 @@ namespace datatypes
 				return this->identifier;
 			}
 
+			/**
+			* \brief	Sets the current station identifier
+			*
+			* \param	ident	String identifier to set as the identifier the NetCDF store is to operate on.
+			*/
+			void SetIdentifier(string ident)
+			{
+				this->identifier = ident;
+			}
+
 			virtual vector<string> GetIdentifiers() const
 			{
 				if (identifier.empty())
@@ -2152,6 +2162,16 @@ public:
 				return SingleNetCdfFileStore<T>::GetIdentifiers();
 				vector<string> x = { SingleNetCdfFileStore<T>::GetIdentifier() };
 				return x;
+			}
+
+			/**
+			* \brief	Sets the current station identifier
+			*
+			* \param	ident	String identifier to set as the identifier the NetCDF store is to operate on.
+			*/
+			void SetIdentifier(string ident)
+			{
+				SingleNetCdfFileStore<T>::SetIdentifier(ident);
 			}
 
 			/**
