@@ -10,5 +10,7 @@ if((Sys.getenv('COMPILE_WITH_VCPP') != '')) {
 # nothing
 } else {
 	files <- Sys.glob(paste0("*", SHLIB_EXT))
+    message("about to call msvs:::custom_install_shlib", domain = NA)
 	msvs:::custom_install_shlib(files, srclibname='uchronia_r', shlib_ext=SHLIB_EXT, r_arch=R_ARCH, r_package_dir=R_PACKAGE_DIR, windows=WINDOWS, group.writable=FALSE)
+    message("called msvs:::custom_install_shlib", domain = NA)
 }

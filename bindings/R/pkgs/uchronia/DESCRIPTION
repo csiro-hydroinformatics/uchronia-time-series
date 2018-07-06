@@ -1,8 +1,8 @@
 Package: uchronia
 Type: Package
 Title: Handling large multidimensional time series
-Version: 0.4.2
-Date: 2018-04-06
+Version: 0.4.3
+Date: 2018-07-06
 Authors@R: c( person("Jean-Michel", "Perraud", email =
     "jean-michel.perraud@csiro.au", role = c("aut", "cre")))
 Author: Jean-Michel Perraud [aut, cre]
@@ -17,7 +17,7 @@ Imports:
     methods,
     lubridate,
     cinterop (>= 0.2.4),
-    msvs (>= 0.1.1),
+    msvs (>= 0.3.0),
     xts,
     ggplot2,
     dplyr,
