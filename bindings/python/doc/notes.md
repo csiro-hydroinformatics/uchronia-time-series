@@ -30,17 +30,22 @@ if(Sys.info()['sysname'] == 'Windows') {
 include_dirs <- file.path(uchronia_root, "include/datatypes")
 if(Sys.info()['sysname'] == 'Windows') {
     include_dirs <- c(include_dirs, 'c:/local/include')
+    libp <- Sys.getenv("PATH")
+    p <- 'C:/Rtools/mingw_64/bin/'
+    libp <- paste(p, libp, sep = ";")
+    Sys.setenv(PATH = libp)
 }
+Sys.which('gcc')
 
 api_importer_file <- file.path(uchronia_root, "bindings/codegen/api_importer.cpp")
-uchronia_py_pkg_dir <- file.path(uchronia_root, "bindings/python/uchronia")
-uchronia_cdefs_dir <- file.path(uchronia_root, "bindings/python/uchronia/data")
+uchronia_py_pkgs_dir <- file.path(uchronia_root, "bindings/python/uchronia")
+uchronia_cdefs_dir <- file.path(uchronia_py_pkgs_dir, "uchronia/data")
 
 preprocess_result <- apply_c_preprocessor(include_dirs, api_importer_file, preprocessed_cpp_file)
 create_cffi_cdefs(preprocessed_cpp_file, outdir=uchronia_cdefs_dir, pattern_start_structs="typedef struct _date_time_to_second", extern_c_start_match='char.+GetLastStdExceptionMessage.*' , extern_c_end_match='^\\}')
 ```
 
-Then we can generate bindings including the python wrappers. 
+Then we can generate bindings including the python wrappers.
 
 ```r
 library(capigen)

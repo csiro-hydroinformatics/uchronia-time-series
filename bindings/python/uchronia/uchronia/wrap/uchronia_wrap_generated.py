@@ -448,7 +448,7 @@ def SetItemEnsembleForecastTimeSeriesAsStructure_py(series, i, values):
     
     :param series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
     :param i Python type equivalent for C++ type int
-    :param values Python type equivalent for C++ type const multi_regular_time_series_data&
+    :param values Python type equivalent for C++ type const multi_regular_time_series_data*
     :export
     """
     series_xptr = cinterop.getExternalXptr(series)
@@ -463,7 +463,7 @@ def SetItemEnsembleTimeSeriesAsStructure_py(collection, i, values):
     
     :param collection Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
     :param i Python type equivalent for C++ type int
-    :param values Python type equivalent for C++ type const multi_regular_time_series_data&
+    :param values Python type equivalent for C++ type const multi_regular_time_series_data*
     :export
     """
     collection_xptr = cinterop.getExternalXptr(collection)
@@ -523,7 +523,7 @@ def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries):
     
     CreateEnsembleTimeSeriesDataFromStruct_py Wrapper function for CreateEnsembleTimeSeriesDataFromStruct
     
-    :param ensSeries Python type equivalent for C++ type const multi_regular_time_series_data&
+    :param ensSeries Python type equivalent for C++ type const multi_regular_time_series_data*
     :export
     """
     result = nativelib.CreateEnsembleTimeSeriesDataFromStruct(ensSeries)
@@ -536,7 +536,7 @@ def CreateSingleTimeSeriesDataFromStruct_py(timeSeries):
     
     CreateSingleTimeSeriesDataFromStruct_py Wrapper function for CreateSingleTimeSeriesDataFromStruct
     
-    :param timeSeries Python type equivalent for C++ type const multi_regular_time_series_data&
+    :param timeSeries Python type equivalent for C++ type const multi_regular_time_series_data*
     :export
     """
     result = nativelib.CreateSingleTimeSeriesDataFromStruct(timeSeries)

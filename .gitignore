@@ -127,3 +127,5 @@ Solutions/.vs/
 
 *.VC.db
 *.dll
+bindings/python/uchronia/uchronia.egg-info/
+*.pyc
