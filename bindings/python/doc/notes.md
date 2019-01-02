@@ -1,7 +1,14 @@
 
-# Overview
+# Python bindings using codegen
 
-As of 2017-07-10 the following high level calls are possible to generate/update the low-level glue code for python (and R). The R codegen is working and stable; Python codegen is a work in progress.
+## Working notes
+
+Jan 2019
+
+Moving to use [refcount](https://pypi.org/project/refcount/) for managing c++ objects. Using bindings\python\uchronia\tests\test_low_level.py as a start. Got to the point where I can set the lowest level. Now time to get the equivalent of R's `cinterop.mkExternalObjRef(result, 'ENSEMBLE_DATA_SET_PTR')` working - for now there is no cinterop package. Also:
+    * `values_charpp = to_c_char_ptrptr(values)` which is more equivalent to c++. 
+
+Should I have a cinterop package? probably,  because some data marshalling has nothing to do with refcount. However, the wrapping/unwrapping using refcount maybe should not be in a cinterop package, but refcount itself. New release, too...
 
 ## Dependencies
 
@@ -10,6 +17,8 @@ As of 2017-07-10 the following high level calls are possible to generate/update 
 * re-using [rClr](https://github.com/jmp75/rClr) for this mix of R and .net.
 
 ## Generating code:
+
+As of 2017-07-10 the following high level calls are possible to generate/update the low-level glue code for python (and R). The R codegen is working and stable; Python codegen is a work in progress.
 
 ### Preprocessing C API files to extract C code suitable for CFFI
 

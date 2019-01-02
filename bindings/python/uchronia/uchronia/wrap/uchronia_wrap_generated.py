@@ -5,16 +5,31 @@
 # 
 ##################
 
+
+
+from refcount.interop import *
+
+def to_multi_regular_time_series_data(timeSeries):
+    if is_cffi_native_handle(timeSeries):
+        return unwrap_cffi_native_handle(timeSeries)
+    else:
+        return timeSeries
+
+def custom_wrap_cffi_native_handle(obj, type_id="", release_callback = None):
+    if release_callback is None:
+        release_callback = DisposeSharedPointer_py
+    return wrap_cffi_native_handle(obj, type_id, release_callback)
+
 def GetLastStdExceptionMessage_py():
     """
     GetLastStdExceptionMessage_py
     
     GetLastStdExceptionMessage_py Wrapper function for GetLastStdExceptionMessage
     
-    :export
+    
     """
-    result = nativelib.GetLastStdExceptionMessage()
-    return cinterop.mkExternalObjRef(result, 'char*')
+    result = uchronia_so.GetLastStdExceptionMessage()
+    return custom_wrap_cffi_native_handle(result, 'char*')
 
 
 def RegisterExceptionCallback_py(callback):
@@ -23,10 +38,10 @@ def RegisterExceptionCallback_py(callback):
     
     RegisterExceptionCallback_py Wrapper function for RegisterExceptionCallback
     
-    :param callback Python type equivalent for C++ type const void*
-    :export
+     callback Python type equivalent for C++ type const void*
+    
     """
-    nativelib.RegisterExceptionCallback(callback)
+    uchronia_so.RegisterExceptionCallback(callback)
 
 
 def DisposeSharedPointer_py(ptr):
@@ -35,11 +50,11 @@ def DisposeSharedPointer_py(ptr):
     
     DisposeSharedPointer_py Wrapper function for DisposeSharedPointer
     
-    :param ptr Python type equivalent for C++ type VOID_PTR_PROVIDER_PTR
-    :export
+     ptr Python type equivalent for C++ type VOID_PTR_PROVIDER_PTR
+    
     """
-    ptr_xptr = cinterop.getExternalXptr(ptr)
-    nativelib.DisposeSharedPointer(ptr_xptr)
+    ptr_xptr = unwrap_cffi_native_handle(ptr)
+    uchronia_so.DisposeSharedPointer(ptr_xptr)
 
 
 def DeleteAnsiStringArray_py(values, arrayLength):
@@ -48,12 +63,12 @@ def DeleteAnsiStringArray_py(values, arrayLength):
     
     DeleteAnsiStringArray_py Wrapper function for DeleteAnsiStringArray
     
-    :param values Python type equivalent for C++ type char**
-    :param arrayLength Python type equivalent for C++ type int
-    :export
+     values Python type equivalent for C++ type char**
+     arrayLength Python type equivalent for C++ type int
+    
     """
     values_charpp = to_c_char_ptrptr(values)
-    nativelib.DeleteAnsiStringArray(values_charpp, arrayLength)
+    uchronia_so.DeleteAnsiStringArray(values_charpp, arrayLength)
 
 
 def DeleteAnsiString_py(value):
@@ -62,10 +77,10 @@ def DeleteAnsiString_py(value):
     
     DeleteAnsiString_py Wrapper function for DeleteAnsiString
     
-    :param value Python type equivalent for C++ type const char*
-    :export
+     value Python type equivalent for C++ type const char*
+    
     """
-    nativelib.DeleteAnsiString(value)
+    uchronia_so.DeleteAnsiString(value)
 
 
 def DeleteDoubleArray_py(value):
@@ -74,10 +89,10 @@ def DeleteDoubleArray_py(value):
     
     DeleteDoubleArray_py Wrapper function for DeleteDoubleArray
     
-    :param value Python type equivalent for C++ type double*
-    :export
+     value Python type equivalent for C++ type double*
+    
     """
-    nativelib.DeleteDoubleArray(value)
+    uchronia_so.DeleteDoubleArray(value)
 
 
 def SetTimeSeriesMissingValueValue_py(missingValueValue):
@@ -86,10 +101,10 @@ def SetTimeSeriesMissingValueValue_py(missingValueValue):
     
     SetTimeSeriesMissingValueValue_py Wrapper function for SetTimeSeriesMissingValueValue
     
-    :param missingValueValue Python type equivalent for C++ type double
-    :export
+     missingValueValue Python type equivalent for C++ type double
+    
     """
-    nativelib.SetTimeSeriesMissingValueValue(missingValueValue)
+    uchronia_so.SetTimeSeriesMissingValueValue(missingValueValue)
 
 
 def LoadEnsembleDataset_py(libraryIdentifier, dataPath):
@@ -98,12 +113,12 @@ def LoadEnsembleDataset_py(libraryIdentifier, dataPath):
     
     LoadEnsembleDataset_py Wrapper function for LoadEnsembleDataset
     
-    :param libraryIdentifier Python type equivalent for C++ type const char*
-    :param dataPath Python type equivalent for C++ type const char*
-    :export
+     libraryIdentifier Python type equivalent for C++ type const char*
+     dataPath Python type equivalent for C++ type const char*
+    
     """
-    result = nativelib.LoadEnsembleDataset(libraryIdentifier, dataPath)
-    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_DATA_SET_PTR')
+    result = uchronia_so.LoadEnsembleDataset(libraryIdentifier, dataPath)
+    return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_DATA_SET_PTR')
 
 
 def CreateEnsembleDataset_py(type):
@@ -112,11 +127,11 @@ def CreateEnsembleDataset_py(type):
     
     CreateEnsembleDataset_py Wrapper function for CreateEnsembleDataset
     
-    :param type Python type equivalent for C++ type const char*
-    :export
+     type Python type equivalent for C++ type const char*
+    
     """
-    result = nativelib.CreateEnsembleDataset(type)
-    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_DATA_SET_PTR')
+    result = uchronia_so.CreateEnsembleDataset(type)
+    return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_DATA_SET_PTR')
 
 
 
@@ -126,11 +141,11 @@ def GetEnsembleDatasetDataIdentifiers_py(dataLibrary):
     
     GetEnsembleDatasetDataIdentifiers_py Wrapper function for GetEnsembleDatasetDataIdentifiers
     
-    :export
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    result = nativelib.GetEnsembleDatasetDataIdentifiers(dataLibrary)
-    return(cinterop.mkExternalObjRef(result,'dummytype'))
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    result = uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary)
+    return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
 
 def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary, dataCollectionId):
@@ -139,11 +154,11 @@ def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary, dataCollectionId):
     
     GetEnsembleDatasetDataSubIdentifiers_py Wrapper function for GetEnsembleDatasetDataSubIdentifiers
     
-    :export
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    result = nativelib.GetEnsembleDatasetDataSubIdentifiers(dataLibrary, dataCollectionId)
-    return(cinterop.mkExternalObjRef(result,'dummytype'))
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    result = uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary, dataCollectionId)
+    return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
 
 def GetEnsembleDatasetDataSummaries_py(dataLibrary):
@@ -152,11 +167,11 @@ def GetEnsembleDatasetDataSummaries_py(dataLibrary):
     
     GetEnsembleDatasetDataSummaries_py Wrapper function for GetEnsembleDatasetDataSummaries
     
-    :export
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    result = nativelib.GetEnsembleDatasetDataSummaries(dataLibrary)
-    return(cinterop.mkExternalObjRef(result,'dummytype'))
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    result = uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary)
+    return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
 def GetDataDimensionsDescription_py(dataLibrary, dataId):
     """
@@ -164,13 +179,13 @@ def GetDataDimensionsDescription_py(dataLibrary, dataId):
     
     GetDataDimensionsDescription_py Wrapper function for GetDataDimensionsDescription
     
-    :param dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-    :param dataId Python type equivalent for C++ type const char*
-    :export
+     dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
+     dataId Python type equivalent for C++ type const char*
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    result = nativelib.GetDataDimensionsDescription(dataLibrary_xptr, dataId)
-    return cinterop.mkExternalObjRef(result, 'time_series_dimensions_description*')
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    result = uchronia_so.GetDataDimensionsDescription(dataLibrary_xptr, dataId)
+    return custom_wrap_cffi_native_handle(result, 'time_series_dimensions_description*')
 
 
 def EnsembleSizeEnsembleTimeSeries_py(ensSeries):
@@ -179,12 +194,12 @@ def EnsembleSizeEnsembleTimeSeries_py(ensSeries):
     
     EnsembleSizeEnsembleTimeSeries_py Wrapper function for EnsembleSizeEnsembleTimeSeries
     
-    :param ensSeries Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-    :export
+     ensSeries Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+    
     """
-    ensSeries_xptr = cinterop.getExternalXptr(ensSeries)
-    result = nativelib.EnsembleSizeEnsembleTimeSeries(ensSeries_xptr)
-    return cinterop.mkExternalObjRef(result, 'int')
+    ensSeries_xptr = unwrap_cffi_native_handle(ensSeries)
+    result = uchronia_so.EnsembleSizeEnsembleTimeSeries(ensSeries_xptr)
+    return custom_wrap_cffi_native_handle(result, 'int')
 
 
 def DisposeDataDimensionsDescriptions_py(data):
@@ -193,10 +208,10 @@ def DisposeDataDimensionsDescriptions_py(data):
     
     DisposeDataDimensionsDescriptions_py Wrapper function for DisposeDataDimensionsDescriptions
     
-    :param data Python type equivalent for C++ type time_series_dimensions_description*
-    :export
+     data Python type equivalent for C++ type time_series_dimensions_description*
+    
     """
-    nativelib.DisposeDataDimensionsDescriptions(data)
+    uchronia_so.DisposeDataDimensionsDescriptions(data)
 
 
 def CreateEnsembleForecastTimeSeries_py(start, length, timeStepName):
@@ -205,13 +220,15 @@ def CreateEnsembleForecastTimeSeries_py(start, length, timeStepName):
     
     CreateEnsembleForecastTimeSeries_py Wrapper function for CreateEnsembleForecastTimeSeries
     
-    :param start Python type equivalent for C++ type date_time_to_second
-    :param length Python type equivalent for C++ type int
-    :param timeStepName Python type equivalent for C++ type const char*
-    :export
+     start Python type equivalent for C++ type date_time_to_second
+     length Python type equivalent for C++ type int
+     timeStepName Python type equivalent for C++ type const char*
+    
     """
-    result = nativelib.CreateEnsembleForecastTimeSeries(start, length, timeStepName)
-    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
+    start_datetime = to_date_time_to_second(start)
+    result = uchronia_so.CreateEnsembleForecastTimeSeries(start_datetime, length, timeStepName)
+    # start_datetime - no cleanup needed
+    return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
 def GetDatasetSingleTimeSeries_py(dataLibrary, dataId):
@@ -220,13 +237,13 @@ def GetDatasetSingleTimeSeries_py(dataLibrary, dataId):
     
     GetDatasetSingleTimeSeries_py Wrapper function for GetDatasetSingleTimeSeries
     
-    :param dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-    :param dataId Python type equivalent for C++ type const char*
-    :export
+     dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
+     dataId Python type equivalent for C++ type const char*
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    result = nativelib.GetDatasetSingleTimeSeries(dataLibrary_xptr, dataId)
-    return cinterop.mkExternalObjRef(result, 'TIME_SERIES_PTR')
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    result = uchronia_so.GetDatasetSingleTimeSeries(dataLibrary_xptr, dataId)
+    return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
 def GetDatasetEnsembleTimeSeries_py(dataLibrary, dataEnsembleId):
@@ -235,13 +252,13 @@ def GetDatasetEnsembleTimeSeries_py(dataLibrary, dataEnsembleId):
     
     GetDatasetEnsembleTimeSeries_py Wrapper function for GetDatasetEnsembleTimeSeries
     
-    :param dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-    :param dataEnsembleId Python type equivalent for C++ type const char*
-    :export
+     dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
+     dataEnsembleId Python type equivalent for C++ type const char*
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    result = nativelib.GetDatasetEnsembleTimeSeries(dataLibrary_xptr, dataEnsembleId)
-    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    result = uchronia_so.GetDatasetEnsembleTimeSeries(dataLibrary_xptr, dataEnsembleId)
+    return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
 def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary, dataId):
@@ -250,13 +267,13 @@ def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary, dataId):
     
     GetDatasetEnsembleForecastTimeSeries_py Wrapper function for GetDatasetEnsembleForecastTimeSeries
     
-    :param dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-    :param dataId Python type equivalent for C++ type const char*
-    :export
+     dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
+     dataId Python type equivalent for C++ type const char*
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    result = nativelib.GetDatasetEnsembleForecastTimeSeries(dataLibrary_xptr, dataId)
-    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    result = uchronia_so.GetDatasetEnsembleForecastTimeSeries(dataLibrary_xptr, dataId)
+    return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
 def SaveSingleTimeSeriesToNetcdf_py(timeSeries, filename, overwrite):
@@ -265,13 +282,13 @@ def SaveSingleTimeSeriesToNetcdf_py(timeSeries, filename, overwrite):
     
     SaveSingleTimeSeriesToNetcdf_py Wrapper function for SaveSingleTimeSeriesToNetcdf
     
-    :param timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
-    :param filename Python type equivalent for C++ type char*
-    :param overwrite Python type equivalent for C++ type bool
-    :export
+     timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
+     filename Python type equivalent for C++ type char*
+     overwrite Python type equivalent for C++ type bool
+    
     """
-    timeSeries_xptr = cinterop.getExternalXptr(timeSeries)
-    nativelib.SaveSingleTimeSeriesToNetcdf(timeSeries_xptr, filename, overwrite)
+    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
+    uchronia_so.SaveSingleTimeSeriesToNetcdf(timeSeries_xptr, filename, overwrite)
 
 
 def SaveEnsembleTimeSeriesToNetcdf_py(collection, filename, overwrite):
@@ -280,13 +297,13 @@ def SaveEnsembleTimeSeriesToNetcdf_py(collection, filename, overwrite):
     
     SaveEnsembleTimeSeriesToNetcdf_py Wrapper function for SaveEnsembleTimeSeriesToNetcdf
     
-    :param collection Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-    :param filename Python type equivalent for C++ type char*
-    :param overwrite Python type equivalent for C++ type bool
-    :export
+     collection Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+     filename Python type equivalent for C++ type char*
+     overwrite Python type equivalent for C++ type bool
+    
     """
-    collection_xptr = cinterop.getExternalXptr(collection)
-    nativelib.SaveEnsembleTimeSeriesToNetcdf(collection_xptr, filename, overwrite)
+    collection_xptr = unwrap_cffi_native_handle(collection)
+    uchronia_so.SaveEnsembleTimeSeriesToNetcdf(collection_xptr, filename, overwrite)
 
 
 def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs, filename, overwrite):
@@ -295,13 +312,13 @@ def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs, filename, overwrite):
     
     SaveEnsembleForecastTimeSeriesToNetcdf_py Wrapper function for SaveEnsembleForecastTimeSeriesToNetcdf
     
-    :param tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param filename Python type equivalent for C++ type char*
-    :param overwrite Python type equivalent for C++ type bool
-    :export
+     tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+     filename Python type equivalent for C++ type char*
+     overwrite Python type equivalent for C++ type bool
+    
     """
-    tsEnsTs_xptr = cinterop.getExternalXptr(tsEnsTs)
-    nativelib.SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs_xptr, filename, overwrite)
+    tsEnsTs_xptr = unwrap_cffi_native_handle(tsEnsTs)
+    uchronia_so.SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs_xptr, filename, overwrite)
 
 
 def IsMissingValueItemEnsembleForecastTimeSeries_py(series, i):
@@ -310,13 +327,13 @@ def IsMissingValueItemEnsembleForecastTimeSeries_py(series, i):
     
     IsMissingValueItemEnsembleForecastTimeSeries_py Wrapper function for IsMissingValueItemEnsembleForecastTimeSeries
     
-    :param series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param i Python type equivalent for C++ type int
-    :export
+     series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+     i Python type equivalent for C++ type int
+    
     """
-    series_xptr = cinterop.getExternalXptr(series)
-    result = nativelib.IsMissingValueItemEnsembleForecastTimeSeries(series_xptr, i)
-    return cinterop.mkExternalObjRef(result, 'bool')
+    series_xptr = unwrap_cffi_native_handle(series)
+    result = uchronia_so.IsMissingValueItemEnsembleForecastTimeSeries(series_xptr, i)
+    return custom_wrap_cffi_native_handle(result, 'bool')
 
 
 def GetItemEnsembleForecastTimeSeries_py(efts, i):
@@ -325,13 +342,13 @@ def GetItemEnsembleForecastTimeSeries_py(efts, i):
     
     GetItemEnsembleForecastTimeSeries_py Wrapper function for GetItemEnsembleForecastTimeSeries
     
-    :param efts Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param i Python type equivalent for C++ type int
-    :export
+     efts Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+     i Python type equivalent for C++ type int
+    
     """
-    efts_xptr = cinterop.getExternalXptr(efts)
-    result = nativelib.GetItemEnsembleForecastTimeSeries(efts_xptr, i)
-    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
+    efts_xptr = unwrap_cffi_native_handle(efts)
+    result = uchronia_so.GetItemEnsembleForecastTimeSeries(efts_xptr, i)
+    return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
 def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs, index):
@@ -340,13 +357,13 @@ def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs, index):
     
     TimeSeriesFromEnsembleOfTimeSeries_py Wrapper function for TimeSeriesFromEnsembleOfTimeSeries
     
-    :param collectionTs Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-    :param index Python type equivalent for C++ type int
-    :export
+     collectionTs Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+     index Python type equivalent for C++ type int
+    
     """
-    collectionTs_xptr = cinterop.getExternalXptr(collectionTs)
-    result = nativelib.TimeSeriesFromEnsembleOfTimeSeries(collectionTs_xptr, index)
-    return cinterop.mkExternalObjRef(result, 'TIME_SERIES_PTR')
+    collectionTs_xptr = unwrap_cffi_native_handle(collectionTs)
+    result = uchronia_so.TimeSeriesFromEnsembleOfTimeSeries(collectionTs_xptr, index)
+    return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
 def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts, indexInIssueTime, indexInForecastTime):
@@ -355,14 +372,14 @@ def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts, indexInIssueTime, in
     
     TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py Wrapper function for TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries
     
-    :param efts Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param indexInIssueTime Python type equivalent for C++ type int
-    :param indexInForecastTime Python type equivalent for C++ type int
-    :export
+     efts Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+     indexInIssueTime Python type equivalent for C++ type int
+     indexInForecastTime Python type equivalent for C++ type int
+    
     """
-    efts_xptr = cinterop.getExternalXptr(efts)
-    result = nativelib.TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts_xptr, indexInIssueTime, indexInForecastTime)
-    return cinterop.mkExternalObjRef(result, 'TIME_SERIES_PTR')
+    efts_xptr = unwrap_cffi_native_handle(efts)
+    result = uchronia_so.TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts_xptr, indexInIssueTime, indexInForecastTime)
+    return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
 def GetValueFromUnivariateTimeSeries_py(ts, index):
@@ -371,13 +388,13 @@ def GetValueFromUnivariateTimeSeries_py(ts, index):
     
     GetValueFromUnivariateTimeSeries_py Wrapper function for GetValueFromUnivariateTimeSeries
     
-    :param ts Python type equivalent for C++ type TIME_SERIES_PTR
-    :param index Python type equivalent for C++ type int
-    :export
+     ts Python type equivalent for C++ type TIME_SERIES_PTR
+     index Python type equivalent for C++ type int
+    
     """
-    ts_xptr = cinterop.getExternalXptr(ts)
-    result = nativelib.GetValueFromUnivariateTimeSeries(ts_xptr, index)
-    return cinterop.mkExternalObjRef(result, 'double')
+    ts_xptr = unwrap_cffi_native_handle(ts)
+    result = uchronia_so.GetValueFromUnivariateTimeSeries(ts_xptr, index)
+    return custom_wrap_cffi_native_handle(result, 'double')
 
 
 def TransformEachItem_py(tsEnsTs, method, methodArgument):
@@ -386,13 +403,13 @@ def TransformEachItem_py(tsEnsTs, method, methodArgument):
     
     TransformEachItem_py Wrapper function for TransformEachItem
     
-    :param tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param method Python type equivalent for C++ type char*
-    :param methodArgument Python type equivalent for C++ type char*
-    :export
+     tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+     method Python type equivalent for C++ type char*
+     methodArgument Python type equivalent for C++ type char*
+    
     """
-    tsEnsTs_xptr = cinterop.getExternalXptr(tsEnsTs)
-    nativelib.TransformEachItem(tsEnsTs_xptr, method, methodArgument)
+    tsEnsTs_xptr = unwrap_cffi_native_handle(tsEnsTs)
+    uchronia_so.TransformEachItem(tsEnsTs_xptr, method, methodArgument)
 
 
 def SetValueToUnivariateTimeSeries_py(ts, index, value):
@@ -401,13 +418,13 @@ def SetValueToUnivariateTimeSeries_py(ts, index, value):
     
     SetValueToUnivariateTimeSeries_py Wrapper function for SetValueToUnivariateTimeSeries
     
-    :param ts Python type equivalent for C++ type TIME_SERIES_PTR
-    :param index Python type equivalent for C++ type int
-    :param value Python type equivalent for C++ type double
-    :export
+     ts Python type equivalent for C++ type TIME_SERIES_PTR
+     index Python type equivalent for C++ type int
+     value Python type equivalent for C++ type double
+    
     """
-    ts_xptr = cinterop.getExternalXptr(ts)
-    nativelib.SetValueToUnivariateTimeSeries(ts_xptr, index, value)
+    ts_xptr = unwrap_cffi_native_handle(ts)
+    uchronia_so.SetValueToUnivariateTimeSeries(ts_xptr, index, value)
 
 
 def GetItemEnsembleForecastTimeSeriesAsStructure_py(series, i):
@@ -416,13 +433,13 @@ def GetItemEnsembleForecastTimeSeriesAsStructure_py(series, i):
     
     GetItemEnsembleForecastTimeSeriesAsStructure_py Wrapper function for GetItemEnsembleForecastTimeSeriesAsStructure
     
-    :param series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param i Python type equivalent for C++ type int
-    :export
+     series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+     i Python type equivalent for C++ type int
+    
     """
-    series_xptr = cinterop.getExternalXptr(series)
-    result = nativelib.GetItemEnsembleForecastTimeSeriesAsStructure(series_xptr, i)
-    return cinterop.mkExternalObjRef(result, 'multi_regular_time_series_data*')
+    series_xptr = unwrap_cffi_native_handle(series)
+    result = uchronia_so.GetItemEnsembleForecastTimeSeriesAsStructure(series_xptr, i)
+    return custom_wrap_cffi_native_handle(result, 'multi_regular_time_series_data*')
 
 
 def GetItemEnsembleTimeSeriesAsStructure_py(series, i):
@@ -431,13 +448,13 @@ def GetItemEnsembleTimeSeriesAsStructure_py(series, i):
     
     GetItemEnsembleTimeSeriesAsStructure_py Wrapper function for GetItemEnsembleTimeSeriesAsStructure
     
-    :param series Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-    :param i Python type equivalent for C++ type int
-    :export
+     series Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+     i Python type equivalent for C++ type int
+    
     """
-    series_xptr = cinterop.getExternalXptr(series)
-    result = nativelib.GetItemEnsembleTimeSeriesAsStructure(series_xptr, i)
-    return cinterop.mkExternalObjRef(result, 'multi_regular_time_series_data*')
+    series_xptr = unwrap_cffi_native_handle(series)
+    result = uchronia_so.GetItemEnsembleTimeSeriesAsStructure(series_xptr, i)
+    return custom_wrap_cffi_native_handle(result, 'multi_regular_time_series_data*')
 
 
 def SetItemEnsembleForecastTimeSeriesAsStructure_py(series, i, values):
@@ -446,13 +463,15 @@ def SetItemEnsembleForecastTimeSeriesAsStructure_py(series, i, values):
     
     SetItemEnsembleForecastTimeSeriesAsStructure_py Wrapper function for SetItemEnsembleForecastTimeSeriesAsStructure
     
-    :param series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param i Python type equivalent for C++ type int
-    :param values Python type equivalent for C++ type const multi_regular_time_series_data*
-    :export
+     series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+     i Python type equivalent for C++ type int
+     values Python type equivalent for C++ type const multi_regular_time_series_data*
+    
     """
-    series_xptr = cinterop.getExternalXptr(series)
-    nativelib.SetItemEnsembleForecastTimeSeriesAsStructure(series_xptr, i, values)
+    series_xptr = unwrap_cffi_native_handle(series)
+    values_tsd_ptr = to_multi_regular_time_series_data(values)
+    uchronia_so.SetItemEnsembleForecastTimeSeriesAsStructure(series_xptr, i, values_tsd_ptr)
+    # cinterop::disposal::dispose_of<multi_regular_time_series_data>(values_tsd_ptr_x)
 
 
 def SetItemEnsembleTimeSeriesAsStructure_py(collection, i, values):
@@ -461,13 +480,15 @@ def SetItemEnsembleTimeSeriesAsStructure_py(collection, i, values):
     
     SetItemEnsembleTimeSeriesAsStructure_py Wrapper function for SetItemEnsembleTimeSeriesAsStructure
     
-    :param collection Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-    :param i Python type equivalent for C++ type int
-    :param values Python type equivalent for C++ type const multi_regular_time_series_data*
-    :export
+     collection Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+     i Python type equivalent for C++ type int
+     values Python type equivalent for C++ type const multi_regular_time_series_data*
+    
     """
-    collection_xptr = cinterop.getExternalXptr(collection)
-    nativelib.SetItemEnsembleTimeSeriesAsStructure(collection_xptr, i, values)
+    collection_xptr = unwrap_cffi_native_handle(collection)
+    values_tsd_ptr = to_multi_regular_time_series_data(values)
+    uchronia_so.SetItemEnsembleTimeSeriesAsStructure(collection_xptr, i, values_tsd_ptr)
+    # cinterop::disposal::dispose_of<multi_regular_time_series_data>(values_tsd_ptr_x)
 
 
 def CreatePerfectForecastTimeSeries_py(observations, start, length, timeStepName, offsetForecasts, leadTime):
@@ -476,17 +497,19 @@ def CreatePerfectForecastTimeSeries_py(observations, start, length, timeStepName
     
     CreatePerfectForecastTimeSeries_py Wrapper function for CreatePerfectForecastTimeSeries
     
-    :param observations Python type equivalent for C++ type TIME_SERIES_PTR
-    :param start Python type equivalent for C++ type date_time_to_second
-    :param length Python type equivalent for C++ type int
-    :param timeStepName Python type equivalent for C++ type const char*
-    :param offsetForecasts Python type equivalent for C++ type int
-    :param leadTime Python type equivalent for C++ type int
-    :export
+     observations Python type equivalent for C++ type TIME_SERIES_PTR
+     start Python type equivalent for C++ type date_time_to_second
+     length Python type equivalent for C++ type int
+     timeStepName Python type equivalent for C++ type const char*
+     offsetForecasts Python type equivalent for C++ type int
+     leadTime Python type equivalent for C++ type int
+    
     """
-    observations_xptr = cinterop.getExternalXptr(observations)
-    result = nativelib.CreatePerfectForecastTimeSeries(observations_xptr, start, length, timeStepName, offsetForecasts, leadTime)
-    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
+    observations_xptr = unwrap_cffi_native_handle(observations)
+    start_datetime = to_date_time_to_second(start)
+    result = uchronia_so.CreatePerfectForecastTimeSeries(observations_xptr, start_datetime, length, timeStepName, offsetForecasts, leadTime)
+    # start_datetime - no cleanup needed
+    return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
 def ToStructEnsembleTimeSeriesData_py(ensSeries):
@@ -495,12 +518,12 @@ def ToStructEnsembleTimeSeriesData_py(ensSeries):
     
     ToStructEnsembleTimeSeriesData_py Wrapper function for ToStructEnsembleTimeSeriesData
     
-    :param ensSeries Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-    :export
+     ensSeries Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
+    
     """
-    ensSeries_xptr = cinterop.getExternalXptr(ensSeries)
-    result = nativelib.ToStructEnsembleTimeSeriesData(ensSeries_xptr)
-    return cinterop.mkExternalObjRef(result, 'multi_regular_time_series_data*')
+    ensSeries_xptr = unwrap_cffi_native_handle(ensSeries)
+    result = uchronia_so.ToStructEnsembleTimeSeriesData(ensSeries_xptr)
+    return custom_wrap_cffi_native_handle(result, 'multi_regular_time_series_data*')
 
 
 def ToStructSingleTimeSeriesData_py(timeSeries):
@@ -509,12 +532,12 @@ def ToStructSingleTimeSeriesData_py(timeSeries):
     
     ToStructSingleTimeSeriesData_py Wrapper function for ToStructSingleTimeSeriesData
     
-    :param timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
-    :export
+     timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
+    
     """
-    timeSeries_xptr = cinterop.getExternalXptr(timeSeries)
-    result = nativelib.ToStructSingleTimeSeriesData(timeSeries_xptr)
-    return cinterop.mkExternalObjRef(result, 'multi_regular_time_series_data*')
+    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
+    result = uchronia_so.ToStructSingleTimeSeriesData(timeSeries_xptr)
+    return custom_wrap_cffi_native_handle(result, 'multi_regular_time_series_data*')
 
 
 def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries):
@@ -523,11 +546,13 @@ def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries):
     
     CreateEnsembleTimeSeriesDataFromStruct_py Wrapper function for CreateEnsembleTimeSeriesDataFromStruct
     
-    :param ensSeries Python type equivalent for C++ type const multi_regular_time_series_data*
-    :export
+     ensSeries Python type equivalent for C++ type const multi_regular_time_series_data*
+    
     """
-    result = nativelib.CreateEnsembleTimeSeriesDataFromStruct(ensSeries)
-    return cinterop.mkExternalObjRef(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
+    ensSeries_tsd_ptr = to_multi_regular_time_series_data(ensSeries)
+    result = uchronia_so.CreateEnsembleTimeSeriesDataFromStruct(ensSeries_tsd_ptr)
+    # cinterop::disposal::dispose_of<multi_regular_time_series_data>(ensSeries_tsd_ptr_x)
+    return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
 def CreateSingleTimeSeriesDataFromStruct_py(timeSeries):
@@ -536,11 +561,13 @@ def CreateSingleTimeSeriesDataFromStruct_py(timeSeries):
     
     CreateSingleTimeSeriesDataFromStruct_py Wrapper function for CreateSingleTimeSeriesDataFromStruct
     
-    :param timeSeries Python type equivalent for C++ type const multi_regular_time_series_data*
-    :export
+     timeSeries Python type equivalent for C++ type const multi_regular_time_series_data*
+    
     """
-    result = nativelib.CreateSingleTimeSeriesDataFromStruct(timeSeries)
-    return cinterop.mkExternalObjRef(result, 'TIME_SERIES_PTR')
+    timeSeries_tsd_ptr = to_multi_regular_time_series_data(timeSeries)
+    result = uchronia_so.CreateSingleTimeSeriesDataFromStruct(timeSeries_tsd_ptr)
+    # cinterop::disposal::dispose_of<multi_regular_time_series_data>(timeSeries_tsd_ptr_x)
+    return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
 def DisposeMultiTimeSeriesData_py(data):
@@ -549,10 +576,10 @@ def DisposeMultiTimeSeriesData_py(data):
     
     DisposeMultiTimeSeriesData_py Wrapper function for DisposeMultiTimeSeriesData
     
-    :param data Python type equivalent for C++ type multi_regular_time_series_data*
-    :export
+     data Python type equivalent for C++ type multi_regular_time_series_data*
+    
     """
-    nativelib.DisposeMultiTimeSeriesData(data)
+    uchronia_so.DisposeMultiTimeSeriesData(data)
 
 
 def GetTimeSeriesGeometry_py(timeSeries, geom):
@@ -561,13 +588,14 @@ def GetTimeSeriesGeometry_py(timeSeries, geom):
     
     GetTimeSeriesGeometry_py Wrapper function for GetTimeSeriesGeometry
     
-    :param timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
-    :param geom Python type equivalent for C++ type TS_GEOMETRY_PTR
-    :export
+     timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
+     geom Python type equivalent for C++ type TS_GEOMETRY_PTR
+    
     """
-    timeSeries_xptr = cinterop.getExternalXptr(timeSeries)
-    geom_xptr = cinterop.getExternalXptr(geom)
-    nativelib.GetTimeSeriesGeometry(timeSeries_xptr, geom_xptr)
+    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
+    geom_tsgeom = cinterop.timeseries.to_regular_time_series_geometry_ptr(geom)
+    uchronia_so.GetTimeSeriesGeometry(timeSeries_xptr, geom_tsgeom)
+    # delete geom_tsgeom
 
 
 def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries, geom):
@@ -576,13 +604,14 @@ def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries, geom):
     
     GetEnsembleForecastTimeSeriesGeometry_py Wrapper function for GetEnsembleForecastTimeSeriesGeometry
     
-    :param timeSeries Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-    :param geom Python type equivalent for C++ type TS_GEOMETRY_PTR
-    :export
+     timeSeries Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+     geom Python type equivalent for C++ type TS_GEOMETRY_PTR
+    
     """
-    timeSeries_xptr = cinterop.getExternalXptr(timeSeries)
-    geom_xptr = cinterop.getExternalXptr(geom)
-    nativelib.GetEnsembleForecastTimeSeriesGeometry(timeSeries_xptr, geom_xptr)
+    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
+    geom_tsgeom = cinterop.timeseries.to_regular_time_series_geometry_ptr(geom)
+    uchronia_so.GetEnsembleForecastTimeSeriesGeometry(timeSeries_xptr, geom_tsgeom)
+    # delete geom_tsgeom
 
 
 def GetTimeSeriesValues_py(timeSeries, values, arrayLength):
@@ -591,13 +620,13 @@ def GetTimeSeriesValues_py(timeSeries, values, arrayLength):
     
     GetTimeSeriesValues_py Wrapper function for GetTimeSeriesValues
     
-    :param timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
-    :param values Python type equivalent for C++ type double*
-    :param arrayLength Python type equivalent for C++ type int
-    :export
+     timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
+     values Python type equivalent for C++ type double*
+     arrayLength Python type equivalent for C++ type int
+    
     """
-    timeSeries_xptr = cinterop.getExternalXptr(timeSeries)
-    nativelib.GetTimeSeriesValues(timeSeries_xptr, values, arrayLength)
+    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
+    uchronia_so.GetTimeSeriesValues(timeSeries_xptr, values, arrayLength)
 
 
 def GetNumTimeSeries_py():
@@ -606,10 +635,10 @@ def GetNumTimeSeries_py():
     
     GetNumTimeSeries_py Wrapper function for GetNumTimeSeries
     
-    :export
+    
     """
-    result = nativelib.GetNumTimeSeries()
-    return cinterop.mkExternalObjRef(result, 'int')
+    result = uchronia_so.GetNumTimeSeries()
+    return custom_wrap_cffi_native_handle(result, 'int')
 
 
 def GetProviderTsGeometry_py(dataLibrary, variableIdentifier, geom):
@@ -618,14 +647,15 @@ def GetProviderTsGeometry_py(dataLibrary, variableIdentifier, geom):
     
     GetProviderTsGeometry_py Wrapper function for GetProviderTsGeometry
     
-    :param dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
-    :param variableIdentifier Python type equivalent for C++ type const char*
-    :param geom Python type equivalent for C++ type TS_GEOMETRY_PTR
-    :export
+     dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
+     variableIdentifier Python type equivalent for C++ type const char*
+     geom Python type equivalent for C++ type TS_GEOMETRY_PTR
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    geom_xptr = cinterop.getExternalXptr(geom)
-    nativelib.GetProviderTsGeometry(dataLibrary_xptr, variableIdentifier, geom_xptr)
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    geom_tsgeom = cinterop.timeseries.to_regular_time_series_geometry_ptr(geom)
+    uchronia_so.GetProviderTsGeometry(dataLibrary_xptr, variableIdentifier, geom_tsgeom)
+    # delete geom_tsgeom
 
 
 def GetProviderTimeSeriesValues_py(dataLibrary, variableIdentifier, values, arrayLength):
@@ -634,14 +664,14 @@ def GetProviderTimeSeriesValues_py(dataLibrary, variableIdentifier, values, arra
     
     GetProviderTimeSeriesValues_py Wrapper function for GetProviderTimeSeriesValues
     
-    :param dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
-    :param variableIdentifier Python type equivalent for C++ type const char*
-    :param values Python type equivalent for C++ type double*
-    :param arrayLength Python type equivalent for C++ type int
-    :export
+     dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
+     variableIdentifier Python type equivalent for C++ type const char*
+     values Python type equivalent for C++ type double*
+     arrayLength Python type equivalent for C++ type int
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    nativelib.GetProviderTimeSeriesValues(dataLibrary_xptr, variableIdentifier, values, arrayLength)
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    uchronia_so.GetProviderTimeSeriesValues(dataLibrary_xptr, variableIdentifier, values, arrayLength)
 
 
 
@@ -651,11 +681,11 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary):
     
     GetProviderTimeSeriesIdentifiers_py Wrapper function for GetProviderTimeSeriesIdentifiers
     
-    :export
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    result = nativelib.GetProviderTimeSeriesIdentifiers(dataLibrary)
-    return(cinterop.mkExternalObjRef(result,'dummytype'))
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    result = uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary)
+    return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
 def TimeSeriesFromProviderTs_py(dataLibrary, variableIdentifier):
     """
@@ -663,12 +693,12 @@ def TimeSeriesFromProviderTs_py(dataLibrary, variableIdentifier):
     
     TimeSeriesFromProviderTs_py Wrapper function for TimeSeriesFromProviderTs
     
-    :param dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
-    :param variableIdentifier Python type equivalent for C++ type const char*
-    :export
+     dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
+     variableIdentifier Python type equivalent for C++ type const char*
+    
     """
-    dataLibrary_xptr = cinterop.getExternalXptr(dataLibrary)
-    result = nativelib.TimeSeriesFromProviderTs(dataLibrary_xptr, variableIdentifier)
-    return cinterop.mkExternalObjRef(result, 'TIME_SERIES_PTR')
+    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+    result = uchronia_so.TimeSeriesFromProviderTs(dataLibrary_xptr, variableIdentifier)
+    return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 

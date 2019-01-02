@@ -14,8 +14,10 @@ pkg_dir = os.path.join(os.path.dirname(__file__),'..')
 
 sys.path.append(pkg_dir)
 
-from uchronia.wrap.uchronia_wrap_generated import *
 from uchronia.wrap.ffi_interop import *
+import uchronia.wrap.uchronia_wrap_generated
+setattr(sys.modules['uchronia.wrap.uchronia_wrap_generated'], 'uchronia_so', uchronia_so)
+from uchronia.wrap.uchronia_wrap_generated import *
 
 from cffi import FFI
 
@@ -59,12 +61,26 @@ def test_struct_ensemble_series():
     del geom
     del mtsd
 
+def create_struct_ensemble_series(n=365, n_ens=2, t_step=b'D'):
+    mdt = MarshaledDateTime(2001,1,2,3,4,5)
+    geom = MarshaledTsGeometry(mdt, t_step, n)
+
+    values = np.zeros((n, 1))
+    np_values = np.ascontiguousarray(values.T, dtype=np.float64)
+    values_c = uchronia_ffi.new("double* [{dim}]".format(dim=values.shape[1]))
+    for idx in range(values.shape[1]):
+        values_c[idx] = uchronia_ffi.cast("double *", np_values[idx].ctypes.data)
+
+    mtsd = MultiTimeSeriesData(geom, values.shape[1], values_c)
+    return mtsd
+
 def test_create_series():
-    ptr = FFI_.new("MarshaledDateTime *")
-    CreateSingleTimeSeriesDataFromStruct_py(timeSeries)
+    tss = create_struct_ensemble_series()
+    timeSeries = CreateSingleTimeSeriesDataFromStruct_py(tss)
+    del timeSeries
     assert True
 
-test_struct_ensemble_series()
+test_create_series()
 
 # CreateEnsembleForecastTimeSeries_py(start, length, timeStepName):
 # CreatePerfectForecastTimeSeries_py(observations, start, length, timeStepName, offsetForecasts, leadTime):
