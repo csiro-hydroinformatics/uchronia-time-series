@@ -9,11 +9,6 @@
 
 from refcount.interop import *
 
-def to_multi_regular_time_series_data(timeSeries):
-    if is_cffi_native_handle(timeSeries):
-        return unwrap_cffi_native_handle(timeSeries)
-    else:
-        return timeSeries
 
 def custom_wrap_cffi_native_handle(obj, type_id="", release_callback = None):
     if release_callback is None:
@@ -143,7 +138,9 @@ def GetEnsembleDatasetDataIdentifiers_py(dataLibrary):
     
     
     """
+
     dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+
     result = uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary)
     return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
@@ -156,7 +153,9 @@ def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary, dataCollectionId):
     
     
     """
+
     dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+
     result = uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary, dataCollectionId)
     return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
@@ -169,7 +168,9 @@ def GetEnsembleDatasetDataSummaries_py(dataLibrary):
     
     
     """
+
     dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+
     result = uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary)
     return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
@@ -469,7 +470,7 @@ def SetItemEnsembleForecastTimeSeriesAsStructure_py(series, i, values):
     
     """
     series_xptr = unwrap_cffi_native_handle(series)
-    values_tsd_ptr = to_multi_regular_time_series_data(values)
+    values_tsd_ptr = cinterop.timeseries.to_multi_regular_time_series_data(values)
     uchronia_so.SetItemEnsembleForecastTimeSeriesAsStructure(series_xptr, i, values_tsd_ptr)
     # cinterop::disposal::dispose_of<multi_regular_time_series_data>(values_tsd_ptr_x)
 
@@ -486,7 +487,7 @@ def SetItemEnsembleTimeSeriesAsStructure_py(collection, i, values):
     
     """
     collection_xptr = unwrap_cffi_native_handle(collection)
-    values_tsd_ptr = to_multi_regular_time_series_data(values)
+    values_tsd_ptr = cinterop.timeseries.to_multi_regular_time_series_data(values)
     uchronia_so.SetItemEnsembleTimeSeriesAsStructure(collection_xptr, i, values_tsd_ptr)
     # cinterop::disposal::dispose_of<multi_regular_time_series_data>(values_tsd_ptr_x)
 
@@ -549,7 +550,7 @@ def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries):
      ensSeries Python type equivalent for C++ type const multi_regular_time_series_data*
     
     """
-    ensSeries_tsd_ptr = to_multi_regular_time_series_data(ensSeries)
+    ensSeries_tsd_ptr = cinterop.timeseries.to_multi_regular_time_series_data(ensSeries)
     result = uchronia_so.CreateEnsembleTimeSeriesDataFromStruct(ensSeries_tsd_ptr)
     # cinterop::disposal::dispose_of<multi_regular_time_series_data>(ensSeries_tsd_ptr_x)
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
@@ -564,7 +565,7 @@ def CreateSingleTimeSeriesDataFromStruct_py(timeSeries):
      timeSeries Python type equivalent for C++ type const multi_regular_time_series_data*
     
     """
-    timeSeries_tsd_ptr = to_multi_regular_time_series_data(timeSeries)
+    timeSeries_tsd_ptr = cinterop.timeseries.to_multi_regular_time_series_data(timeSeries)
     result = uchronia_so.CreateSingleTimeSeriesDataFromStruct(timeSeries_tsd_ptr)
     # cinterop::disposal::dispose_of<multi_regular_time_series_data>(timeSeries_tsd_ptr_x)
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
@@ -683,7 +684,9 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary):
     
     
     """
+
     dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
+
     result = uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary)
     return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
