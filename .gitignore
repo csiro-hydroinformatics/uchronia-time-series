@@ -131,3 +131,7 @@ bindings/python/uchronia/uchronia.egg-info/
 *.pyc
 
 .vscode/
+*.pyd
+bindings/python/uchronia_pb/uchronia_pb.egg-info/
+*.db-shm
+bindings/python/uchronia_pb/src/.vs/

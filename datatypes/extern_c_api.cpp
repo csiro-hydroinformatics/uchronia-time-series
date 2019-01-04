@@ -463,7 +463,7 @@ multi_regular_time_series_data* GetEnsembleTimeSeriesData(ENSEMBLE_PTR_TIME_SERI
 
 
 
-void TransformEachItem(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, char* method, char* methodArgument)
+void TransformEachItem(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, const char* method, const char* methodArgument)
 {
 	TRY_START
 		EFTSPTR efts = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(tsEnsTs);
@@ -473,13 +473,13 @@ void TransformEachItem(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, char* method, 
 
 
 // Below are evil temporary things tied to a particular backend storage;
-void SaveSingleTimeSeriesToNetcdf(TIME_SERIES_PTR timeSeries, char* filename, bool overwrite)
+void SaveSingleTimeSeriesToNetcdf(TIME_SERIES_PTR timeSeries, const char* filename, bool overwrite)
 {
 	TRY_START
 		throw std::logic_error("SaveSingleTimeSeriesToNetcdf not implemented");
 		INTERCEPT_STD_EXCEPTION
 }
-void SaveEnsembleTimeSeriesToNetcdf(ENSEMBLE_PTR_TIME_SERIES_PTR collection, char* filename, bool overwrite) 
+void SaveEnsembleTimeSeriesToNetcdf(ENSEMBLE_PTR_TIME_SERIES_PTR collection, const char* filename, bool overwrite)
 {
 	TRY_START
 	throw std::logic_error("SaveEnsembleTimeSeriesToNetcdf not implemented");
@@ -506,7 +506,7 @@ void SaveEnsembleTimeSeriesToNetcdf(ENSEMBLE_PTR_TIME_SERIES_PTR collection, cha
 		INTERCEPT_STD_EXCEPTION
 }
 
-void SaveEnsembleForecastTimeSeriesToNetcdf(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, char* filename, bool overwrite)
+void SaveEnsembleForecastTimeSeriesToNetcdf(ENSEMBLE_FORECAST_TIME_SERIES_PTR tsEnsTs, const char* filename, bool overwrite)
 {
 	TRY_START
 		EFTSPTR ens = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(tsEnsTs);
