@@ -3,11 +3,12 @@
 # setup.py that excludes installing the "tests" package
 
 import os
-# import pandas as pd
-# import numpy as np
+import pandas as pd
+import numpy as np
 import datetime as dt
 import sys
 from datetime import datetime
+import xarray as xr
 
 pkg_dir = os.path.join(os.path.dirname(__file__),'..')
 # pkg_dir = "C:/src/csiro/stash/datatypes/bindings/python/uchronia"
@@ -20,12 +21,6 @@ setattr(sys.modules['uchronia.wrap.uchronia_wrap_generated'], 'uchronia_so', uch
 from uchronia.wrap.uchronia_wrap_generated import *
 
 from cffi import FFI
-
-def test_success():
-    assert True
-
-def test_struct_created_domain():
-    pass
 
 def test_struct_datetime():
     mdt = MarshaledDateTime(2001,1,2,3,4,5)
@@ -74,13 +69,46 @@ def create_struct_ensemble_series(n=365, n_ens=2, t_step=b'D'):
     mtsd = MultiTimeSeriesData(geom, values.shape[1], values_c)
     return mtsd
 
+
+
+def create_ensemble_series(n=365, n_ens=2, t_step=b'D'):
+    data = np.random.rand(n, n_ens)
+    locs = [str(i) for i in range(n_ens)]
+    times = pd.date_range('2001-01-02', periods=n, freq='D')
+    foo = xr.DataArray(data, coords=[times, locs], dims=['time', 'ens'])
+    return foo
+
+def to_multi_regular_time_series_data(x):
+    if not isinstance(x, xr.DataArray):
+        raise Exception("not supported")
+    # x = xr.DataArray(data, coords=[times, locs], dims=['time', 'ens'])
+    n = x.shape[0]
+    n_ens = x.shape[1]
+    start = x.coords.get('time').to_index()[0]
+    t_step = b'D'
+    mdt = MarshaledDateTime(start.year, start.month, start.day, start.hour, start.minute,start.second)
+    geom = MarshaledTsGeometry(mdt, t_step, n)
+    values = x.values
+    np_values = np.ascontiguousarray(values.T, dtype=np.float64)
+    values_c = uchronia_ffi.new("double* [{dim}]".format(dim=values.shape[1]))
+    for idx in range(values.shape[1]):
+        values_c[idx] = uchronia_ffi.cast("double *", np_values[idx].ctypes.data)
+
+    mtsd = MultiTimeSeriesData(geom, values.shape[1], values_c)
+    return mtsd
+
+
 def test_create_series():
     tss = create_struct_ensemble_series()
     timeSeries = CreateSingleTimeSeriesDataFromStruct_py(tss)
     del timeSeries
     assert True
 
-test_create_series()
+x = create_ensemble_series()
+mtsd = to_multi_regular_time_series_data(x)
+
+# test_create_series()
+
 
 # CreateEnsembleForecastTimeSeries_py(start, length, timeStepName):
 # CreatePerfectForecastTimeSeries_py(observations, start, length, timeStepName, offsetForecasts, leadTime):

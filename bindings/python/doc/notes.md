@@ -10,6 +10,12 @@ Moving to use [refcount](https://pypi.org/project/refcount/) for managing c++ ob
 
 Should I have a cinterop package? probably,  because some data marshalling has nothing to do with refcount. However, the wrapping/unwrapping using refcount maybe should not be in a cinterop package, but refcount itself. New release, too...
 
+### pybind11 testbed
+
+Code generation pointers for pybind11:  [pybind11 issue 252](https://github.com/pybind/pybind11/issues/252)  [pybind11 issue 553](https://github.com/pybind/pybind11/issues/553)  . Also [https://github.com/ranr01/pybind11-code-generator](https://github.com/ranr01/pybind11-code-generator)
+
+[binder](https://pybind11.readthedocs.io/en/master/compiling.html#binder) is mentioned by the pybind11 doc. Worth a look.
+
 ## Dependencies
 
 * [capigen](https://bitbucket.csiro.au/users/per202/repos/c-api-bindings/browse) is an ongoing refactor of the legacy package 'swiftdev',

@@ -13,7 +13,18 @@ Previously, `pandas` had panels for handling multi-dimensional series (data fram
 
 Another initiative to handle multidimensional data is [xtensor python bindings](https://github.com/QuantStack/xtensor-python). The fact that xtensor is primarily about c++ rather than python-centric is appealing for interop, but interplay with xarray is unclear (and also there may be naming clashes). It has a large numpy compatibility.
 
+It is worth nothing that xtensor is mentioned on [The pydata.xarray roadmap](https://github.com/pydata/xarray/blob/master/doc/roadmap.rst) as of Jul 2018.
+
 ## Design considerations
 
-* Could `uchronia` be a backend to `xarray`, the way netCDF is ?
+* Could `uchronia` be a backend to `xarray`, the way netCDF is ? Or is it smarter to go through xtensor?
 
+## Giving a spin to pydata.xarray
+
+```bat
+conda activate uchronia
+conda install -c conda-forge xarray dask netCDF4 bottleneck
+conda install -c conda-forge pytest mock
+py.test --pyargs xarray
+conda install -c conda-forge matplotlib
+```
