@@ -16,6 +16,18 @@ Code generation pointers for pybind11:  [pybind11 issue 252](https://github.com/
 
 [binder](https://pybind11.readthedocs.io/en/master/compiling.html#binder) is mentioned by the pybind11 doc. Worth a look.
 
+### xtensor for exposing structures
+
+What should I do for things such as:
+
+```cpp
+opaque_pointer_handle* CreateEnsembleTimeSeriesDataFromStruct_cpp(const Rcpp::S4& ensSeries)
+{
+    auto ensSeries_tsd_ptr_x = cinterop::timeseries::to_multi_regular_time_series_data(ensSeries); multi_regular_time_series_data* ensSeries_tsd_ptr = &ensSeries_tsd_ptr_x;
+```
+
+Looking for packages that depend on [xtensor-python](blah) as an example [Higra](https://github.com/PerretB/Higra); [a file of a canadian parallel_python_course](https://github.com/phaustin/parallel_python_course/blob/master/code_examples/pybind11_demo/src/main.cpp)
+
 ## Dependencies
 
 * [capigen](https://bitbucket.csiro.au/users/per202/repos/c-api-bindings/browse) is an ongoing refactor of the legacy package 'swiftdev',
