@@ -25,20 +25,20 @@ rClr::clrSet (cppGen, 'OpaquePointerClassName', "opaque_pointer_handle")
 # Also start by giving a go with conda install -c conda-forge xtensor-python   in the conda uchronia environment
 
 
-  set_wrapper_type_map(cppGen, 'regular_time_series_geometry*', 'const Rcpp::S4&')
+  set_wrapper_type_map(cppGen, 'regular_time_series_geometry*', 'regular_time_series_geometry&')
   set_wrapper_type_converter(cppGen, 'regular_time_series_geometry*', '_tsgeom', 
-    'regular_time_series_geometry* C_ARGNAME = cinterop::timeseries::to_regular_time_series_geometry_ptr(RCPP_ARGNAME);', 
-    'delete C_ARGNAME;')
+    'regular_time_series_geometry* C_ARGNAME = &RCPP_ARGNAME;', 
+    '// no delection for C_ARGNAME;')
 
-  set_wrapper_type_map(cppGen, 'TS_GEOMETRY_PTR', 'const Rcpp::S4&')
+  set_wrapper_type_map(cppGen, 'TS_GEOMETRY_PTR', 'regular_time_series_geometry&')
   set_wrapper_type_converter(cppGen, 'TS_GEOMETRY_PTR', '_tsgeom', 
-    'regular_time_series_geometry* C_ARGNAME = cinterop::timeseries::to_regular_time_series_geometry_ptr(RCPP_ARGNAME);',
-    'delete C_ARGNAME;')
+    'regular_time_series_geometry* C_ARGNAME = &RCPP_ARGNAME;', 
+    '// no delection for C_ARGNAME;')
 
-  set_wrapper_type_map(cppGen, 'const multi_regular_time_series_data*', 'const Rcpp::S4&')
+  set_wrapper_type_map(cppGen, 'const multi_regular_time_series_data*', 'multi_regular_time_series_data&')
   set_wrapper_type_converter(cppGen, 'const multi_regular_time_series_data*', '_tsd_ptr', 
-    'auto C_ARGNAME_x = cinterop::timeseries::to_multi_regular_time_series_data(RCPP_ARGNAME); multi_regular_time_series_data* C_ARGNAME = &C_ARGNAME_x;',
-    'cinterop::disposal::dispose_of<multi_regular_time_series_data>(C_ARGNAME_x);')
+    'multi_regular_time_series_data* C_ARGNAME = &RCPP_ARGNAME;', 
+    '// no delection for C_ARGNAME;')
 
 
 
@@ -49,18 +49,6 @@ prepend_impl<- '
 #include "../include/uchronia_pb_exports.h"
 #include "../include/cpp_bindings_generated.h"
 
-// if we are to use xtensor, we may want (based on the xtensor-python documentation)
-//#include "pybind11/pybind11.h"            // Pybind11 import to define Python bindings
-//#include "xtensor/xmath.hpp"              // xtensor import for the C++ universal functions
-//#define FORCE_IMPORT_ARRAY
-//#include "xtensor-python/pyarray.hpp"     // Numpy bindings
-//
-//double sum_of_sines(xt::pyarray<double>& m)
-//{
-//	auto sines = xt::sin(m);  // sines does not actually hold values.
-//	return std::accumulate(sines.begin(), sines.end(), 0.0);
-//}
-
 '
 
 rClr::clrSet (cppGen, 'PrependOutputFile', prepend_impl)
@@ -70,7 +58,7 @@ cppGen <- configure_cpp_typemap(cppGen)
 api_filter <- create_uchronia_api_filter()
 #clrSet(api_filter, 'ContainsNone', character(0))
 blacklist <- clrGet(api_filter, 'ContainsNone')
-clrSet(api_filter, 'ContainsNone', c(blacklist, 'DeleteDoubleArray', 'SetItemEnsembleTimeSeriesAsStructure'))
+clrSet(api_filter, 'ContainsNone', c(blacklist, 'DeleteDoubleArray', 'GetTimeSeriesValues', 'GetProviderTimeSeriesValues'))
 
 
 gen <- create_wrapper_generator(cppGen, api_filter)
@@ -99,6 +87,7 @@ prepend_header<- '
 #include "moirai/opaque_pointers.hpp"
 using moirai::opaque_pointer_handle;
 #include "cinterop/c_cpp_interop.hpp"
+#include "cinterop/timeseries_c_interop.h"
 '
 
 rClr::clrSet (cppGen, 'PrependOutputFile', prepend_header)
@@ -136,12 +125,14 @@ f <- datatypes_func_names
 
 # todo: what was the package at user2018? glue?
 pybind_datatypes_func_names <- paste0(
-  '    m.def("', f, '", &', f, ', R"pbdoc(', f, ')pbdoc");'
+  '    m.def("', f, '", &', f, '_cpp, R"pbdoc( TODO doc for ', f, ')pbdoc");'
 )
 
 out_dir <- 'c:/tmp/'
 
 write_simple(pybind_datatypes_func_names, 'pybind_def_file.cpp', directory=out_dir)
+
+
 write_simple(c(wila_structs, c_structs, swift_fcts), 'swift_api.h', directory=out_matlab_native_dir)
 
 

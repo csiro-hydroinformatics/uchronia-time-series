@@ -7,6 +7,16 @@ Testbed for python package uchronia. Started using [pybind11 getting started exa
 ```bat
 conda activate uchronia
 cd c:\src\csiro\stash\datatypes\bindings\python\uchronia_pb
+conda list | grep uch
+```
+
+possibly:
+
+```bat
+pip uninstall uchronia_pb
+```
+
+```bat
 REM after adding include and libraries path to setup.py
 python setup.py develop
 ```
@@ -17,7 +27,7 @@ python setup.py develop
 from uchronia_pb import *
 ```
 
-```
+```text
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 ImportError: DLL load failed: The specified module could not be found.
@@ -25,7 +35,9 @@ ImportError: DLL load failed: The specified module could not be found.
 
 things like pyswift were loading the dll explicitely; in the present case, not sure how we can do this. Probably a matter of updateing the PATH before loading the module, unfortunately.
 
-`set PATH=%PATH%;c:\local\libs\64` then
+`set PATH=%PATH%;c:\local\libs\64`  or `set PATH=%PATH%;C:\src\csiro\stash\datatypes\Solutions\x64\Debug;c:\localdev\libs\64`
+
+then
 
 ```python
 from uchronia_pb import *

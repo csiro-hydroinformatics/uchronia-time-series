@@ -24,16 +24,22 @@ class get_pybind_include(object):
 ext_modules = [
     Extension(
         'uchronia_pb',
-        ['src/main.cpp'],
+        ['src/main.cpp','src/cpp_bindings_generated.cpp'],
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
             get_pybind_include(user=True),
+            "C:/src/github_jm/rcpp-interop-commons/include",
+            'C:/src/csiro/stash/datatypes/include',
             "C:/local/include"
+
         ],
         # see ./src/uchronia_pb.vcxproj
-        libraries = ['datatypes'],
-        library_dirs = ['C:/local/libs/64'],
+        libraries = ['datatypes','moirai'],
+        library_dirs = [
+            'C:/src/csiro/stash/datatypes/Solutions/x64/Debug', 
+            'C:/localdev/libs/64'
+        ],
         language='c++'
     ),
 ]
