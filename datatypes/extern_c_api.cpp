@@ -2,6 +2,7 @@
 #include "moirai/error_reporting.h"
 
 #include "cinterop/c_cpp_interop.hpp"
+#include "cinterop/c_boost_posix_time_interop.hpp"
 #include "cinterop/timeseries_interop.hpp"
 #include "datatypes/internals_c_api.hpp"
 #include "datatypes/shared_pointer_conversions.hpp"

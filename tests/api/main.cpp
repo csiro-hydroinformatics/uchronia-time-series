@@ -8,6 +8,7 @@
 #include "catch/catch_macros.hpp"
 
 #include "cinterop/c_cpp_interop.hpp"
+#include "cinterop/c_boost_posix_time_interop.hpp"
 
 #include <moirai/reference_handle_test_helper.hpp>
 
