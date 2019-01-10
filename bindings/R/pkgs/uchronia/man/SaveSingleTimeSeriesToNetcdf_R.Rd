@@ -9,7 +9,7 @@ SaveSingleTimeSeriesToNetcdf_R(timeSeries, filename, overwrite)
 \arguments{
 \item{timeSeries}{R type equivalent for C++ type TIME_SERIES_PTR}
 
-\item{filename}{R type equivalent for C++ type char*}
+\item{filename}{R type equivalent for C++ type const char*}
 
 \item{overwrite}{R type equivalent for C++ type bool}
 }

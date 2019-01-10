@@ -138,9 +138,7 @@ def GetEnsembleDatasetDataIdentifiers_py(dataLibrary):
     
     
     """
-
     dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-
     result = uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary)
     return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
@@ -153,9 +151,7 @@ def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary, dataCollectionId):
     
     
     """
-
     dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-
     result = uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary, dataCollectionId)
     return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
@@ -168,9 +164,7 @@ def GetEnsembleDatasetDataSummaries_py(dataLibrary):
     
     
     """
-
     dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-
     result = uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary)
     return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
@@ -284,7 +278,7 @@ def SaveSingleTimeSeriesToNetcdf_py(timeSeries, filename, overwrite):
     SaveSingleTimeSeriesToNetcdf_py Wrapper function for SaveSingleTimeSeriesToNetcdf
     
      timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
-     filename Python type equivalent for C++ type char*
+     filename Python type equivalent for C++ type const char*
      overwrite Python type equivalent for C++ type bool
     
     """
@@ -299,7 +293,7 @@ def SaveEnsembleTimeSeriesToNetcdf_py(collection, filename, overwrite):
     SaveEnsembleTimeSeriesToNetcdf_py Wrapper function for SaveEnsembleTimeSeriesToNetcdf
     
      collection Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-     filename Python type equivalent for C++ type char*
+     filename Python type equivalent for C++ type const char*
      overwrite Python type equivalent for C++ type bool
     
     """
@@ -314,7 +308,7 @@ def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs, filename, overwrite):
     SaveEnsembleForecastTimeSeriesToNetcdf_py Wrapper function for SaveEnsembleForecastTimeSeriesToNetcdf
     
      tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     filename Python type equivalent for C++ type char*
+     filename Python type equivalent for C++ type const char*
      overwrite Python type equivalent for C++ type bool
     
     """
@@ -405,8 +399,8 @@ def TransformEachItem_py(tsEnsTs, method, methodArgument):
     TransformEachItem_py Wrapper function for TransformEachItem
     
      tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     method Python type equivalent for C++ type char*
-     methodArgument Python type equivalent for C++ type char*
+     method Python type equivalent for C++ type const char*
+     methodArgument Python type equivalent for C++ type const char*
     
     """
     tsEnsTs_xptr = unwrap_cffi_native_handle(tsEnsTs)
@@ -684,9 +678,7 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary):
     
     
     """
-
     dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-
     result = uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary)
     return(custom_wrap_cffi_native_handle(result,'dummytype'))
 

@@ -9,7 +9,7 @@ SaveEnsembleForecastTimeSeriesToNetcdf_R(tsEnsTs, filename, overwrite)
 \arguments{
 \item{tsEnsTs}{R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR}
 
-\item{filename}{R type equivalent for C++ type char*}
+\item{filename}{R type equivalent for C++ type const char*}
 
 \item{overwrite}{R type equivalent for C++ type bool}
 }

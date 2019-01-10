@@ -9,9 +9,9 @@ TransformEachItem_R(tsEnsTs, method, methodArgument)
 \arguments{
 \item{tsEnsTs}{R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR}
 
-\item{method}{R type equivalent for C++ type char*}
+\item{method}{R type equivalent for C++ type const char*}
 
-\item{methodArgument}{R type equivalent for C++ type char*}
+\item{methodArgument}{R type equivalent for C++ type const char*}
 }
 \description{
 TransformEachItem_R Wrapper function for TransformEachItem

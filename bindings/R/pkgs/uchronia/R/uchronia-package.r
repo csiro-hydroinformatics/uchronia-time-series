@@ -5,14 +5,15 @@
 #' \tabular{ll}{
 #' Package: \tab uchronia \cr
 #' Type: \tab Package\cr
-#' Version: \tab 0.4.3 \cr
-#' Date: \tab 2018-07-06 \cr
-#' Release Notes: \tab Adjust uchronia R package after testing build on Windows 10 with RTools 3.5 \cr
+#' Version: \tab 0.4.4 \cr
+#' Date: \tab 2019-01-10 \cr
+#' Release Notes: \tab Maintenance release, with mostly functionally neutral structural changes. \cr
 #' License: \tab LGPL-3 \cr
 #' }
 #'
 #' \tabular{lll}{
 #' Version \tab Date \tab Notes \cr
+#' 0.4.3 \tab 2018-07-06 \tab Adjust uchronia R package after testing build on Windows 10 with RTools 3.5. \cr
 #' 0.4.2 \tab 2018-04-06 \tab Minor improvements in messages and warnings. \cr
 #' 0.4.1 \tab 2018-02-27 \tab Build against a version of the datatypes library with a changed API (no reference '&'). \cr
 #' 0.4.0 \tab 2018-01-30 \tab Start to include visualisations using ggplot2: plotXtsQuantiles. \cr

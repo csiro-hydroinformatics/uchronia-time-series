@@ -200,7 +200,7 @@ GetDatasetEnsembleForecastTimeSeries_R <- function(dataLibrary, dataId) {
 #' SaveSingleTimeSeriesToNetcdf_R Wrapper function for SaveSingleTimeSeriesToNetcdf
 #'
 #' @param timeSeries R type equivalent for C++ type TIME_SERIES_PTR
-#' @param filename R type equivalent for C++ type char*
+#' @param filename R type equivalent for C++ type const char*
 #' @param overwrite R type equivalent for C++ type bool
 #' @export
 SaveSingleTimeSeriesToNetcdf_R <- function(timeSeries, filename, overwrite) {
@@ -215,7 +215,7 @@ SaveSingleTimeSeriesToNetcdf_R <- function(timeSeries, filename, overwrite) {
 #' SaveEnsembleTimeSeriesToNetcdf_R Wrapper function for SaveEnsembleTimeSeriesToNetcdf
 #'
 #' @param collection R type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-#' @param filename R type equivalent for C++ type char*
+#' @param filename R type equivalent for C++ type const char*
 #' @param overwrite R type equivalent for C++ type bool
 #' @export
 SaveEnsembleTimeSeriesToNetcdf_R <- function(collection, filename, overwrite) {
@@ -230,7 +230,7 @@ SaveEnsembleTimeSeriesToNetcdf_R <- function(collection, filename, overwrite) {
 #' SaveEnsembleForecastTimeSeriesToNetcdf_R Wrapper function for SaveEnsembleForecastTimeSeriesToNetcdf
 #'
 #' @param tsEnsTs R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-#' @param filename R type equivalent for C++ type char*
+#' @param filename R type equivalent for C++ type const char*
 #' @param overwrite R type equivalent for C++ type bool
 #' @export
 SaveEnsembleForecastTimeSeriesToNetcdf_R <- function(tsEnsTs, filename, overwrite) {
@@ -303,8 +303,8 @@ GetValueFromUnivariateTimeSeries_R <- function(ts, index) {
 #' TransformEachItem_R Wrapper function for TransformEachItem
 #'
 #' @param tsEnsTs R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-#' @param method R type equivalent for C++ type char*
-#' @param methodArgument R type equivalent for C++ type char*
+#' @param method R type equivalent for C++ type const char*
+#' @param methodArgument R type equivalent for C++ type const char*
 #' @export
 TransformEachItem_R <- function(tsEnsTs, method, methodArgument) {
   tsEnsTs <- cinterop::getExternalXptr(tsEnsTs)
