@@ -114,6 +114,12 @@ bool IsMissingValueItemEnsembleForecastTimeSeries_cpp(opaque_pointer_handle* ser
     auto x = result;
     return x;}
 
+opaque_pointer_handle* GetItemEnsembleForecastTimeSeries_cpp(opaque_pointer_handle* efts, int i)
+{
+    auto result = GetItemEnsembleForecastTimeSeries(efts->get(), (int)i);
+    auto x = new opaque_pointer_handle(result);
+    return x;}
+
 opaque_pointer_handle* TimeSeriesFromEnsembleOfTimeSeries_cpp(opaque_pointer_handle* collectionTs, int index)
 {
     auto result = TimeSeriesFromEnsembleOfTimeSeries(collectionTs->get(), (int)index);
@@ -142,11 +148,24 @@ void SetValueToUnivariateTimeSeries_cpp(opaque_pointer_handle* ts, int index, do
     SetValueToUnivariateTimeSeries(ts->get(), (int)index, (double)value);
 }
 
+opaque_pointer_handle* GetItemEnsembleForecastTimeSeriesAsStructure_cpp(opaque_pointer_handle* series, int i)
+{
+    auto result = GetItemEnsembleForecastTimeSeriesAsStructure(series->get(), (int)i);
+    auto x = new opaque_pointer_handle(result);
+    return x;}
+
 opaque_pointer_handle* GetItemEnsembleTimeSeriesAsStructure_cpp(opaque_pointer_handle* series, int i)
 {
     auto result = GetItemEnsembleTimeSeriesAsStructure(series->get(), (int)i);
     auto x = new opaque_pointer_handle(result);
     return x;}
+
+void SetItemEnsembleForecastTimeSeriesAsStructure_cpp(opaque_pointer_handle* series, int i, multi_regular_time_series_data& values)
+{
+    multi_regular_time_series_data* values_tsd_ptr = &values;
+    SetItemEnsembleForecastTimeSeriesAsStructure(series->get(), (int)i, values_tsd_ptr);
+    // no delection for values_tsd_ptr;
+}
 
 void SetItemEnsembleTimeSeriesAsStructure_cpp(opaque_pointer_handle* collection, int i, multi_regular_time_series_data& values)
 {

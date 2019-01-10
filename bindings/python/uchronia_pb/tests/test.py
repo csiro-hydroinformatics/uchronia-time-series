@@ -1,10 +1,9 @@
 import uchronia_pb as m
+import cinteroppyb11 as c
 import numpy as np
 import datetime as dt
+import pandas as pd
 import pytz
-
-
-assert m.__version__ == '0.0.1'
 
 
 #' mainTimeAxis
@@ -24,25 +23,80 @@ def mainTimeAxis(deltaT, n, p=n):
         tsStartEns = state_date + dt.timedelta(seconds=deltaT*p)
     )
 
-#' buildTestEnsTs
-#'
-#' buildTestEnsTs
-#'
-#' @param i index of the test ensemble of time series
-#' @return an xts
 def buildTestEnsTs(i, seed=None, deltaT=3600, n=100, nEns=4):
   tt = mainTimeAxis(deltaT, n)
   return buildTestHourlyXts(i, tt['tsStartDate'], seed=seed, n=n, nEns=nEns, deltaT=deltaT)
 
+def to_daily_time_series(data_array, start_date):
+    tseries_index = pd.date_range(start_date, periods=data_array.shape[0], freq='D')
+    # return pd.Series(data_array, index=tseries_index)
+    df = pd.DataFrame(data_array)
+    df['date'] = tseries_index
+    df = df.set_index('date')
+    return df
 
-def buildTestHourlyXts(i, originDate, seed=None, n=5, nEns=4, deltaT):
+def _is_negative(x): return x < 0
+
+def mkSeriesRegularTstep (startDate, x, isMissingFunc = _is_negative, deltaTSec=3600):
+    #   stopifnot(is(startDate, "POSIXct"))
+    if not isMissingFunc is None:
+        isMissing = isMissingFunc(x)
+        y = x.copy()
+        y[isMissing] = np.nan
+    else:
+        y = x
+    return to_daily_time_series(y, startDate)
+
+def buildTestHourlyXts(i, originDate, seed=None, n=5, nEns=4, deltaT=3600):
     if seed is None: seed = 456
     np.random.seed(seed)
-    x = matrix(rnorm(n=nEns*n), ncol=nEns)
-    return mkSeriesRegularTstep(originDate+dt.timedelta(hours=i), (x+i), is.na, deltaT)
+    x = np.random.rand(n, nEns)
+    return mkSeriesRegularTstep(originDate+dt.timedelta(hours=i), (x+i), None, deltaT)
+
+def as_interop_dts(d):
+    x = c.DateTimeToSecond()
+    x.year = d.year
+    x.month = d.month
+    x.day = d.day
+    x.hour = d.hour
+    x.minute = d.minute
+    x.second = d.second
+    return x
+
+def createEnsembleForecastTimeSeries(start, n, deltaT):
+    s = as_interop_dts(start)
+    # HACK
+    return m.CreateEnsembleForecastTimeSeries(s, n, 'daily')
+
+def asInteropRegularTimeSeries(pandas_df):
+    # HACK
+    hack_tstep = 86400
+    n = pandas_df.shape[0]
+    nEns = pandas_df.shape[1]
+    mts = c.MultiRegularTimeSeries()
+    mts.clear_numeric_data()
+    mts.ensemble_size = nEns
+    geom = c.RegularTimeSeriesGeometry()
+    geom.length = n
+    geom.start = as_interop_dts(pandas_df.index[0].to_pydatetime())
+    geom.time_step_seconds = hack_tstep
+    mts.time_series_geometry = geom
+    mts.set_numeric_data(pandas_df.values)
+    return mts
+
+asInteropRegularTimeSeries(multiTimeSeriesIn)
+
+def setItem(ensFcTs, i, value):
+value = multiTimeSeriesIn
+i = 0
+mts = asInteropRegularTimeSeries(value)
+m.SetItemEnsembleForecastTimeSeriesAsStructure(ensFcTs, i, mts)
+m.SetItemEnsembleTimeSeriesAsStructure(ensFcTs, i, mts)
 
 
-def buildTestTsEnsTs(deltaT=3600, n=100, p=80, deltaTLead, nLead=5, nEns=4):
+def uchronia.setItem(ensFcTs, i, multiTimeSeriesIn):
+
+def buildTestTsEnsTs(deltaT=3600, n=100, p=80, deltaTLead=180, nLead=5, nEns=4):
     # if(p > n) 
     # stop("start of non-null ensemble is past the end of the time series")
     tt = mainTimeAxis(deltaT, n, p)
@@ -52,23 +106,38 @@ def buildTestTsEnsTs(deltaT=3600, n=100, p=80, deltaTLead, nLead=5, nEns=4):
         uchronia.setItem(ensFcTs, i, multiTimeSeriesIn)
     return ensFcTs
 
+
+deltaT = 3600*3
+deltaTLead = 180
+n = 20
+p = 8
+nLead = 5
+nEns = 4
+tt = mainTimeAxis(deltaT, n, p)
+ensFcTs = createEnsembleForecastTimeSeries(tt['tsStartDate'], n, deltaT)
+for i in range(p, n):
+    multiTimeSeriesIn = buildTestEnsTs(i,n=nLead, deltaT=deltaTLead)
+    uchronia.setItem(ensFcTs, i, multiTimeSeriesIn)
+return ensFcTs
+
+
 def test_getting_data_from_efts(): 
-    deltaT = 3600*3
-    deltaTLead = 180
-    n = 20
-    p = 8
-    nLead = 5
-    nEns = 4
-    ensFcTs = buildTestTsEnsTs(deltaT=deltaT,deltaTLead=deltaTLead,n=n,p=p,nLead=nLead,nEns=nEns)
-    q = n-p-1
-    tt = mainTimeAxis(deltaT, n, p)
-    for i in range(n):
-        ensTs = uchronia.getItem(ensFcTs, i)
-        if i < p:
-            assert np.isnan(ensTs)
-        else:
-            multiTimeSeriesExpected = buildTestHourlyXts(i, tt['tsStartDate'], n=nLead, nEns=nEns,deltaT=deltaTLead)
-            expect_true(all(ensTs == multiTimeSeriesExpected))
+deltaT = 3600*3
+deltaTLead = 180
+n = 20
+p = 8
+nLead = 5
+nEns = 4
+ensFcTs = buildTestTsEnsTs(deltaT=deltaT,deltaTLead=deltaTLead,n=n,p=p,nLead=nLead,nEns=nEns)
+q = n-p-1
+tt = mainTimeAxis(deltaT, n, p)
+for i in range(n):
+    ensTs = uchronia.getItem(ensFcTs, i)
+    if i < p:
+        assert np.isnan(ensTs)
+    else:
+        multiTimeSeriesExpected = buildTestHourlyXts(i, tt['tsStartDate'], n=nLead, nEns=nEns,deltaT=deltaTLead)
+        expect_true(all(ensTs == multiTimeSeriesExpected))
 
 # test_that("Splicing - round trip setting/getting data from an ensemble of time series", {
 def test_splicing():

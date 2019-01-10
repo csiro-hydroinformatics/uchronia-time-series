@@ -56,14 +56,6 @@
     <ClCompile Include="cpp_bindings_generated.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <!--<ClInclude Include="../inst/include/swift_wrapper_setup.h" />-->
-    <!-- <ClInclude Include="../inst/include/uchronia_pb_exports.h" />
-    <ClInclude Include="../inst/include/uchronia_wrapper_setup.h" />
-    <ClInclude Include="../inst/include/uchronia.h" />
-    <ClInclude Include="..\inst\include\rcpp_uchronia.h" /> -->
-    <ClInclude Include="..\..\..\R\pkgs\uchronia\inst\include\uchronia_pb_exports.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)/Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

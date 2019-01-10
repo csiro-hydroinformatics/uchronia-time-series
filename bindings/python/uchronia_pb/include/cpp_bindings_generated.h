@@ -45,6 +45,8 @@ void SaveEnsembleForecastTimeSeriesToNetcdf_cpp(opaque_pointer_handle* tsEnsTs, 
 ;
 bool IsMissingValueItemEnsembleForecastTimeSeries_cpp(opaque_pointer_handle* series, int i)
 ;
+opaque_pointer_handle* GetItemEnsembleForecastTimeSeries_cpp(opaque_pointer_handle* efts, int i)
+;
 opaque_pointer_handle* TimeSeriesFromEnsembleOfTimeSeries_cpp(opaque_pointer_handle* collectionTs, int index)
 ;
 opaque_pointer_handle* TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_cpp(opaque_pointer_handle* efts, int indexInIssueTime, int indexInForecastTime)
@@ -55,7 +57,11 @@ void TransformEachItem_cpp(opaque_pointer_handle* tsEnsTs, const std::string met
 ;
 void SetValueToUnivariateTimeSeries_cpp(opaque_pointer_handle* ts, int index, double value)
 ;
+opaque_pointer_handle* GetItemEnsembleForecastTimeSeriesAsStructure_cpp(opaque_pointer_handle* series, int i)
+;
 opaque_pointer_handle* GetItemEnsembleTimeSeriesAsStructure_cpp(opaque_pointer_handle* series, int i)
+;
+void SetItemEnsembleForecastTimeSeriesAsStructure_cpp(opaque_pointer_handle* series, int i, multi_regular_time_series_data& values)
 ;
 void SetItemEnsembleTimeSeriesAsStructure_cpp(opaque_pointer_handle* collection, int i, multi_regular_time_series_data& values)
 ;

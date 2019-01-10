@@ -20,7 +20,7 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(uchronia_pb, m) {
 
-	py::module::import("cinteroppyb11");
+	//py::module::import("cinteroppyb11");
 
     m.doc() = R"pbdoc(
         Pybind11 uchronia bindings plugin
@@ -34,7 +34,6 @@ PYBIND11_MODULE(uchronia_pb, m) {
            CreateSingleTimeSeriesDataFromStruct
            etc.
     )pbdoc";
-
 	m.def("GetLastStdExceptionMessage", &GetLastStdExceptionMessage_cpp, R"pbdoc( TODO doc for GetLastStdExceptionMessage)pbdoc");
 	m.def("RegisterExceptionCallback", &RegisterExceptionCallback_cpp, R"pbdoc( TODO doc for RegisterExceptionCallback)pbdoc");
 	m.def("DisposeSharedPointer", &DisposeSharedPointer_cpp, R"pbdoc( TODO doc for DisposeSharedPointer)pbdoc");
@@ -53,12 +52,15 @@ PYBIND11_MODULE(uchronia_pb, m) {
 	m.def("SaveEnsembleTimeSeriesToNetcdf", &SaveEnsembleTimeSeriesToNetcdf_cpp, R"pbdoc( TODO doc for SaveEnsembleTimeSeriesToNetcdf)pbdoc");
 	m.def("SaveEnsembleForecastTimeSeriesToNetcdf", &SaveEnsembleForecastTimeSeriesToNetcdf_cpp, R"pbdoc( TODO doc for SaveEnsembleForecastTimeSeriesToNetcdf)pbdoc");
 	m.def("IsMissingValueItemEnsembleForecastTimeSeries", &IsMissingValueItemEnsembleForecastTimeSeries_cpp, R"pbdoc( TODO doc for IsMissingValueItemEnsembleForecastTimeSeries)pbdoc");
+	m.def("GetItemEnsembleForecastTimeSeries", &GetItemEnsembleForecastTimeSeries_cpp, R"pbdoc( TODO doc for GetItemEnsembleForecastTimeSeries)pbdoc");
 	m.def("TimeSeriesFromEnsembleOfTimeSeries", &TimeSeriesFromEnsembleOfTimeSeries_cpp, R"pbdoc( TODO doc for TimeSeriesFromEnsembleOfTimeSeries)pbdoc");
 	m.def("TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries", &TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_cpp, R"pbdoc( TODO doc for TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries)pbdoc");
 	m.def("GetValueFromUnivariateTimeSeries", &GetValueFromUnivariateTimeSeries_cpp, R"pbdoc( TODO doc for GetValueFromUnivariateTimeSeries)pbdoc");
 	m.def("TransformEachItem", &TransformEachItem_cpp, R"pbdoc( TODO doc for TransformEachItem)pbdoc");
 	m.def("SetValueToUnivariateTimeSeries", &SetValueToUnivariateTimeSeries_cpp, R"pbdoc( TODO doc for SetValueToUnivariateTimeSeries)pbdoc");
+	m.def("GetItemEnsembleForecastTimeSeriesAsStructure", &GetItemEnsembleForecastTimeSeriesAsStructure_cpp, R"pbdoc( TODO doc for GetItemEnsembleForecastTimeSeriesAsStructure)pbdoc");
 	m.def("GetItemEnsembleTimeSeriesAsStructure", &GetItemEnsembleTimeSeriesAsStructure_cpp, R"pbdoc( TODO doc for GetItemEnsembleTimeSeriesAsStructure)pbdoc");
+	m.def("SetItemEnsembleForecastTimeSeriesAsStructure", &SetItemEnsembleForecastTimeSeriesAsStructure_cpp, R"pbdoc( TODO doc for SetItemEnsembleForecastTimeSeriesAsStructure)pbdoc");
 	m.def("SetItemEnsembleTimeSeriesAsStructure", &SetItemEnsembleTimeSeriesAsStructure_cpp, R"pbdoc( TODO doc for SetItemEnsembleTimeSeriesAsStructure)pbdoc");
 	m.def("CreatePerfectForecastTimeSeries", &CreatePerfectForecastTimeSeries_cpp, R"pbdoc( TODO doc for CreatePerfectForecastTimeSeries)pbdoc");
 	m.def("ToStructEnsembleTimeSeriesData", &ToStructEnsembleTimeSeriesData_cpp, R"pbdoc( TODO doc for ToStructEnsembleTimeSeriesData)pbdoc");

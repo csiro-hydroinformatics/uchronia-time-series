@@ -57,8 +57,19 @@ cppGen <- configure_cpp_typemap(cppGen)
 
 api_filter <- create_uchronia_api_filter()
 #clrSet(api_filter, 'ContainsNone', character(0))
-blacklist <- clrGet(api_filter, 'ContainsNone')
-clrSet(api_filter, 'ContainsNone', c(blacklist, 'DeleteDoubleArray', 'GetTimeSeriesValues', 'GetProviderTimeSeriesValues'))
+(blacklist <- clrGet(api_filter, 'ContainsNone'))
+
+blacklist <- c(
+"DeleteAnsiStringArray",
+"DeleteAnsiString",
+"DisposeMultiTimeSeriesData",
+"GetDataDimensionsDescription",
+"DisposeDataDimensionsDescriptions",
+'DeleteDoubleArray',
+'GetTimeSeriesValues', 
+'GetProviderTimeSeriesValues')
+
+clrSet(api_filter, 'ContainsNone', blacklist)
 
 
 gen <- create_wrapper_generator(cppGen, api_filter)
@@ -133,6 +144,5 @@ out_dir <- 'c:/tmp/'
 write_simple(pybind_datatypes_func_names, 'pybind_def_file.cpp', directory=out_dir)
 
 
-write_simple(c(wila_structs, c_structs, swift_fcts), 'swift_api.h', directory=out_matlab_native_dir)
 
 
