@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.0)
 
 ## start setting
 SET (this_target datatypes)
@@ -19,17 +19,25 @@ list(APPEND CMAKE_MODULE_PATH "/data/projects/hydroforecast/usr/local/share/cmak
 find_package (NetCDF REQUIRED)
 find_package (YAMLCPP REQUIRED)
 
+find_path (MOIRAI_INCLUDE_DIRS moirai/reference_handle.hpp)
+message ("The path to the moirai headers is ${MOIRAI_INCLUDE_DIRS}")
+FIND_LIBRARY(MOIRAI_LIBRARIES NAMES moirai)
+message ("The path to the moirai library is ${MOIRAI_LIBRARIES}")
+
+
 ## section: include directory
 INCLUDE_DIRECTORIES(
 	../include
-    ${Boost_INCLUDE_DIRS}
-    ${NETCDF_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIRS}
+	${NETCDF_INCLUDE_DIRS}
+	${MOIRAI_INCLUDE_DIRS}
 	${YAMLCPP_INCLUDE_DIRS}
 )
 
 
 ## section: library directories
 LINK_DIRECTORIES(
+# use target_link_libraries instead
 )
 
 
@@ -105,8 +113,8 @@ ADD_LIBRARY(${this_target} SHARED ${${this_target}_SOURCE_FILES} )
 TARGET_LINK_LIBRARIES( ${this_target}
     ${NETCDF_LIBRARIES}
     ${Boost_LIBRARIES}
-	yaml-cpp
-	moirai
+    ${MOIRAI_LIBRARIES}
+    ${YAMLCPP_LIBRARIES}
 )
 
 # Files to be installed - used by packaging stuff below
