@@ -5,7 +5,7 @@
 #include <boost/algorithm/string.hpp>    
 #ifdef __GNUC__
 // https ://jira.csiro.au/browse/WIRADA-350  GNU gcc regex bug; use boost instead
-#if (__GNUC__ <= 4 && __GNUC_MINOR__ < 9)
+#if (__GNUC__ <= 4 && __GNUC_MINOR__ <= 9)
 #include <boost/regex.hpp>
 #else
 #include <regex>
@@ -188,7 +188,7 @@ namespace datatypes
 		{
 #ifdef __GNUC__
 			// https ://jira.csiro.au/browse/WIRADA-350  GNU gcc regex bug; use boost instead
-#if (__GNUC__ <= 4 && __GNUC_MINOR__ < 9)
+#if (__GNUC__ <= 4 && __GNUC_MINOR__ <= 9)
 			using boost::regex;
 			using boost::regex_constants::icase;
 			using boost::regex_search;
