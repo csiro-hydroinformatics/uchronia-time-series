@@ -48,7 +48,15 @@ internalGetTimeSeriesFromProvider <- function(provider, dataIds) {
 internalGetMultipleTimeSeries <- function(simulation, varIds, apiGetTsFunc) {
   if(length(varIds)==0) return(NULL)
   tSeriesList <- lapply(varIds, function(varId) {internalGetSingleModelTts(simulation, varId, apiGetTsFunc) })
-  result <- do.call(merge, tSeriesList)
+  # This function used to use do.call(merge,etc.) however tests done with xts_0.11-0 on R 3.4.4 showed that using a loop
+  # is actually much faster. Completely unexpected but pretty clear. See a revisited https://jira.csiro.au/browse/WIRADA-147
+  n <- length(tSeriesList)
+  result <- tSeriesList[[1]]
+  if (n > 1) {
+    for (i in 2:n) {
+      result <- merge(result, tSeriesList[[i]])
+    }
+  }
   names(result) <- varIds
   result
 }
