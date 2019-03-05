@@ -358,7 +358,8 @@ namespace datatypes
 			static bool EqualsAny(const string& toTest, const vector<string>& toMatch, bool caseSensitive = true);
 			static bool StringPredicate(const string& toTest, const string& toMatch, boost::function<bool(const string&, const string&)> predicate, bool caseSensitive = true);
 			static string Paste(const vector<string>& items, const string& sep = "");
-			static vector<string> Paste(const string& prefix, const vector<string>& postfixes);
+			static vector<string> VPaste(const vector<string>& prefixes, const string& postfix, const string& sep = "");
+			static vector<string> VPaste(const string& prefix, const vector<string>& postfixes, const string& sep = "");
 			static bool ContainsAll(const vector<string>& toTest, const vector<string>& toMatch, bool caseSensitive = true);
 			static bool SetEquals(const vector<string>& toTest, const vector<string>& toMatch, bool caseSensitive = true);
 			static vector<string> SetDiff(const vector<string>& toTest, const vector<string>& toRemove, bool caseSensitive = true);

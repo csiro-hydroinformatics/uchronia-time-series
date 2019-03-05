@@ -76,11 +76,19 @@ namespace datatypes
 			return res;
 		}
 
-		vector<string> StringProcessing::Paste(const string& prefix, const vector<string>& postfixes)
+		vector<string> StringProcessing::VPaste(const vector<string>& prefixes, const string& postfix, const string& sep)
+		{
+			vector<string> result(prefixes.size());
+			for (size_t i = 0; i < prefixes.size(); i++)
+				result[i] = prefixes[i] + sep + postfix;
+			return result;
+		}
+
+		vector<string> StringProcessing::VPaste(const string& prefix, const vector<string>& postfixes, const string& sep)
 		{
 			vector<string> result(postfixes.size());
 			for (size_t i = 0; i < postfixes.size(); i++)
-				result[i] = prefix + postfixes[i];
+				result[i] = prefix + sep + postfixes[i];
 			return result;
 		}
 
