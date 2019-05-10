@@ -104,7 +104,7 @@ ADD_DEFINITIONS(
     )
 
 # JM needed to use this as of 2016-07, after an upgrade to latest Debian setup. The Add_definitions macro was not working, somehow.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L$ENV{BOOST_LIBRARYDIR} -std=c++11")  #  required on some linux clusters 
 
 ## section: add target
 ADD_LIBRARY(${this_target} SHARED ${${this_target}_SOURCE_FILES} )
