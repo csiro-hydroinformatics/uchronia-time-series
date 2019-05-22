@@ -1013,7 +1013,7 @@ namespace datatypes
 				sec_type remainder = delta % deltaNew;
 				if (remainder != 0)
 					throw std::logic_error("Disaggregate: the starting time step must be a multiple of the target time step");
-				sec_type multiple = delta / deltaNew;
+				size_t multiple = (size_t)(delta / deltaNew);
 
 				size_t srcSize = series.GetLength();
 				size_t targetSize = series.GetLength() * multiple;
