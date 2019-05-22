@@ -41,7 +41,12 @@ include_directories(
     ${NETCDF_INCLUDE_DIRS}
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L$ENV{BOOST_LIBRARYDIR} -std=c++11")  #  required on some linux clusters 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")  #  required on some linux clusters 
+
+if(DEFINED ENV{BOOST_LIBRARYDIR})
+	message("Detected environment variable BOOST_LIBRARYDIR, adding to CMAKE_CXX_FLAGS")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L$ENV{BOOST_LIBRARYDIR}")  #  required on some linux clusters 
+endif()
 
 ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 TARGET_LINK_LIBRARIES( ${this_target}
