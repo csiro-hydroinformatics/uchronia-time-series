@@ -1013,7 +1013,10 @@ namespace datatypes
 				sec_type remainder = delta % deltaNew;
 				if (remainder != 0)
 					throw std::logic_error("Disaggregate: the starting time step must be a multiple of the target time step");
-				size_t multiple = (size_t)(delta / deltaNew);
+
+				sec_type multiple = delta / deltaNew;
+				// NOTE: I had changed from sec_type to size_t because of a compilation issue with gcc 8.3.0 (??), but this breaks the UT on calling AddSteps
+				// size_t multiple = (size_t)(delta / deltaNew);
 
 				size_t srcSize = series.GetLength();
 				size_t targetSize = series.GetLength() * multiple;
