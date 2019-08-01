@@ -6,6 +6,7 @@
 #include "datatypes/time_step_implementation.h"
 
 using namespace boost::posix_time;
+using sec_type = boost::posix_time::time_duration::sec_type;
 
 namespace datatypes
 {
@@ -114,6 +115,8 @@ namespace datatypes
 			 */
 
 			time_duration GetRegularStepDuration() const;
+
+			const ptime AddSteps(const ptime& startTimeStep, sec_type n) const;
 
 			const ptime AddSteps(const ptime& startTimeStep, size_t n) const;
 

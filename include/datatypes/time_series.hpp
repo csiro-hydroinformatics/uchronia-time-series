@@ -1005,7 +1005,7 @@ namespace datatypes
 			static SeriesType DisaggregateTimeStep(const SeriesType& series, const string& argument) {
 
 				using sec_type = boost::posix_time::time_duration::sec_type;
-				auto newTimeStep = TimeStep::Parse(argument);
+				TimeStep newTimeStep = TimeStep::Parse(argument);
 				sec_type deltaNew = newTimeStep.GetRegularStepDuration().total_seconds();
 				sec_type delta = series.GetTimeStep().GetRegularStepDuration().total_seconds();
 				if (deltaNew > delta)
@@ -1022,7 +1022,7 @@ namespace datatypes
 				size_t targetSize = series.GetLength() * multiple;
 				if (targetSize < 1)
 					throw std::logic_error("Disaggregate: source lengh is too short to aggregate");
-				auto newStartDate = newTimeStep.AddSteps(series.GetStartDate(), -(multiple - 1));
+				ptime newStartDate = newTimeStep.AddSteps(series.GetStartDate(), -(multiple - 1));
 				SeriesType newTs(0.0, targetSize, newStartDate, newTimeStep);
 
 				for (size_t i = 0; i < srcSize; i++)
