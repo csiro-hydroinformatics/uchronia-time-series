@@ -225,6 +225,7 @@ namespace datatypes
 			{
 				int durationSeconds = datatypes::utils::StringProcessing::Parse<int>(s);
 				tstep = TimeStep::FromSeconds(durationSeconds);
+				return true;
 			}
 			else
 				return false;
