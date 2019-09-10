@@ -400,7 +400,7 @@ namespace datatypes
 			catch (std::exception& c)
 			{
 				delete result;
-				throw std::bad_cast(string("Failed to convert vector of ") +
+				throw datatypes::utils::bad_lexical_cast(string("Failed to convert vector of ") +
 					string(typeid(TFrom).name()) +
 					string(" to an array of ") +
 					string(typeid(TTo).name()));
@@ -423,7 +423,7 @@ namespace datatypes
 					string(" to a vector of ") +
 					string(typeid(TTo).name()));
 
-				throw std::bad_cast(msg.c_str());
+				throw datatypes::utils::bad_lexical_cast(msg);
 			}
 		}
 
