@@ -217,7 +217,7 @@ namespace datatypes
 			}
 			else if (regex_search(s, rexs))
 			{
-				int durationSeconds = datatypes::utils::StringProcessing::Parse<int>(s);
+				int durationSeconds = datatypes::utils::Parse<int>(s);
 				tstep = TimeStep::FromSeconds(durationSeconds);
 			}
 			else

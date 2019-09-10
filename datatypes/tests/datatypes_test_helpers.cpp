@@ -402,7 +402,7 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 
 		TestTimeSeriesEnsembleTimeSeriesStore::PtrEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::Read(const std::string& ensembleIdentifier)
 		{
-			int i = boost::lexical_cast<int>(ensembleIdentifier);
+			//int i = boost::lexical_cast<int>(ensembleIdentifier);
 			datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
 			MultiTimeSeries<TTimeSeries<double>*>* blah = nullptr; //ensFts->GetValue(i);
 			return blah;

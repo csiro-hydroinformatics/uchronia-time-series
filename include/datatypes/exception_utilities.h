@@ -1,7 +1,6 @@
 #pragma once
 #include <string> 
 #include <stdexcept> 
-#include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 #include "datatypes/io_helper.h"
 
@@ -16,9 +15,10 @@ namespace datatypes
 	{
 		template <typename T>
 		static void ThrowNotInRange(T value, T bound, const string& variableName, const string& condition, const string& boundType) {
-			string valStr = boost::lexical_cast<string, T>(value);
-			throw std::out_of_range(string("variable '") + variableName + "' (=" + valStr + ") is " + condition +
-				" than its allowed " + boundType + " value " + boost::lexical_cast<string, T>(bound));
+			throw std::out_of_range(string("variable '") + variableName + "' (=" +
+				datatypes::utils::ToString<T>(value) + ") is " + condition +
+				" than its allowed " + boundType + " value " + 
+				datatypes::utils::ToString<T>(bound));
 		}
 
 		template <typename T>

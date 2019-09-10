@@ -1,10 +1,10 @@
 
 #include <fstream>
 #include "boost/date_time/gregorian/gregorian.hpp"
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include "yaml-cpp/yaml.h"
+#include "datatypes/common.h"
 #include "datatypes/exception_utilities.h"
 #include "datatypes/time_series_io.hpp"
 #include "datatypes/time_series_store.hpp"
@@ -362,12 +362,12 @@ namespace datatypes
 
 			void SwiftNetCDFAccess::ThrowOnFileOpenFail(const string& filename, int code)
 			{
-				throw std::logic_error(string("Failed to open file ") + filename + " with code " + boost::lexical_cast<string>(code));
+				throw std::logic_error(string("Failed to open file ") + filename + " with code " + std::to_string(code));
 			}
 
 			void SwiftNetCDFAccess::ThrowOnVarInquiryFail(const string& varName, int code)
 			{
-				throw std::logic_error(string("Failed to query on variable ") + varName + " with code " + boost::lexical_cast<string>(code));
+				throw std::logic_error(string("Failed to query on variable ") + varName + " with code " + std::to_string(code));
 			}
 
 			SwiftNetCDFAccess::~SwiftNetCDFAccess()
@@ -405,8 +405,8 @@ namespace datatypes
 				int ind = (tzp > 0) ? tzp : tzn;
 				int direction = (tzp > 0) ? 1 : -1;
 				std::string timezone = t2string.substr(ind + 1);
-				int hours = boost::lexical_cast<int>(timezone.substr(0, 2)) * direction;
-				int minutes = boost::lexical_cast<int>(timezone.substr(2, 2)) * direction;
+				int hours = datatypes::utils::Parse<int>(timezone.substr(0, 2)) * direction;
+				int minutes = datatypes::utils::Parse<int>(timezone.substr(2, 2)) * direction;
 				time_duration inputOffset = time_duration(hours, minutes, 0);
 				time_duration diff = inputOffset - TimeOffsetIn;
 				startDate = startDate - diff;
@@ -1082,7 +1082,7 @@ namespace datatypes
 			void SwiftNetCDFAccess::DefineVariable(const VariableDefinition& d, int& code)
 			{
 				string varName = d.Name;
-				int varNumDims = boost::lexical_cast<int>(d.Dimensions);
+				int varNumDims = datatypes::utils::Parse<int>(d.Dimensions);
 				int precision = d.GetPrecision();
 				vector<int> vardimids = GetVarDims(varNumDims);
 				int variableVarId;
@@ -1461,12 +1461,10 @@ namespace datatypes
 
 			size_t SwiftNetCDFAccess::IndexForIdentifier(const string& identifier) const
 			{
-				using boost::lexical_cast;
-
 				if (identifier == string(""))
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Identifier provided cannot be an empty string.");
 
-				int intIdentifier = lexical_cast<int>(identifier);
+				int intIdentifier = datatypes::utils::Parse<int>(identifier);
 
 				vector<int> testVector(stationIds);
 
@@ -1487,7 +1485,7 @@ namespace datatypes
 			vector<string> SwiftNetCDFAccess::GetIdentifiers() const
 			{
 				vector<int> testVector(stationIds);
-				std::function<string(const int&)> f = [&](const int& p) { return boost::lexical_cast<string>(p); };
+				std::function<string(const int&)> f = [&](const int& p) { return std::to_string(p); };
 				return SwiftNetCDFAccess::Convert<int, string>(testVector, f);
 			}
 
