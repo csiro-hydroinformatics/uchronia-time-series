@@ -360,7 +360,7 @@ namespace datatypes
 			try {
 				return boost::lexical_cast<string>(value);
 			}
-			catch (boost::bad_lexical_cast & c)
+			catch (boost::bad_lexical_cast&)
 			{
 				throw datatypes::utils::bad_lexical_cast(string("Failed to convert a value of type '") + string(typeid(Source).name()) + string("' to a string"));
 			}
@@ -416,19 +416,21 @@ namespace datatypes
 					result[i] = (TTo)src[i];
 				return result;
 			}
-			catch (std::exception & c)
+			catch (std::exception&)
 			{
-				throw std::bad_cast(string("Failed to convert vector of ") +
+				string msg = (string("Failed to convert vector of ") +
 					string(typeid(TFrom).name()) +
 					string(" to a vector of ") +
 					string(typeid(TTo).name()));
+
+				throw std::bad_cast(msg.c_str());
 			}
 		}
 
 		template<class TTo>
 		vector<TTo> Convert(const vector<string> & src)
 		{
-			string& strId;
+			string strId;
 			vector<TTo> result(src.size());
 			try {
 				for (int i = 0; i < src.size(); i++)
@@ -438,9 +440,8 @@ namespace datatypes
 				}
 				return result;
 			}
-			catch (boost::bad_lexical_cast & c)
+			catch (boost::bad_lexical_cast&)
 			{
-				delete result;
 				throw datatypes::utils::bad_lexical_cast(string("Failed to parse '") + strId + string("' in an vector as a ") + string(typeid(TTo).name()));
 			}
 		}
