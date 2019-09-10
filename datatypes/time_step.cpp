@@ -99,12 +99,6 @@ namespace datatypes
 			return tsImpl->GetName();
 		}
 
-		const ptime TimeStep::AddSteps(const ptime& startTimeStep, sec_type n) const
-		{
-			double x = (double)n;
-			return AddSteps(startTimeStep, x);
-		}
-
 		const ptime TimeStep::AddSteps(const ptime& startTimeStep, size_t n) const
 		{
 			size_t max = 1000000000000 /*1e12*/ ;

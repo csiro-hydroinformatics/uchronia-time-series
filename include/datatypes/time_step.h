@@ -116,7 +116,7 @@ namespace datatypes
 
 			time_duration GetRegularStepDuration() const;
 
-			const ptime AddSteps(const ptime& startTimeStep, sec_type n) const;
+			//const ptime AddSteps(const ptime& startTimeStep, sec_type n) const;
 
 			const ptime AddSteps(const ptime& startTimeStep, size_t n) const;
 
