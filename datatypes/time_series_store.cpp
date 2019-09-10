@@ -2,7 +2,6 @@
 #include <map>
 
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 

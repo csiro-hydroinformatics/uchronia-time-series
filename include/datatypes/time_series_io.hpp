@@ -807,47 +807,26 @@ namespace datatypes
 				template<class TTo>
 				static TTo* ConvertToArray(const vector<string>& src)
 				{
-					using boost::lexical_cast;
-					TTo* result = new TTo[src.size()];
-					for (int i = 0; i < src.size(); i++)
-					{
-						result[i] = lexical_cast<TTo>(src[i]);
-					}
-					return result;
+					return datatypes::utils::ConvertToArray<TTo>(src);
 				}
 
 				template<class TFrom, class TTo>
 				static TTo* ConvertToArray(const vector<TFrom>& src)
 				{
-					TTo* result = new TTo[src.size()];
-					for (int i = 0; i < src.size(); i++)
-					{
-						result[i] = (TTo)src[i];
-					}
-					return result;
+					return datatypes::utils::ConvertToArray<TFrom, TTo>(src);
 				}
 
 				template<class TFrom, class TTo>
 				static vector<TTo> Convert(const vector<TFrom>& src)
 				{
-					vector<TTo> result(src.size());
-					for (int i = 0; i < src.size(); i++)
-						result[i] = (TTo)src[i];
-					return result;
+					return datatypes::utils::Convert<TFrom, TTo>(src);
 				}
 
 				template<class TTo>
 				vector<TTo> Convert(const vector<string>& src)
 				{
-					using boost::lexical_cast;
-					vector<TTo> result(src.size());
-					for (int i = 0; i < src.size(); i++)
-					{
-						result[i] = lexical_cast<TTo>(src[i]);
-					}
-					return result;
+					return datatypes::utils::Convert<TTo>(src);
 				}
-
 
 				template<class T>
 				static vector<T> ToVector(T* values, size_t n)
@@ -1560,7 +1539,7 @@ namespace datatypes
 					DataSummaryForIdentifier() +
 					string(", start: ") + to_iso_extended_string(start) +
 					string(", end: ") + to_iso_extended_string(end) +
-					string(", time length: ") + boost::lexical_cast<string>(this->GetNcAccess()->GetTimeLength()) +
+					string(", time length: ") + std::to_string(this->GetNcAccess()->GetTimeLength()) +
 					string(", time step: ") + this->GetNcAccess()->GetTimeStep().GetName();
 				return result;
 			}
@@ -2719,10 +2698,10 @@ public:
 				string result =
 					string("variable name: ") + varName +
 					string(", identifier: ") + varIdentifier +
-					string(", index: ") + boost::lexical_cast<string>(index) +
+					string(", index: ") + std::to_string(index) +
 					string(", start: ") + to_iso_extended_string(start) +
 					string(", end: ") + to_iso_extended_string(end) +
-					string(", time length: ") + boost::lexical_cast<string>(GetLength()) +
+					string(", time length: ") + std::to_string(GetLength()) +
 					string(", time step: <not yet supported>");
 				return result;
 			}

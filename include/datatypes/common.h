@@ -332,12 +332,119 @@ namespace datatypes
 		 *
 		 * \brief	A bad_lexical_cast that inherits from std::exception, unlike Boost's. Needed for graceful C API interop.
 		 */
-
 		class DATATYPES_DLL_LIB bad_lexical_cast : public std::invalid_argument
 		{
 		public:
 			bad_lexical_cast(const string& msg);
 		};
+
+		/**
+		 * \brief	Wraps boost::lexical_cast with a try/catch; 
+		 *          rethrows an exception that inherits from std::exception and a more useful error message.
+		 */
+		template <typename Target>
+		static Target Parse(const string& strId)
+		{
+			try {
+				return boost::lexical_cast<Target>(strId);
+			}
+			catch (boost::bad_lexical_cast&)
+			{
+				throw datatypes::utils::bad_lexical_cast(string("Failed to parse '") + strId + string("' as a ") + string(typeid(Target).name()));
+			}
+		}
+
+		template <typename Source>
+		static string ToString(const Source& value)
+		{
+			try {
+				return boost::lexical_cast<string>(value);
+			}
+			catch (boost::bad_lexical_cast&)
+			{
+				throw datatypes::utils::bad_lexical_cast(string("Failed to convert a value of type '") + string(typeid(Source).name()) + string("' to a string"));
+			}
+		}
+
+		template<class TTo>
+		static TTo* ConvertToArray(const vector<string>& src)
+		{
+			string& strId;
+			TTo* result = new TTo[src.size()];
+			try {
+				for (int i = 0; i < src.size(); i++)
+				{
+					strId = src[i];
+					result[i] = boost::lexical_cast<TTo>(strId);
+				}
+				return result;
+			}
+			catch (boost::bad_lexical_cast & c)
+			{
+				delete result;
+				throw datatypes::utils::bad_lexical_cast(string("Failed to parse '") + strId + string("' in an vector as a ") + string(typeid(TTo).name()));
+			}
+		}
+
+		template<class TFrom, class TTo>
+		static TTo* ConvertToArray(const vector<TFrom>& src)
+		{
+			TTo* result = new TTo[src.size()];
+			try {
+				for (int i = 0; i < src.size(); i++)
+				{
+					result[i] = (TTo)src[i];
+				}
+				return result;
+			}
+			catch (std::exception& c)
+			{
+				delete result;
+				throw std::bad_cast(string("Failed to convert vector of ") +
+					string(typeid(TFrom).name()) +
+					string(" to an array of ") +
+					string(typeid(TTo).name()));
+			}
+		}
+
+		template<class TFrom, class TTo>
+		static vector<TTo> Convert(const vector<TFrom>& src)
+		{
+			vector<TTo> result(src.size());
+			try {
+				for (int i = 0; i < src.size(); i++)
+					result[i] = (TTo)src[i];
+				return result;
+			}
+			catch (std::exception&)
+			{
+				string msg = (string("Failed to convert vector of ") +
+					string(typeid(TFrom).name()) +
+					string(" to a vector of ") +
+					string(typeid(TTo).name()));
+
+				throw std::bad_cast(msg.c_str());
+			}
+		}
+
+		template<class TTo>
+		vector<TTo> Convert(const vector<string> & src)
+		{
+			string strId;
+			vector<TTo> result(src.size());
+			try {
+				for (int i = 0; i < src.size(); i++)
+				{
+					strId = src[i];
+					result[i] = boost::lexical_cast<TTo>(strId);
+				}
+				return result;
+			}
+			catch (boost::bad_lexical_cast&)
+			{
+				throw datatypes::utils::bad_lexical_cast(string("Failed to parse '") + strId + string("' in an vector as a ") + string(typeid(TTo).name()));
+			}
+		}
 
 		class DATATYPES_DLL_LIB StringProcessing
 		{
@@ -364,30 +471,6 @@ namespace datatypes
 			static bool SetEquals(const vector<string>& toTest, const vector<string>& toMatch, bool caseSensitive = true);
 			static vector<string> SetDiff(const vector<string>& toTest, const vector<string>& toRemove, bool caseSensitive = true);
 			static vector<string> Unique(const vector<string>& set);
-
-			template <typename Target>
-			static Target Parse(const string& strId)
-			{
-				try {
-					return boost::lexical_cast<Target>(strId);
-				}
-				catch (boost::bad_lexical_cast&)
-				{
-					throw datatypes::utils::bad_lexical_cast(string("Failed to convert '") + strId + string("' via a lexical cast to a ") + string(typeid(Target).name()));
-				}
-			}
-
-			template <typename Target>
-			static string ToString(const Target& value)
-			{
-				try {
-					return boost::lexical_cast<string>(value);
-				}
-				catch (boost::bad_lexical_cast& c)
-				{
-					throw datatypes::utils::bad_lexical_cast(string("Failed to convert a value of type '") + string(typeid(Target).name()) + string("' to a string"));
-				}
-			}
 
 			static const string kElementSeparatorToken;
 			static string BuildIdentifier(vector<string> &tokens, int fromIndex, int toIndex = -1, const string& sep=StringProcessing::kElementSeparatorToken);
