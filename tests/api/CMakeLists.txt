@@ -28,6 +28,7 @@ find_path (MOIRAI_INCLUDE_DIRS moirai/reference_handle.hpp)
 
 
 FIND_LIBRARY(UCHRONIA_LIBRARIES NAMES datatypes)
+FIND_LIBRARY(MOIRAI_LIBRARIES NAMES moirai)
 
 SET (${this_target}_SOURCE_FILES
     main.cpp
