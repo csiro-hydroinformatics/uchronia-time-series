@@ -52,9 +52,9 @@ ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 TARGET_LINK_LIBRARIES( ${this_target}
     ${Boost_LIBRARIES}
     ${NETCDF_LIBRARIES}
-    datatypes
-    yaml-cpp
-    moirai
+ 	${UCHRONIA_LIBRARIES}
+	${YAMLCPP_LIBRARIES}
+    ${MOIRAI_LIBRARIES}
 )
 
 # Files to be installed

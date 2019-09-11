@@ -23,6 +23,11 @@ find_path (datatypes_INCLUDE_DIRS NAMES datatypes/time_series.hpp)
 # Find catch.hpp
 find_path (catch_INCLUDE_DIRS NAMES catch/catch.hpp PATHS )
 find_path (MOIRAI_INCLUDE_DIRS moirai/reference_handle.hpp)
+FIND_LIBRARY(MOIRAI_LIBRARIES NAMES moirai)
+message ("The path to the moirai library is ${MOIRAI_LIBRARIES}")
+
+find_package (YAMLCPP REQUIRED)
+FIND_LIBRARY(UCHRONIA_LIBRARIES NAMES datatypes)
 
 SET (${this_target}_SOURCE_FILES
     main.cpp
@@ -54,10 +59,10 @@ endif()
 ADD_EXECUTABLE(${this_target} ${${this_target}_SOURCE_FILES})
 TARGET_LINK_LIBRARIES( ${this_target}
     ${Boost_LIBRARIES}
-    datatypes
+ 	${UCHRONIA_LIBRARIES}
     ${NETCDF_LIBRARIES}
-    yaml-cpp
-    moirai
+    ${YAMLCPP_LIBRARIES}
+    ${MOIRAI_LIBRARIES}
 )
 
 # Files to be installed
