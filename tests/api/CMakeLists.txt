@@ -19,11 +19,15 @@ endif()
 find_package (NetCDF REQUIRED)
 find_package(Boost 1.48.0 COMPONENTS filesystem system date_time REQUIRED)
 
+find_package (YAMLCPP REQUIRED)
 
 find_path (datatypes_INCLUDE_DIRS NAMES datatypes/time_series.hpp)
 # Find catch.hpp
 find_path (catch_INCLUDE_DIRS NAMES catch/catch.hpp PATHS )
 find_path (MOIRAI_INCLUDE_DIRS moirai/reference_handle.hpp)
+
+
+FIND_LIBRARY(UCHRONIA_LIBRARIES NAMES datatypes)
 
 SET (${this_target}_SOURCE_FILES
     main.cpp
