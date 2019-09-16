@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
-SET (VERSION 0.5.9)
+cmake_minimum_required(VERSION 3.0)
+SET (VERSION 2.1.1)
 
 IF(DEFINED CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of
