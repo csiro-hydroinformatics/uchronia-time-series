@@ -14,6 +14,25 @@ import os
 from refcount.interop import *
 from refcount.putils import library_short_filename
 
+def prepend_path_env (added_paths, to_env='PATH'):
+    path_sep = ';'
+    prior_path_env = os.environ.get(to_env)
+    prior_paths = prior_path_env.split(path_sep)
+    # prior_paths = tolower(prior_paths)
+    added_paths = [os.path.join(x, subfolder) for x in added_paths]
+    added_paths = [x for x in added_paths if os.path.exists(x)]
+    # TODO: check for duplicate folders BUT if using 'set' for set difference we'd mess up order which is wrong in principle.
+    new_paths = prior_paths + added_paths
+    new_env_val = path_sep.join(new_paths)
+    return new_env_val
+    # if(file.exists(sharedLibPath)):
+    #     if(file.exists(fullpath)):
+    #     if(!(tolower(fullpath) %in% prior_paths)):
+    #         startup_msg = appendstartup_msg(paste('Appending to the PATH env var:', fullpath), startup_msg)
+    #         new_paths = c(new_paths, fullpath)
+    #         else 
+    #         startup_msg = appendstartup_msg(paste('Path', fullpath, 'already found in PATH environment variable'), startup_msg)
+
 def build_new_path_env (from_env='LIBRARY_PATH', to_env='PATH'):
     startup_msg = ''
     if(sys.platform == 'win32'):
@@ -27,34 +46,11 @@ def build_new_path_env (from_env='LIBRARY_PATH', to_env='PATH'):
             else:
                 subfolder = '32'
             shared_lib_paths_vec = shared_lib_paths.split(path_sep)
-            prior_path_env = os.environ.get(to_env)
-            prior_paths = prior_path_env.split(path_sep)
-            # prior_paths = tolower(prior_paths)
-            added_paths = [os.path.join(x, subfolder) for x in shared_lib_paths_vec]
-            added_paths = [x for x in added_paths if os.path.exists(x)]
-            # TODO: check for duplicate folders BUT if using 'set' for set difference we'd mess up order which is wrong in principle.
-            new_paths = prior_paths + added_paths
-            new_env_val = path_sep.join(new_paths)
-            return new_env_val
-            # if(file.exists(sharedLibPath)):
-            #     if(file.exists(fullpath)):
-            #     if(!(tolower(fullpath) %in% prior_paths)):
-            #         startup_msg = appendstartup_msg(paste('Appending to the PATH env var:', fullpath), startup_msg)
-            #         new_paths = c(new_paths, fullpath)
-            #         else 
-            #         startup_msg = appendstartup_msg(paste('Path', fullpath, 'already found in PATH environment variable'), startup_msg)
+            return prepend_path_env(shared_lib_paths_vec, to_env=to_env)
 
 def update_path_windows (from_env='LIBRARY_PATH', to_env='PATH'):
     if(sys.platform == 'win32'):
         os.environ[to_env] = build_new_path_env(from_env, to_env)
-        # if(file.exists(sharedLibPath)):
-        #     if(file.exists(fullpath)):
-        #     if(!(tolower(fullpath) %in% prior_paths)):
-        #         startup_msg = appendstartup_msg(paste('Appending to the PATH env var:', fullpath), startup_msg)
-        #         new_paths = c(new_paths, fullpath)
-        #         else 
-        #         startup_msg = appendstartup_msg(paste('Path', fullpath, 'already found in PATH environment variable'), startup_msg)
-
 
 def none_or_empty(x):
     return (x is None or x == '')
