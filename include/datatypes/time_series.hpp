@@ -1022,7 +1022,7 @@ namespace datatypes
 				size_t targetSize = series.GetLength() * multiple;
 				if (targetSize < 1)
 					throw std::logic_error("Disaggregate: source lengh is too short to aggregate");
-				ptime newStartDate = newTimeStep.AddSteps(series.GetStartDate(), -(multiple - 1));
+				ptime newStartDate = newTimeStep.AddSteps(series.GetStartDate(), -( ((double)multiple) - 1));
 				SeriesType newTs(0.0, targetSize, newStartDate, newTimeStep);
 
 				for (size_t i = 0; i < srcSize; i++)
