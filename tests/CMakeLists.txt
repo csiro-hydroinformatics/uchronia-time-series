@@ -7,9 +7,9 @@ if (WIN32)
     set(BOOST_INCLUDEDIR "c:/local/include")
     set(BOOST_LIBRARYDIR "c:/local/libs/64")
 else()
-    list(APPEND CMAKE_MODULE_PATH "/usr/local/share/cmake/Modules")
-    list(APPEND CMAKE_MODULE_PATH "~/share/cmake/Modules") # Pearcey
-    list(APPEND CMAKE_MODULE_PATH "/data/projects/hydroforecast/usr/local/share/cmake/Modules") # Pearcey
+    # list(APPEND CMAKE_MODULE_PATH "/usr/local/share/cmake/Modules")
+    # list(APPEND CMAKE_MODULE_PATH "~/share/cmake/Modules") # Pearcey
+    # list(APPEND CMAKE_MODULE_PATH "/data/projects/hydroforecast/usr/local/share/cmake/Modules") # Pearcey
 endif()
 
 # # (Julien Lerat)
