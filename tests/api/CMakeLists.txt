@@ -44,6 +44,7 @@ include_directories(
    ${datatypes_INCLUDE_DIRS}
    ${MOIRAI_INCLUDE_DIRS}
     ${NETCDF_INCLUDE_DIRS}
+    ${YAMLCPP_INCLUDE_DIRS}
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")  #  required on some linux clusters 

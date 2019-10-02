@@ -27,6 +27,8 @@ FIND_LIBRARY(MOIRAI_LIBRARIES NAMES moirai)
 message ("The path to the moirai library is ${MOIRAI_LIBRARIES}")
 
 find_package (YAMLCPP REQUIRED)
+# message ("The path to the yamlcpp headers is ${YAMLCPP_INCLUDE_DIRS}")
+
 FIND_LIBRARY(UCHRONIA_LIBRARIES NAMES datatypes)
 
 SET (${this_target}_SOURCE_FILES
@@ -47,6 +49,7 @@ include_directories(
    ${catch_INCLUDE_DIRS}
    ${MOIRAI_INCLUDE_DIRS}
    ${NETCDF_INCLUDE_DIRS}
+   ${YAMLCPP_INCLUDE_DIRS}
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")  #  required on some linux clusters 

@@ -19,6 +19,7 @@ list(APPEND CMAKE_MODULE_PATH "/data/projects/hydroforecast/usr/local/share/cmak
 
 find_package (NetCDF REQUIRED)
 find_package (YAMLCPP REQUIRED)
+message ("The path to the yamlcpp headers is ${YAMLCPP_INCLUDE_DIRS}")
 
 find_path (MOIRAI_INCLUDE_DIRS moirai/reference_handle.hpp)
 message ("The path to the moirai headers is ${MOIRAI_INCLUDE_DIRS}")
