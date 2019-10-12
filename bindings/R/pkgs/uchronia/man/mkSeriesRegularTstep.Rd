@@ -4,8 +4,12 @@
 \alias{mkSeriesRegularTstep}
 \title{Make a time series with a regular time step}
 \usage{
-mkSeriesRegularTstep(startDate, x, isMissingFunc = function(val) {     val < 0
-  }, deltaTSec = 3600)
+mkSeriesRegularTstep(
+  startDate,
+  x,
+  isMissingFunc = function(val) {     val < 0 },
+  deltaTSec = 3600
+)
 }
 \arguments{
 \item{startDate}{the start date of the time series. It must be a POSIXct object.}

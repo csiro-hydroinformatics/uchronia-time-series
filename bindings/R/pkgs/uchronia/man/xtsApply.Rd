@@ -4,8 +4,10 @@
 \alias{xtsApply}
 \title{Apply a function to each row of a time series}
 \usage{
-xtsApply(tSeries, func = function(x) {     quantile(x, probs = c(0.05, 0.5,
-  0.95)) })
+xtsApply(
+  tSeries,
+  func = function(x) {     quantile(x, probs = c(0.05, 0.5, 0.95)) }
+)
 }
 \arguments{
 \item{tSeries}{a time series of class 'xts'}

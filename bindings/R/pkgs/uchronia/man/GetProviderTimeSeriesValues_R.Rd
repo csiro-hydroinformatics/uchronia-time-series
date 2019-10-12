@@ -4,8 +4,12 @@
 \alias{GetProviderTimeSeriesValues_R}
 \title{GetProviderTimeSeriesValues_R}
 \usage{
-GetProviderTimeSeriesValues_R(dataLibrary, variableIdentifier, values,
-  arrayLength)
+GetProviderTimeSeriesValues_R(
+  dataLibrary,
+  variableIdentifier,
+  values,
+  arrayLength
+)
 }
 \arguments{
 \item{dataLibrary}{R type equivalent for C++ type TIME_SERIES_PROVIDER_PTR}

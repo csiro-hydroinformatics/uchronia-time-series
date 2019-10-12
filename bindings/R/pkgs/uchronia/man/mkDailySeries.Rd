@@ -4,7 +4,9 @@
 \alias{mkDailySeries}
 \title{Make an daily time series}
 \usage{
-mkDailySeries(startDate, x, isMissingFunc = function(val) {     val < 0 })
+mkDailySeries(startDate, x, isMissingFunc = function(val) {
+    val < 0
+})
 }
 \arguments{
 \item{startDate}{the start date of the time series. It must be a POSIXct object.}

@@ -4,8 +4,14 @@
 \alias{CreatePerfectForecastTimeSeries_R}
 \title{CreatePerfectForecastTimeSeries_R}
 \usage{
-CreatePerfectForecastTimeSeries_R(observations, start, length, timeStepName,
-  offsetForecasts, leadTime)
+CreatePerfectForecastTimeSeries_R(
+  observations,
+  start,
+  length,
+  timeStepName,
+  offsetForecasts,
+  leadTime
+)
 }
 \arguments{
 \item{observations}{R type equivalent for C++ type TIME_SERIES_PTR}

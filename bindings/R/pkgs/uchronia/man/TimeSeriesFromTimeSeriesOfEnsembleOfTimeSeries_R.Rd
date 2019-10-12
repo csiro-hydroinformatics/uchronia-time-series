@@ -4,8 +4,11 @@
 \alias{TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_R}
 \title{TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_R}
 \usage{
-TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_R(efts, indexInIssueTime,
-  indexInForecastTime)
+TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_R(
+  efts,
+  indexInIssueTime,
+  indexInForecastTime
+)
 }
 \arguments{
 \item{efts}{R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR}

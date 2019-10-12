@@ -4,7 +4,9 @@
 \alias{mkHourlySeries}
 \title{Make an hourly time series}
 \usage{
-mkHourlySeries(startDate, x, isMissingFunc = function(val) {     val < 0 })
+mkHourlySeries(startDate, x, isMissingFunc = function(val) {
+    val < 0
+})
 }
 \arguments{
 \item{startDate}{the start date of the time series. It must be a POSIXct object.}
