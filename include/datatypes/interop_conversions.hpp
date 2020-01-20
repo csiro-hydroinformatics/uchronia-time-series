@@ -4,6 +4,7 @@
 #include "datatypes/common.h"
 #include "datatypes/time_series_io.hpp"
 #include "datatypes/interop_conversions.h"
+#include "cinterop/timeseries_interop.hpp"
 
 using namespace cinterop::utils;
 using namespace datatypes::timeseries;
@@ -24,3 +25,17 @@ static regular_time_series_geometry ToTimeSeriesGeomStruct(const Tts& ts)
 	ToTimeSeriesGeomStruct(ts, g);
 	return g;
 }
+
+namespace cinterop
+{
+	namespace timeseries
+	{
+		template<>
+		inline multi_regular_time_series_data* to_multi_regular_time_series_data_ptr<TimeSeries>(const TimeSeries& ts)
+		{
+			return ToMultiTimeSeriesDataPtr(ts);
+		}
+	}
+}
+
+
