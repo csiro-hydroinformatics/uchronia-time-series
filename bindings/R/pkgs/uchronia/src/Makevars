@@ -1,7 +1,9 @@
 
 INSTDIR=../inst
 
-CPP_LANG_FLAGS = --std=c++0x 
+# For debugging the bindings
+CPP_LANG_FLAGS = --std=c++0x -g -O0 
+# CPP_LANG_FLAGS = --std=c++0x 
 # an intel compiler still requires 'future' flag for 5yrs old stuff.
 ifeq "$(CXX)" "icpc"
 CPP_LANG_FLAGS = -std=c++0x 
