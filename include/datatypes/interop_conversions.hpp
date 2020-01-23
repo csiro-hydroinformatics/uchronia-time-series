@@ -36,6 +36,26 @@ namespace cinterop
 			return ToMultiTimeSeriesDataPtr(ts);
 		}
 	}
+	namespace statistics
+	{
+		template<>
+		inline statistic_definition* to_statistic_definition_ptr<TimeSeries>(const std::string& model_variable_id, const std::string& statistic_identifier, const std::string& objective_identifier, const std::string& objective_name,
+			const date_time_to_second& start, const date_time_to_second& end, const TimeSeries& time_series_data)
+		// Tried to have a default implementation and relying on finding an implementation for to_multi_regular_time_series_data_ptr<From> but had issues getting this working. 
+		{
+			using namespace cinterop::timeseries;
+			statistic_definition* stat = new statistic_definition();
+			stat->statistic_identifier = STRDUP(statistic_identifier.c_str());
+			stat->start = start;
+			stat->end = end;
+			stat->model_variable_id = STRDUP(model_variable_id.c_str());
+			stat->objective_identifier = STRDUP(objective_identifier.c_str());
+			stat->objective_name = STRDUP(objective_name.c_str());
+			stat->observations = to_multi_regular_time_series_data_ptr<TimeSeries>(time_series_data);
+			return stat;
+		}
+
+	}
 }
 
 
