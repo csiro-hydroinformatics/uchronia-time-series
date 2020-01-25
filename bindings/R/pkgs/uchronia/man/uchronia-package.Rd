@@ -12,14 +12,15 @@ A package to handle multidimensional time series and ensemble thereof
 \tabular{ll}{
 Package: \tab uchronia \cr
 Type: \tab Package\cr
-Version: \tab 2.1.1 \cr
-Date: \tab 2019-09-16 \cr
+Version: \tab 2.1.2 \cr
+Date: \tab 2020-01-25 \cr
 Release Notes: \tab Cumulative maintenance release. \cr
 License: \tab LGPL-3 \cr
 }
 
 \tabular{lll}{
 Version \tab Date \tab Notes \cr
+2.1.1 \tab 2019-09-16 \tab Cumulative maintenance release. \cr
 0.4.5 \tab 2019-02-24 \tab Improve performance retrieving time series from providers and models. \cr
 0.4.4 \tab 2019-01-10 \tab Maintenance release, with mostly functionally neutral structural changes. \cr
 0.4.3 \tab 2018-07-06 \tab Adjust uchronia R package after testing build on Windows 10 with RTools 3.5. \cr

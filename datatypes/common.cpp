@@ -119,7 +119,7 @@ namespace datatypes
 			for (auto& t : set)
 				if (!EqualsAny(t, res))
 					res.push_back(t);
-			return set;
+			return res;
 		}
 
 		bool StringProcessing::SetEquals(const vector<string>& toTest, const vector<string>& toMatch, bool caseSensitive)
