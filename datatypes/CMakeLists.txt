@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.0)
 ## start setting
 SET (this_target datatypes)
 PROJECT(${this_target})
-SET (VERSION 2.1.2)
 
 find_package(Boost 1.48.0 COMPONENTS system date_time regex filesystem REQUIRED)
 

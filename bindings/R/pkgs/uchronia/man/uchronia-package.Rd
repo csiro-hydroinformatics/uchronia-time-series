@@ -15,7 +15,7 @@ Type: \tab Package\cr
 Version: \tab 2.1.2 \cr
 Date: \tab 2020-01-25 \cr
 Release Notes: \tab Cumulative maintenance release. \cr
-License: \tab LGPL-3 \cr
+License: \tab BSD-3 \cr
 }
 
 \tabular{lll}{

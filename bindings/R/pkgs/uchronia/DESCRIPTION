@@ -1,15 +1,15 @@
 Package: uchronia
 Type: Package
 Title: Handling large multidimensional time series
-Version: 2.1.2
-Date: 2020-01-25
+Version: 2.3.0
+Date: 2020-06-10
 Authors@R: c( person("Jean-Michel", "Perraud", email =
     "jean-michel.perraud@csiro.au", role = c("aut", "cre")))
 Author: Jean-Michel Perraud [aut, cre]
 Maintainer: Jean-Michel Perraud <per202@csiro.au>
 Description: uchronia is a package to access a C++ library for managing multidimensional time series, notably ensemble forecasting time series.
 URL: https://stash.csiro.au/projects/SF/
-License: LGPL-3
+License: BSD-3
 Depends:
     R (>= 3.1)
 Imports:
