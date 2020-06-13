@@ -8,7 +8,7 @@ Authors@R: c( person("Jean-Michel", "Perraud", email =
 Author: Jean-Michel Perraud [aut, cre]
 Maintainer: Jean-Michel Perraud <per202@csiro.au>
 Description: uchronia is a package to access a C++ library for managing multidimensional time series, notably ensemble forecasting time series.
-URL: https://stash.csiro.au/projects/SF/
+URL: https://bitbucket.csiro.au/projects/SF/
 License: BSD-3
 Depends:
     R (>= 3.1)
