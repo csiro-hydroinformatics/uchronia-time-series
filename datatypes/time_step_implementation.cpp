@@ -248,6 +248,7 @@ namespace datatypes
 				return AddIntSteps(startTimeStep, whole);
 			else
 				datatypes::exceptions::ExceptionUtilities::ThrowNotSupported("Cannot add non-integer values of MonthlyQppTimeStepImplementation");
+			return not_a_date_time;
 		}
 
 		const ptime MonthlyQppTimeStepImplementation::AddIntSteps(const ptime& startTimeStep, int n) const

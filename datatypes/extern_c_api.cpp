@@ -13,6 +13,18 @@
 #define TRY_START try {
 #define INTERCEPT_STD_EXCEPTION } catch (std::exception& e) { moirai::error_handling::error_log::handle_std_exception(e); }
 
+/**
+ * @brief macro for intercepting exceptions at C API call but avoiding 
+ * "warning: control reaches end of non-void function [-Wreturn-type]"
+ * 
+ */
+#define INTERCEPT_STD_EXCEPTION_RET(dummyReturned) } catch (std::exception& e) { moirai::error_handling::error_log::handle_std_exception(e); } return dummyReturned;
+
+#define INTERCEPT_STD_EXCEPTION_RETPTR INTERCEPT_STD_EXCEPTION_RET(nullptr)
+#define INTERCEPT_STD_EXCEPTION_BOOL INTERCEPT_STD_EXCEPTION_RET(false)
+#define INTERCEPT_STD_EXCEPTION_DOUBLE INTERCEPT_STD_EXCEPTION_RET(0.0)
+#define INTERCEPT_STD_EXCEPTION_INT INTERCEPT_STD_EXCEPTION_RET(0)
+
 using namespace cinterop::utils;
 
 // Using a few type aliases here:
@@ -36,7 +48,7 @@ char** StrVecToChars(int* size, const std::vector<std::string>& names)
 {
 	TRY_START
 		return cinterop::utils::vector_to_c_array<string, char*>(names, cinterop::utils::to_ansi_string<string>, size);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 template<typename Tts>
@@ -119,7 +131,7 @@ char* GetLastStdExceptionMessage()
 	TRY_START
 		char* res = STRDUP(moirai::error_handling::error_log::get_last_exception_message().c_str());
 	return res;
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 int GetNumTimeSeries(){ return datatypes::timeseries::TTimeSeries<double>::NumInstances(); }
@@ -149,7 +161,7 @@ char** GetProviderTimeSeriesIdentifiers(TIME_SERIES_PROVIDER_PTR dataLibrary, in
 	TRY_START
 		vector<string> ids = TIME_SERIES_PROVIDER_DYNCAST(dataLibrary)->GetIdentifiers();
 	return StrVecToChars(size, ids);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 TIME_SERIES_PTR TimeSeriesFromProviderTs(TIME_SERIES_PROVIDER_PTR dataLibrary, const char* variableIdentifier)
@@ -158,7 +170,7 @@ TIME_SERIES_PTR TimeSeriesFromProviderTs(TIME_SERIES_PROVIDER_PTR dataLibrary, c
 		TimeSeriesProvider<double>* mts = TIME_SERIES_PROVIDER_DYNCAST(dataLibrary);
 	TS* tsPtr = mts->GetSingle(string(variableIdentifier));
 	return WRAP_TIME_SERIES_PTR(tsPtr);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 using datatypes::timeseries::TimeSeriesLibraryFactory;
@@ -168,7 +180,7 @@ ENSEMBLE_DATA_SET_PTR LoadEnsembleDataset(const char* filename, const char* data
 	TRY_START
 		TSL* x = TimeSeriesLibraryFactory::LoadTimeSeriesLibraryPtr(string(filename), string(dataPath));
 	return WRAP_ENSEMBLE_DATA_SET_PTR(x);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 ENSEMBLE_DATA_SET_PTR CreateEnsembleDataset(const char* type)
@@ -176,7 +188,7 @@ ENSEMBLE_DATA_SET_PTR CreateEnsembleDataset(const char* type)
 	TRY_START
 		TSL* x = TimeSeriesLibraryFactory::CreateTimeSeriesLibraryPtr(string(type));
 	return WRAP_ENSEMBLE_DATA_SET_PTR(x);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 char** GetEnsembleDatasetDataIdentifiers(ENSEMBLE_DATA_SET_PTR dataLibrary, int* size)
@@ -184,7 +196,7 @@ char** GetEnsembleDatasetDataIdentifiers(ENSEMBLE_DATA_SET_PTR dataLibrary, int*
 	TRY_START
 		auto ids = ENSEMBLE_DATA_SET_DYNCAST(dataLibrary)->GetIdentifiers();
 	return StrVecToChars(size, ids);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 char** GetEnsembleDatasetDataSubIdentifiers(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataCollectionId, int* size)
@@ -192,7 +204,7 @@ char** GetEnsembleDatasetDataSubIdentifiers(ENSEMBLE_DATA_SET_PTR dataLibrary, c
 	TRY_START
 		auto ids = ENSEMBLE_DATA_SET_DYNCAST(dataLibrary)->GetIdentifiers(string(dataCollectionId));
 	return StrVecToChars(size, ids);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 char** GetEnsembleDatasetDataSummaries(ENSEMBLE_DATA_SET_PTR dataLibrary, int* size)
@@ -204,7 +216,7 @@ char** GetEnsembleDatasetDataSummaries(ENSEMBLE_DATA_SET_PTR dataLibrary, int* s
 	for(auto id : ids)
 		res.push_back(ds->GetDataSummary(id));
 	return StrVecToChars(size, res);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 ENSEMBLE_FORECAST_TIME_SERIES_PTR CreateEnsembleForecastTimeSeries(date_time_to_second start, int length, const char* timeStepName)
@@ -213,7 +225,7 @@ ENSEMBLE_FORECAST_TIME_SERIES_PTR CreateEnsembleForecastTimeSeries(date_time_to_
 		TimeStep tstep = TimeStep::Parse(string(timeStepName));
 	auto x = new ENSEMBLE_FORECAST_TIME_SERIES_DOUBLE(length, to_ptime(start), tstep);
 	return WRAP_ENSEMBLE_FORECAST_TIME_SERIES_PTR(x);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 ENSEMBLE_FORECAST_TIME_SERIES_PTR CreatePerfectForecastTimeSeries(TIME_SERIES_PTR observations, date_time_to_second start, int length, const char* timeStepName, int offsetForecasts, int leadTime)
@@ -224,7 +236,7 @@ ENSEMBLE_FORECAST_TIME_SERIES_PTR CreatePerfectForecastTimeSeries(TIME_SERIES_PT
 		ptime s = to_ptime(start);
 		EFTSPTR result = datatypes::timeseries::TimeSeriesOperations<>::CreateForecastPtr(*obs, s, length, tstep, leadTime, offsetForecasts);
 	return WRAP_ENSEMBLE_FORECAST_TIME_SERIES_PTR(result);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 void SetItemEnsembleForecastTimeSeriesAsStructure(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i, const multi_regular_time_series_data*  values)
@@ -250,7 +262,7 @@ time_series_dimensions_description* GetDataDimensionsDescription(ENSEMBLE_DATA_S
 	auto dims = d->GetDataDimensionsDescription(string(dataId));
 	auto res = ToTimeSeriesDimensionDescriptions(dims);
 	return res;
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 int EnsembleSizeEnsembleTimeSeries(ENSEMBLE_PTR_TIME_SERIES_PTR ensSeries)
@@ -258,7 +270,7 @@ int EnsembleSizeEnsembleTimeSeries(ENSEMBLE_PTR_TIME_SERIES_PTR ensSeries)
 	TRY_START
 		MTSPTR d = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(ensSeries);
 	return static_cast<int>(d->Size());
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_INT
 }
 
 void DisposeDataDimensionsDescriptions(time_series_dimensions_description* data)
@@ -276,7 +288,7 @@ bool IsMissingValueItemEnsembleForecastTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_
 		EFTSPTR x = ENSEMBLE_FORECAST_TIME_SERIES_DYNCAST(series);
 	MTSPTR mts = x->GetValue(i);
 	return(x->IsMissingValue(mts));
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_BOOL
 }
 
 ENSEMBLE_PTR_TIME_SERIES_PTR GetItemEnsembleForecastTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i)
@@ -288,7 +300,7 @@ ENSEMBLE_PTR_TIME_SERIES_PTR GetItemEnsembleForecastTimeSeries(ENSEMBLE_FORECAST
 		datatypes::exceptions::ExceptionUtilities::ThrowNotSupported("GetItemEnsembleForecastTimeSeries cannot yet deal with missing values");
 	MTSPTR result = new MTS(*mts);
 	return WRAP_ENSEMBLE_TIME_SERIES_PTR(result);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 multi_regular_time_series_data* GetItemEnsembleForecastTimeSeriesAsStructure(ENSEMBLE_FORECAST_TIME_SERIES_PTR series, int i)
@@ -316,7 +328,7 @@ multi_regular_time_series_data* GetItemEnsembleForecastTimeSeriesAsStructure(ENS
 		result->time_series_geometry.start.second = 0;
 	}
 	return result;
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 multi_regular_time_series_data* GetItemEnsembleTimeSeriesAsStructure(ENSEMBLE_PTR_TIME_SERIES_PTR series, int i)
@@ -326,7 +338,7 @@ multi_regular_time_series_data* GetItemEnsembleTimeSeriesAsStructure(ENSEMBLE_PT
 	auto ts = x->Get(i);
 	multi_regular_time_series_data* result = ToMultiTimeSeriesDataPtr(*ts);
 	return result;
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 double GetValueFromUnivariateTimeSeries(TIME_SERIES_PTR ts, int index)
@@ -334,7 +346,7 @@ double GetValueFromUnivariateTimeSeries(TIME_SERIES_PTR ts, int index)
 	TRY_START
 		TSPTR tsptr = TIME_SERIES_DYNCAST(ts);
 	return tsptr->GetValue(index);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_DOUBLE
 }
 
 void SetValueToUnivariateTimeSeries(TIME_SERIES_PTR ts, int index, double value)
@@ -351,7 +363,7 @@ TIME_SERIES_PTR TimeSeriesFromEnsembleOfTimeSeries(ENSEMBLE_PTR_TIME_SERIES_PTR 
 		MTSPTR mts = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(collectionTs);
 	TS* tsPtr = new TS(mts->Get(index));
 	return WRAP_TIME_SERIES_PTR(tsPtr);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 TIME_SERIES_PTR TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(ENSEMBLE_FORECAST_TIME_SERIES_PTR efts, int indexInIssueTime, int indexInForecastTime)
@@ -361,7 +373,7 @@ TIME_SERIES_PTR TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(ENSEMBLE_FORECAST
 	MTSPTR mts = e->GetValue(indexInIssueTime);
 	TS* tsPtr = new TS(mts->Get(indexInForecastTime));
 	return WRAP_TIME_SERIES_PTR(tsPtr);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 multi_regular_time_series_data* ToStructEnsembleTimeSeriesData(ENSEMBLE_PTR_TIME_SERIES_PTR ensSeries)
@@ -370,7 +382,7 @@ multi_regular_time_series_data* ToStructEnsembleTimeSeriesData(ENSEMBLE_PTR_TIME
 		MTSPTR mts = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(ensSeries);
 	multi_regular_time_series_data* result = ToMultiTimeSeriesDataPtr(*mts);
 	return result;
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 multi_regular_time_series_data* ToStructSingleTimeSeriesData(TIME_SERIES_PTR timeSeries)
@@ -379,21 +391,21 @@ multi_regular_time_series_data* ToStructSingleTimeSeriesData(TIME_SERIES_PTR tim
 		TSPTR ts = TIME_SERIES_DYNCAST(timeSeries);
 	multi_regular_time_series_data* result = ToMultiTimeSeriesDataPtr(*ts);
 	return result;
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 ENSEMBLE_PTR_TIME_SERIES_PTR CreateEnsembleTimeSeriesDataFromStruct(const multi_regular_time_series_data* ensSeries)
 {
 	TRY_START
 		return WRAP_ENSEMBLE_TIME_SERIES_PTR(MultiTsPtrFromMultiTimeSeriesData(*ensSeries));
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 TIME_SERIES_PTR CreateSingleTimeSeriesDataFromStruct(const multi_regular_time_series_data* timeSeries)
 {
 	TRY_START
 		return WRAP_TIME_SERIES_PTR(SingleTsPtrFromMultiTimeSeriesData(*timeSeries));
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 void DisposeMultiTimeSeriesData(multi_regular_time_series_data* data)
@@ -433,7 +445,7 @@ ENSEMBLE_FORECAST_TIME_SERIES_PTR GetDatasetEnsembleForecastTimeSeries(ENSEMBLE_
 		TSL* d = ENSEMBLE_DATA_SET_DYNCAST(dataLibrary);
 		EFTSPTR res = d->GetTimeSeriesEnsembleTimeSeries(dataId);
 	return WRAP_ENSEMBLE_FORECAST_TIME_SERIES_PTR(res);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 TIME_SERIES_PTR GetDatasetSingleTimeSeries(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataId)
@@ -442,7 +454,7 @@ TIME_SERIES_PTR GetDatasetSingleTimeSeries(ENSEMBLE_DATA_SET_PTR dataLibrary, co
 		TSL* d = ENSEMBLE_DATA_SET_DYNCAST(dataLibrary);
 	auto res = d->GetSingle(string(dataId));
 	return WRAP_TIME_SERIES_PTR(res);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 ENSEMBLE_PTR_TIME_SERIES_PTR GetDatasetEnsembleTimeSeries(ENSEMBLE_DATA_SET_PTR dataLibrary, const char* dataEnsembleId)
@@ -451,7 +463,7 @@ ENSEMBLE_PTR_TIME_SERIES_PTR GetDatasetEnsembleTimeSeries(ENSEMBLE_DATA_SET_PTR 
 		TSL* d = ENSEMBLE_DATA_SET_DYNCAST(dataLibrary);
 	auto res = d->GetEnsembleTimeSeries(string(dataEnsembleId));
 	return WRAP_ENSEMBLE_TIME_SERIES_PTR(*res);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 multi_regular_time_series_data* GetEnsembleTimeSeriesData(ENSEMBLE_PTR_TIME_SERIES_PTR ensSeries)
@@ -459,7 +471,7 @@ multi_regular_time_series_data* GetEnsembleTimeSeriesData(ENSEMBLE_PTR_TIME_SERI
 	TRY_START
 	MTSPTR mts = ENSEMBLE_PTR_TIME_SERIES_DYNCAST(ensSeries);
 	return ToMultiTimeSeriesDataPtr(*mts);
-	INTERCEPT_STD_EXCEPTION
+	INTERCEPT_STD_EXCEPTION_RETPTR
 }
 
 

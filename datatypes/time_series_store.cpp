@@ -447,6 +447,8 @@ namespace datatypes
 				return p->GetTimeSeriesEnsembleSeriesInformation(dataId)->GetIdentifiers();
 			else
 				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data identifier ") + dataId + "not found");
+			vector<string> result;
+			return result;
 		}
 
 		string TimeSeriesLibrary::GetDataSummary(const string& dataId)
@@ -459,6 +461,8 @@ namespace datatypes
 				return GetTimeSeriesEnsembleSeriesInformation(dataId)->GetDataSummary();
 			else
 				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data identifier ") + dataId + "not found");
+			string s;
+			return s;
 		}
 
 		DataDimensionDescriptor::DataDimensionDescriptor(const string& type, const string& dimname, size_t size)
@@ -507,6 +511,8 @@ namespace datatypes
 				return GetTimeSeriesEnsembleSeriesInformation(dataId)->GetDataDimensionsDescription();
 			else
 				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data identifier ") + dataId + "not found");
+			vector<DataDimensionDescriptor> v;
+			return v;
 		}
 
 		TTimeSeries<double>* TimeSeriesLibrary::GetSingle(const string& dataId)
@@ -561,6 +567,7 @@ namespace datatypes
 				return GetAllTimeSeries(dataId);
 			else
 				datatypes::exceptions::ExceptionUtilities::ThrowInvalidArgument(string("data information not found for id ") + dataId);
+			return nullptr; // compiler warning otherwise
 
 		}
 

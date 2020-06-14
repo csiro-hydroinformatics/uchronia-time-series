@@ -430,7 +430,7 @@ namespace datatypes
 				auto duration = timeStep.GetRegularStepDuration();
 
 				if (duration >= oneDay)
-					return"days";
+					return "days";
 				else if (duration >= oneHour)
 					return "hours";
 				else if (duration >= oneMinute)
@@ -438,7 +438,10 @@ namespace datatypes
 				else if (duration >= oneSecond)
 					return "seconds";
 				else // (duration < oneSecond)
+				{
 					ExceptionUtilities::ThrowNotSupported("SwiftNetCDFAccess::GetTimeStepName: sub-second time step not yet supported");
+					return "";
+				}
 			}
 
 			string SwiftNetCDFAccess::CreateTimeUnitsAttribute(const ptime& utcStart, const TimeStep& timeStep)
@@ -926,13 +929,19 @@ namespace datatypes
 				if (code == NC_ENOTATT)
 				{
 					if (throwIfNotFound)
+					{
 						ExceptionUtilities::ThrowInvalidArgument("Attribute attName does not exist.");
+						return NAN;
+					}
 					else
 						return defaultValue;
 				}
 
 				if (type != NC_DOUBLE && type != NC_FLOAT && type != NC_INT && type != NC_INT64)
+				{
 					ExceptionUtilities::ThrowInvalidArgument("Attribute attName not of numeric type (double, float, int or int64).");
+					return NAN;
+				}
 
 				if (type == NC_DOUBLE)
 				{
@@ -958,6 +967,7 @@ namespace datatypes
 					code = nc_get_att_long(ncid, varId, attName.c_str(), &l);
 					return (double)l;
 				}
+				return NAN;
 			}
 
 			nc_type SwiftNetCDFAccess::GetDataType(int variableId)
@@ -991,31 +1001,39 @@ namespace datatypes
 			vector<int> SwiftNetCDFAccess::ReadAsInt(int varId, size_t size)
 			{
 				nc_type datatype = GetDataType(varId);
+				vector<int> v;
 				if (datatype == NC_DOUBLE)
 				{
 					ErrorLossPrecision(varId);
-					//return GetVariableDimOne<int, double>(varId, size);
+					return v;
 				}
 				else if (datatype == NC_FLOAT)
 				{
 					ErrorLossPrecision(varId);
-					//return GetVariableDimOne<int, float>(varId, size);
+					return v;
 				}
 				else if (datatype == NC_INT)
 				{
 					return GetVariableDimOne<int>(varId, size);
 				}
 				else
+				{
 					ExceptionUtilities::ThrowInvalidOperation(string("The netCDF data type code ") + std::to_string(datatype) + " of the variable " + std::to_string(varId) + " is not supported ");
+					return v;
+				}
 			}
 
 			vector<float> SwiftNetCDFAccess::ReadAsFloat(int varId, size_t size, bool strict)
 			{
 				nc_type datatype = GetDataType(varId);
+				vector<float> v;
 				if (datatype == NC_DOUBLE)
 				{
 					if(strict) // need to be optionally "lax" for some cases, as some SWIFT netCDF files around have double not float for time dims
+					{
 						ErrorLossPrecision(varId);
+						return v;
+					}
 					else
 						return GetVariableDimOne<float, double>(varId, size);
 				}
@@ -1028,12 +1046,16 @@ namespace datatypes
 					return GetVariableDimOne<float, int>(varId, size);
 				}
 				else
+				{
 					ExceptionUtilities::ThrowInvalidOperation(string("The netCDF data type code ") + std::to_string(datatype) + " of the variable " + std::to_string(varId) + " is not supported ");
+					return v;
+				}
 			}
 
 			vector<double> SwiftNetCDFAccess::ReadAsDouble(int varId, size_t size)
 			{
 				nc_type datatype = GetDataType(varId);
+				vector<double> v;
 				if (datatype == NC_DOUBLE)
 				{
 					return GetVariableDimOne<double>(varId, size);
@@ -1048,6 +1070,7 @@ namespace datatypes
 				}
 				else
 					ExceptionUtilities::ThrowInvalidOperation(string("The netCDF data type code ") + std::to_string(datatype) + " of the variable " + std::to_string(varId) + " is not supported ");
+				return v;
 			}
 
 			vector<int> SwiftNetCDFAccess::GetVarDims(const string& varName)
@@ -1542,6 +1565,7 @@ namespace datatypes
 					ExceptionUtilities::ThrowInvalidOperation("Monthly time step is not supported");
 				else
 					ExceptionUtilities::ThrowInvalidOperation("Unknown time unit identifier " + timeUnits);
+				return TimeStep::GetHourly(); // prevent compiler warning
 			}
 
 			std::pair<ptime, TimeStep> SwiftNetCDFAccess::CreateTimeGeometry(const string& axisDefinition, const vector<double>& timeCoords)
