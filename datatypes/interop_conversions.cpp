@@ -12,10 +12,20 @@ using namespace cinterop::utils;
 #include "datatypes/interop_conversions.h"
 #include "datatypes/interop_conversions.hpp"
 
-TimeSeries CreateTimeSeries(double * values, const regular_time_series_geometry& g)
+TimeStep FindTimeStep(const regular_time_series_geometry& g)
+{
+	TimeStep tstep;
+	if (g.time_step_code == time_step_code::monthly_step)
+		tstep = TimeStep::GetMonthlyQpp();
+	else
+		tstep = TimeStep(seconds(g.time_step_seconds));
+	return tstep;
+}
+
+TimeSeries CreateTimeSeries(double* values, const regular_time_series_geometry& g)
 {
 	ptime startDate = to_ptime(g.start);
-	TimeStep tstep(seconds(g.time_step_seconds));
+	TimeStep tstep = FindTimeStep(g);
 	TimeSeries ts(values, g.length, startDate, tstep);
 	return ts;
 }
@@ -38,14 +48,14 @@ TimeSeriesEnsemble<TimeSeries> ToTimeSeriesEnsemble(const multi_regular_time_ser
 	if (rawData.ensemble_size == 0)
 		throw std::logic_error("time series data structure has ensemble size 0");
 	auto start = to_ptime(rawData.time_series_geometry.start);
-	TimeSeriesEnsemble<TimeSeries> ts(rawData.numeric_data, rawData.ensemble_size, rawData.time_series_geometry.length, start, TimeStep::FromSeconds(rawData.time_series_geometry.time_step_seconds));
+	TimeSeriesEnsemble<TimeSeries> ts(rawData.numeric_data, rawData.ensemble_size, rawData.time_series_geometry.length, start, FindTimeStep(rawData.time_series_geometry));
 	return ts;
 }
 
 TimeSeriesEnsemble<TimeSeries>* ToTimeSeriesEnsemblePtr(const multi_regular_time_series_data& rawData)
 {
 	auto start = to_ptime(rawData.time_series_geometry.start);
-	return new TimeSeriesEnsemble<TimeSeries>(rawData.numeric_data, rawData.ensemble_size, rawData.time_series_geometry.length, start, TimeStep::FromSeconds(rawData.time_series_geometry.time_step_seconds));
+	return new TimeSeriesEnsemble<TimeSeries>(rawData.numeric_data, rawData.ensemble_size, rawData.time_series_geometry.length, start, FindTimeStep(rawData.time_series_geometry));
 }
 
 multi_regular_time_series_data* ToMultiTimeSeriesDataPtr(const TimeSeriesEnsemble<TimeSeries>& mts)
@@ -112,7 +122,7 @@ void CopyFromMultiTimeSeriesData(const multi_regular_time_series_data& interopda
 	auto values = cinterop::utils::to_cpp_numeric_vector(interopdata.numeric_data[0], geom.length);
 	ts.Reset(values,
 		cinterop::utils::from_date_time_to_second<ptime>(geom.start),
-		TimeStep::FromSeconds(geom.time_step_seconds));
+		FindTimeStep(geom));
 }
 
 void CopyFromMultiTimeSeriesData(const multi_regular_time_series_data& interopdata, TimeSeriesEnsemble<TimeSeries>& mts)
@@ -121,7 +131,7 @@ void CopyFromMultiTimeSeriesData(const multi_regular_time_series_data& interopda
 	TimeSeriesEnsemble<TimeSeries> tmp(
 		interopdata.numeric_data, interopdata.ensemble_size, geom.length,
 		cinterop::utils::from_date_time_to_second<ptime>(geom.start),
-		TimeStep::FromSeconds(geom.time_step_seconds));
+		FindTimeStep(geom));
 	mts = tmp;
 }
 

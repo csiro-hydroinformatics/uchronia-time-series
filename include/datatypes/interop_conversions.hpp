@@ -14,7 +14,17 @@ static void ToTimeSeriesGeomStruct(const Tts& ts, regular_time_series_geometry& 
 {
 	g.length = static_cast<int>(ts.GetLength());
 	ptime startpt = ts.GetStartDate();
-	g.time_step_seconds = ts.GetTimeStep().GetTimeStepDuration(startpt).total_seconds();
+	TimeStep tstep = ts.GetTimeStep();
+	TimeStep m(new MonthlyQppTimeStepImplementation());
+	if (tstep == m)
+	{
+		g.time_step_code = time_step_code::monthly_step;
+		g.time_step_seconds = -1;
+	}
+	else {
+		g.time_step_code = time_step_code::strictly_regular;
+		g.time_step_seconds = tstep.GetTimeStepDuration(startpt).total_seconds();
+	}
 	to_date_time_to_second(startpt, g.start);
 }
 

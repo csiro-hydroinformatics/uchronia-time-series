@@ -260,9 +260,11 @@ timeIndex <- function(tsInfo) {
 }
 
 marshaledTimeSeriesToXts <- function(tsInfo) {
+  # converts series definitions created with make_time_series_info in:
+  # rcpp-interop-commons\include\cinterop\rcpp_timeseries_interop.hpp
   stopifnot(is.list(tsInfo))
-  if (!setequal( c('Start','tzone','Data','TimeStep'), names(tsInfo) )) {
-    stop('The list provided must have names: Start,tzone,Data,TimeStep')
+  if (!setequal( c('Start','tzone','Data','TimeStep','TimeStepCode'), names(tsInfo) )) {
+    stop(paste('The list provided must have names: Start,tzone,Data,TimeStep,TimeStepCode but got:', paste(names(tsInfo), collapse=',')))
   }
   s <- tsInfo[['Start']]
   if(!is(s, 'POSIXct')) {stop('the Start component of the list must be a POSIXct')}
@@ -275,26 +277,34 @@ marshaledTimeSeriesToXts <- function(tsInfo) {
   attr(s, 'tzone') <- timeZone
   values <- tsInfo[['Data']]
   tStep <- tsInfo[['TimeStep']]
-  if(is.character(tStep)) {
-    tsName <- tolower(tsInfo[['TimeStep']])
-    if (tsName=='daily') {
-      mkDailySeries(s, values, NULL)
-    } else if (tsName=='hourly') {
-      mkHourlySeries(s, values, NULL)
-    } else {
-      tStepDuration <- as.integer(tsName)
-      if(!is.na(tStepDuration))
-      {
-        return(mkSeriesRegularTstep(s, values, NULL, deltaTSec=tStepDuration))
+  tStepCode <- tsInfo[['TimeStepCode']]
+  if(tStepCode == 0L) {
+    if(is.character(tStep)) {
+      tsName <- tolower(tsInfo[['TimeStep']])
+      if (tsName=='daily') {
+        mkDailySeries(s, values, NULL)
+      } else if (tsName=='hourly') {
+        mkHourlySeries(s, values, NULL)
+      } else {
+        tStepDuration <- as.integer(tsName)
+        if(!is.na(tStepDuration))
+        {
+          return(mkSeriesRegularTstep(s, values, NULL, deltaTSec=tStepDuration))
+        }
+        stop(paste('Unsupported time step specification:', tsName))
       }
-      stop(paste('Unsupported time step specification:', tsName))
+    } else if (is.integer(tStep)){
+      tStepDuration <- tStep
+      mkSeriesRegularTstep(s, values, NULL, deltaTSec=tStepDuration)
+    } else {
+      stop(paste('Unsupported time step specification:', tStep))
     }
-  } else if (is.integer(tStep)){
-    tStepDuration <- tStep
-    mkSeriesRegularTstep(s, values, NULL, deltaTSec=tStepDuration)
+  } else if(tStepCode == 1L) {
+    return(mkSeriesMonthlyTstep(s, values, NULL))
   } else {
-    stop(paste('Unsupported time step specification:', tStep))
+    stop(paste('Unsupported time step code specification:', tStepCode))
   }
+
 }
 
 

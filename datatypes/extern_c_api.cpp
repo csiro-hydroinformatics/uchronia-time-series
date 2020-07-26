@@ -319,6 +319,7 @@ multi_regular_time_series_data* GetItemEnsembleForecastTimeSeriesAsStructure(ENS
 		result->numeric_data = nullptr;
 		result->time_series_geometry.length = 0;
 		result->time_series_geometry.time_step_seconds = 0;
+		result->time_series_geometry.time_step_code = time_step_code::strictly_regular;
 		// use R's lubridate::origin
 		result->time_series_geometry.start.year = 1970;
 		result->time_series_geometry.start.month = 1;

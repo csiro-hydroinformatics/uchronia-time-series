@@ -349,6 +349,36 @@ mkSeriesRegularTstep <- function(startDate, x, isMissingFunc= function(val){val 
   xts::xts(x, createTimeSeriesIndex(startDate, n, deltaTSec))
 }
 
+#' Make a time series with a monthly step
+#'
+#' Make a time series with a monthly step
+#'
+#' @param startDate the start date of the time series. It must be a POSIXct object.
+#' @param x the numeric vector.
+#' @param isMissingFunc a function, or NULL. The function should return a logical vector. Used to detect missing values in the raw data that are not already identified as NA
+#' @return an xts time series. 
+#' @examples
+#' \dontrun{
+#' # make a time series with a time step of 10 minutes
+#' mkSeriesMonthlyTstep(lubridate::origin, -2:3/3.0)
+#' }
+#' @export
+#' @importFrom xts xts
+#' @importFrom cinterop makeMonthlyTimeAxis
+mkSeriesMonthlyTstep <- function(startDate, x, isMissingFunc= function(val){val < 0}) {
+  # POSIXct[1:1], format: "1999-12-31 12:00:00"
+  # [1] "1999-12-31 12:00:00 UTC"
+  stopifnot(is(startDate, "POSIXct"))
+  if(!is.null(isMissingFunc)) {
+    isMissing <- isMissingFunc(x)
+    x[isMissing] <- NA
+  }
+  dimFunc <- getDataDimensionFunction(x)
+  n <- dimFunc(x)
+  tsIndex <- cinterop::makeMonthlyTimeAxis(startDate, n) 
+  xts::xts(x, tsIndex)
+}
+
 #' Make UTC time series in a serializable form
 #'
 #' Make UTC time series in a serializable form. Serializing xts objects directly leads to issues.

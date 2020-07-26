@@ -237,6 +237,8 @@ namespace datatypes
 				return GetHourly();
 			else if (name == "monthly_qpp")
 				return GetMonthlyQpp();
+			else if (name == "monthly")
+				return GetMonthlyQpp();
 			else
 			{
 				TimeStep tst;
