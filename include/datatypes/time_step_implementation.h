@@ -106,7 +106,7 @@ namespace datatypes
 
 			virtual const ptime AddIntSteps(const ptime& startTimeStep, int n) const = 0;
 			virtual const ptime AddSteps(const ptime& startTimeStep, double mult) const = 0;
-			const time_duration GetTimeStepDuration(const ptime& startTimeStep) const;
+			virtual const time_duration GetTimeStepDuration(const ptime& startTimeStep) const;
 			virtual const void Increment(ptime* t) const = 0;
 
 			bool IsRegular() const;
@@ -128,6 +128,7 @@ namespace datatypes
 
 			const ptime AddIntSteps(const ptime& startTimeStep, int n) const;
 			const ptime AddSteps(const ptime& startTimeStep, double mult) const;
+			const time_duration GetTimeStepDuration(const ptime& startTimeStep) const override;
 			const void Increment(ptime* t) const;
 
 			std::string GetName() const;

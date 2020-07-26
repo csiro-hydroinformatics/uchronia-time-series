@@ -301,6 +301,14 @@ namespace datatypes
 			*t = AddSteps(*t, 1);
 		}
 
+		const time_duration MonthlyQppTimeStepImplementation::GetTimeStepDuration(const ptime& startTimeStep) const
+		{
+			ptime next = startTimeStep;
+			Increment(&next);
+			time_duration td = next - startTimeStep;
+			return td;
+		}
+
 		std::string MonthlyQppTimeStepImplementation::GetName() const
 		{
 			return "monthly_qpp";
