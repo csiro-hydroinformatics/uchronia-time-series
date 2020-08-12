@@ -85,7 +85,8 @@ SET(${this_target}_HEADER_FILES
 )
 
 IF (ENABLE_CODECOVERAGE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
+    INCLUDE(CodeCoverage)
+    append_coverage_compiler_flags()
 ENDIF()
 
 ## section: precompiled header

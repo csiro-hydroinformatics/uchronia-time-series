@@ -49,6 +49,18 @@ include_directories(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")  #  required on some linux clusters 
 
+IF (ENABLE_CODECOVERAGE)
+    INCLUDE(CodeCoverage)
+    append_coverage_compiler_flags()
+    setup_target_for_coverage_gcovr_html(
+        NAME ${this_target}_coverage
+        EXECUTABLE ${this_target}
+        # DEPENDENCIES datatypes? 
+        BASE_DIRECTORY "../../datatypes" # so that the datatypes shared library is included and (if available) its coverage files are found. 
+    )
+ENDIF()
+
+
 if(DEFINED ENV{BOOST_LIBRARYDIR})
 	message("Detected environment variable BOOST_LIBRARYDIR, adding to CMAKE_CXX_FLAGS")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L$ENV{BOOST_LIBRARYDIR}")  #  required on some linux clusters 
