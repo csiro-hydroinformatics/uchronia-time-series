@@ -85,10 +85,9 @@ namespace datatypes
 
 			time_duration * regularStep = nullptr;
 
-			void CopyRegularImplementation(const RegularTimeStepImplementation& src);
-
-			const ptrdiff_t GetUpperNumInstants(const ptime& start, const ptime& end) const;
-			const ptrdiff_t GetNumInstants(const ptime& start, const ptime& end) const;
+			// void CopyRegularImplementation(const RegularTimeStepImplementation& src);
+			// const ptrdiff_t GetUpperNumInstants(const ptime& start, const ptime& end) const;
+			// const ptrdiff_t GetNumInstants(const ptime& start, const ptime& end) const;
 		};
 
 		class DATATYPES_DLL_LIB IrregularTimeStepImplementation :

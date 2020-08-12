@@ -158,26 +158,26 @@ namespace datatypes
 				return to_iso_string(*regularStep);
 		}
 
-		void RegularTimeStepImplementation::CopyRegularImplementation(const RegularTimeStepImplementation& src)
-		{
-			if (regularStep != nullptr)
-				delete regularStep;
-			this->regularStep = new time_duration(*(src.regularStep));
-		}
+		// void RegularTimeStepImplementation::CopyRegularImplementation(const RegularTimeStepImplementation& src)
+		// {
+		// 	if (regularStep != nullptr)
+		// 		delete regularStep;
+		// 	this->regularStep = new time_duration(*(src.regularStep));
+		// }
 
-		const ptrdiff_t RegularTimeStepImplementation::GetUpperNumInstants(const ptime& start, const ptime& end) const
-		{
-			CheckIsDateTime(start);
-			CheckIsDateTime(end);
-			return GetUpperNumSteps(start, end) + 1;
-		}
+		// const ptrdiff_t RegularTimeStepImplementation::GetUpperNumInstants(const ptime& start, const ptime& end) const
+		// {
+		//	CheckIsDateTime(start);
+		//	CheckIsDateTime(end);
+		//	return GetUpperNumSteps(start, end) + 1;
+		// }
 
-		const ptrdiff_t RegularTimeStepImplementation::GetNumInstants(const ptime& start, const ptime& end) const
-		{
-			CheckIsDateTime(start);
-			CheckIsDateTime(end);
-			return GetNumSteps(start, end) + 1;
-		}
+		// const ptrdiff_t RegularTimeStepImplementation::GetNumInstants(const ptime& start, const ptime& end) const
+		// {
+		//	CheckIsDateTime(start);
+		//	CheckIsDateTime(end);
+		//	return GetNumSteps(start, end) + 1;
+		// }
 
 		const double RegularTimeStepImplementation::GetLinearIndexing(const ptime& start, const ptime& end) const
 		{
