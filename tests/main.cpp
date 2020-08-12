@@ -76,4 +76,29 @@ TEST_CASE("Monthly QPP TimeStep NumSteps Test")
 
 	// Difference between start and end is a fraction (one second) more than one month
 	TestTimeStepNumSteps("20000124T000000", "20000222T000001", 3, 2, 1);
+
+	TimeStep ts = TimeStep::GetMonthlyQpp();
+	ptime dummy = not_a_date_time;
+	REQUIRE_THROWS(ts * 2);
+	REQUIRE_THROWS(ts * 2.3);
+	REQUIRE_THROWS(ts / 2);
+	REQUIRE_THROWS(ts.GetTimeStepDuration(dummy));
+	REQUIRE_EQUAL(false, ts.IsRegular());
+	REQUIRE_THROWS(ts.GetRegularStepDuration());
+	REQUIRE(ts == ts);
+	REQUIRE(ts != TimeStep::GetDaily());
+
+	// Some tests effectively were in QPP but should be ported here:
+	ptime s = from_iso_string("20001104T010203");
+	ts.Increment(&s);
+	REQUIRE_EQUAL(from_iso_string("20001204T010203"), s);
+	ts.Increment(&s);
+	REQUIRE_EQUAL(from_iso_string("20010104T010203"), s);
+
+	s = from_iso_string("19970131T010203");
+	ts.Increment(&s);
+	REQUIRE_EQUAL(from_iso_string("19970228T010203"), s);
+
 }
+
+

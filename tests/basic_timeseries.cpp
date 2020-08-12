@@ -2,25 +2,104 @@
 #include "common_datatypes.h"
 
 using namespace datatypes::tests;
+using namespace datatypes::timeseries;
+using namespace boost::posix_time;
+
+TEST_CASE("Date time operations")
+{
+	REQUIRE_THROWS(TimeStepImplementation::CheckIsDateTime(not_a_date_time));
+}
 
 TEST_CASE("Time step handling")
 {
-	auto parse = [](const string& s) {return TimeStep::Parse(s).GetRegularStepDuration().total_seconds();};
-	REQUIRE_EQUAL((3600 * 24), parse("daily"));
-	REQUIRE_EQUAL((3600 * 24), parse("24:00:00"));
-	REQUIRE_EQUAL((3600), parse("hourly"));
-	REQUIRE_EQUAL((3600 * 3), parse("03:00:00"));
+	auto parse = [](const string& s) {return TimeStep::Parse(s);};
+	auto tot_secs = [](const string& s) {return TimeStep::Parse(s).GetRegularStepDuration().total_seconds();};
+	REQUIRE_EQUAL((3600 * 24), tot_secs("daily"));
+	REQUIRE_EQUAL((3600 * 24), tot_secs("24:00:00"));
+	REQUIRE_EQUAL((3600), tot_secs("hourly"));
+	REQUIRE_EQUAL((3600 * 3), tot_secs("03:00:00"));
+	REQUIRE_EQUAL((3600 * 3 + 45), tot_secs("03:00:45"));
+	REQUIRE_EQUAL((43200), tot_secs("43200"));
 
-	REQUIRE_EQUAL((3600 * 3 + 45), parse("03:00:45"));
+	auto getName = [](const string& s) {return TimeStep::Parse(s).GetName();};
+	REQUIRE_EQUAL("daily", getName("daily"));
+	REQUIRE_EQUAL("daily", getName("24:00:00"));
+	REQUIRE_EQUAL("hourly", getName("hourly"));
+	REQUIRE_EQUAL("030000", getName("03:00:00"));
+	REQUIRE_EQUAL("030045", getName("03:00:45"));
+	REQUIRE_EQUAL("120000", getName("43200"));
 
-	REQUIRE_EQUAL((43200), parse("43200"));
+	auto hourly = TimeStep::GetHourly();
+	ptime s = from_iso_string("20000124T010203");
+	REQUIRE_EQUAL(3600, hourly.GetTimeStepDuration(s).total_seconds());
+	hourly.Increment(&s);
+	REQUIRE_EQUAL(from_iso_string("20000124T020203"), s);
 
 	// arithmetic
-	auto hourly = TimeStep::GetHourly();
 	auto threeHourly = hourly * 3;
 	REQUIRE_EQUAL((3600 * 3), threeHourly.GetRegularStepDuration().total_seconds());
 	auto sixMinutes = hourly / 10;
 	REQUIRE_EQUAL((360), sixMinutes.GetRegularStepDuration().total_seconds());
+
+	// test assignments operators
+	auto a = TimeStep::GetDaily();
+	auto b = TimeStep::GetHourly();
+	a = b;
+	REQUIRE_EQUAL("hourly", a.GetName());
+	a = time_duration(3, 30, 29);
+	REQUIRE_EQUAL("033029", a.GetName());
+
+	auto parse_2 = [](const string& s) {TimeStep ts = TimeStep::GetDaily() ; ts = s ; return ts.GetName();};
+	REQUIRE_EQUAL("daily", parse_2("daily"));
+	REQUIRE_EQUAL("daily", parse_2("24:00:00"));
+	REQUIRE_EQUAL("hourly", parse_2("hourly"));
+	REQUIRE_EQUAL("030000", parse_2("03:00:00"));
+	REQUIRE_EQUAL("030045", parse_2("03:00:45"));
+	REQUIRE_EQUAL("120000", parse_2("43200"));
+
+	vector<ptime> v = {from_iso_string("20001104T010203"), from_iso_string("20110228T233000")};
+	auto w = hourly.AddSteps(v, 2.0);
+	REQUIRE_EQUAL(from_iso_string("20001104T030203"), w[0]);
+	REQUIRE_EQUAL(from_iso_string("20110301T013000"), w[1]);
+
+	auto d = from_iso_string("19871104T010203");
+	REQUIRE_EQUAL("1987-11-04 01:02:03", TimeStep::ToString(d, "YYYY-MM-DD hh:mm:ss"));
+	REQUIRE_EQUAL("04/11/1987 01:02:03", TimeStep::ToString(d, "DD/MM/YYYY hh:mm:ss"));
+
+	// Modulo operations
+	auto hl = TimeStep::GetHourly();
+	auto dl = TimeStep::GetDaily();
+
+	// Equivalent of the integer division (TODO: was that a wise choice??? would reconsidering break something?)
+	REQUIRE_EQUAL( 24, dl / hl);
+	REQUIRE_EQUAL( 8, dl / TimeStep::Parse("03:00:00"));
+
+	REQUIRE_EQUAL( 1, dl / dl);
+	REQUIRE_EQUAL( 1, (dl*1.01) / dl);
+	REQUIRE_EQUAL( 1, (dl*1.49) / dl);
+	REQUIRE_EQUAL( 1, (dl*1.51) / dl);
+	REQUIRE_EQUAL( 1, (dl*1.99) / dl);
+	REQUIRE_EQUAL( 2, (dl*2) / dl);
+
+
+	auto doMod = [parse](const string& a, const string& b) {time_duration td = (parse(a) % parse(b)); return td;};
+	REQUIRE_EQUAL( seconds(0), doMod("10", "10"));
+	REQUIRE_EQUAL( seconds(0), doMod("10", "5"));
+	REQUIRE_EQUAL( seconds(1), doMod("10", "9"));
+	REQUIRE_EQUAL( seconds(2), doMod("10", "8"));
+	REQUIRE_EQUAL( seconds(28), doMod("00:10:00", "00:09:32"));
+
+}
+
+TEST_CASE("Invalid time step Operations")
+{
+	TimeStep ts = TimeStep::GetDaily();
+
+	ptime s = from_iso_string("20000124T000000");
+	ptime e = from_iso_string("20000120T000000"); // end before start
+	REQUIRE_THROWS(ts.GetUpperNumSteps(s, e));
+	REQUIRE_THROWS(ts.GetNumSteps(s, e));
+	REQUIRE_THROWS(ts / 0);
 }
 
 TEST_CASE("Basic access - single and double precision")
