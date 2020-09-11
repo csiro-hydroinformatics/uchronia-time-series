@@ -1,8 +1,8 @@
 Package: uchronia
 Type: Package
 Title: Handling large multidimensional time series
-Version: 2.3.0
-Date: 2020-06-10
+Version: 2.3.1
+Date: 2020-07-27
 Authors@R: c( person("Jean-Michel", "Perraud", email =
     "jean-michel.perraud@csiro.au", role = c("aut", "cre")))
 Author: Jean-Michel Perraud [aut, cre]
@@ -11,13 +11,13 @@ Description: uchronia is a package to access a C++ library for managing multidim
 URL: https://bitbucket.csiro.au/projects/SF/
 License: BSD-3
 Depends:
-    R (>= 3.1)
+    R (>= 3.5)
 Imports:
-    Rcpp (>= 0.12.4),
+    Rcpp (>= 1.0.2),
     methods,
     lubridate,
-    cinterop (>= 0.2.4),
-    msvs (>= 0.3.0),
+    cinterop (>= 1.1),
+    msvs (>= 0.4.1),
     xts,
     ggplot2,
     dplyr,
