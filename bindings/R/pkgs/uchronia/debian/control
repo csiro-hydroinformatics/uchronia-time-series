@@ -1,0 +1,37 @@
+Source: r-uchronia
+Maintainer: Jean-Michel Perraud <per202@csiro.au>
+Section: gnu-r
+# Testsuite: autopkgtest-pkg-r
+Priority: optional
+Build-Depends: debhelper-compat (= 13),
+               dh-r,
+               r-base-dev
+Standards-Version: 4.5.0
+Homepage: https://github.com/csiro-hydroinformatics/rcpp-interop-commons
+#Vcs-Browser: https://salsa.debian.org/debian/moirai
+#Vcs-Git: https://salsa.debian.org/debian/moirai.git
+Rules-Requires-Root: no
+
+Package: r-uchronia
+Architecture: any
+Depends: ${R:Depends},
+         r-cinterop (>= 1.1-1),
+         ${shlibs:Depends},
+         ${misc:Depends}         
+Recommends: ${R:Recommends}
+Suggests: ${R:Suggests}
+Description: C++ library for multidimensional time series -- R bindings
+ Uchronia is a C++ library designed to handle multidimensional time series 
+ and ensemble thereof. Some key capabilities are:
+ .
+ * Off the shelf support for point time series and time series 
+ of ensemble forecasts
+ .
+ * Extensibility to various data types (numeric or not) through 
+ C++ templates, e.g. to a "time series of spatial grids"
+ .
+ * High level language bindings for R, Python, Matlab, and 
+ others via a consistent "C" API. 
+ .
+ This package contains the uchronia bindings for R.
+

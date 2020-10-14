@@ -1,0 +1,6 @@
+
+r-uchronia source: debian-rules-is-dh_make-template
+r-uchronia source: empty-short-license-in-dep5-copyright (line 10)
+r-uchronia source: missing-field-in-dep5-copyright Copyright (empty field, line 6)
+r-uchronia source: missing-field-in-dep5-copyright License (paragraph at line 6)
+r-uchronia source: no-debian-changes

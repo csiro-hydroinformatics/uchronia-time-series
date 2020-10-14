@@ -41,7 +41,43 @@ Check:
 
 ```sh
 cd ${DEST}/..
+dpkg -c libuchronia_2.3-1_amd64.deb 
 dpkg -c libuchronia-dev_2.3-1_amd64.deb 
+
+sudo dpkg -i libuchronia_2.3-1_amd64.deb 
 sudo dpkg -i libuchronia-dev_2.3-1_amd64.deb 
 ```
 
+
+### Creating the r-uchronia pkg
+
+Possibly `sudo apt install r-cran-generics r-cran-rcpp`. 
+
+```sh
+pkgname=r-uchronia
+pkgname_ver=${pkgname}-2.3
+fn_ver=${pkgname}_2.3
+SRC=~/src/csiro/stash/datatypes/bindings/R/pkgs/uchronia
+DEST=~/tmp/uchronia/${pkgname_ver}
+FILES="./*"
+
+mkdir -p ${DEST}
+cd ${DEST}
+rm -rf ${DEST}/*
+cd ${SRC}
+cp -Rf ${FILES} ${DEST}/
+cd ${DEST}
+ls -a
+cd ${DEST}/..
+tar -zcvf ${fn_ver}.orig.tar.gz ${pkgname_ver}
+cd ${DEST}
+debuild -us -uc 
+```
+
+Check:
+
+```sh
+cd ${DEST}/..
+dpkg -c r-uchronia_2.3-1_amd64.deb 
+sudo dpkg -i r-uchronia_2.3-1_amd64.deb 
+```
