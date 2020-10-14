@@ -1,0 +1,6 @@
+uchronia source: empty-short-license-in-dep5-copyright (line 10)
+uchronia source: missing-field-in-dep5-copyright License (paragraph at line 6)
+uchronia source: no-debian-changes
+uchronia source: debian-rules-is-dh_make-template
+
+uchronia source: source-contains-cmake-cache-file build/CMakeCache.txt

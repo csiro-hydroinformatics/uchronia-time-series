@@ -1,0 +1,4 @@
+libuchronia: initial-upload-closes-no-bugs
+libuchronia: link-to-shared-library-in-wrong-package usr/lib/x86_64-linux-gnu/libdatatypes.so.2.3.1 usr/lib/x86_64-linux-gnu/libdatatypes.so
+libuchronia: package-name-doesnt-match-sonames libdatatypes2
+libuchronia: possible-unindented-list-in-extended-description

@@ -1,30 +1,39 @@
 cmake_minimum_required(VERSION 3.12)
 
 ## start setting
-SET (this_target datatypes)
-PROJECT(${this_target})
+set(UCHRONIA_LIB_NAME uchronia)
+set(TARGET_LIB_NAME datatypes)
+SET (this_target ${TARGET_LIB_NAME})
+
+set(TARGET_MAJOR 2)
+set(TARGET_MINOR 3)
+set(TARGET_RELEASE 1)
+# set(TARGET_NAME libmoirai${TARGET_MAJOR}${TARGET_MINOR})
+set(TARGET_VERSION ${TARGET_MAJOR}.${TARGET_MINOR}.${TARGET_RELEASE})
+SET (VERSION ${TARGET_VERSION})
+
+PROJECT(${this_target} VERSION ${TARGET_VERSION} DESCRIPTION "C++ library designed to handle multidimensional time series")
+
+include(GNUInstallDirs)
+# Always add the path to the standard (?) linux filesystem location
+list(APPEND CMAKE_MODULE_PATH "/usr/share/cmake/Modules")
 
 find_package(Boost 1.48.0 COMPONENTS system date_time regex filesystem REQUIRED)
 
-# list(APPEND CMAKE_MODULE_PATH "/usr/local/share/cmake/Modules")
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../cmake_modules")
-# list(APPEND CMAKE_MODULE_PATH "~/share/cmake/Modules") # Pearcey
-# list(APPEND CMAKE_MODULE_PATH "/data/projects/hydroforecast/usr/local/share/cmake/Modules") # Pearcey
-
-# # Set install dir for lib (Julien Lerat)
-# set(INSTALL_LIB_DIR lib CACHE PATH "/usr/lib")
-# set(NETCDF_INCLUDE_DIR "/usr/local/include/")
-# set(NETCDF_LIBRARY "/usr/local/lib64/libnetcdf.so")
-
 find_package (NetCDF REQUIRED)
 find_package (YAMLCPP REQUIRED)
-message ("The path to the yamlcpp headers is ${YAMLCPP_INCLUDE_DIRS}")
 
 find_path (MOIRAI_INCLUDE_DIRS moirai/reference_handle.hpp)
-message ("The path to the moirai headers is ${MOIRAI_INCLUDE_DIRS}")
 FIND_LIBRARY(MOIRAI_LIBRARIES NAMES moirai)
-message ("The path to the moirai library is ${MOIRAI_LIBRARIES}")
 
+IF(DEFINED ENV{UCHRONIA_CMAKE_VERBOSE})
+	message ("The path to the boost headers is ${Boost_INCLUDE_DIRS}")
+	message ("The path to the boost libraries is ${Boost_LIBRARIES}")
+	message ("The path to the netcdf headers is ${NETCDF_INCLUDE_DIRS}")
+	message ("The path to the netcdf libraries is ${NETCDF_LIBRARIES}")
+	message ("The path to the yaml-cpp headers is ${YAMLCPP_INCLUDE_DIRS}")
+	message ("The path to the moirai headers is ${MOIRAI_INCLUDE_DIRS}")
+ENDIF()
 
 ## section: include directory
 INCLUDE_DIRECTORIES(
@@ -35,12 +44,10 @@ INCLUDE_DIRECTORIES(
 	${YAMLCPP_INCLUDE_DIRS}
 )
 
-
 ## section: library directories
 LINK_DIRECTORIES(
 # use target_link_libraries instead
 )
-
 
 ## section: source files
 # Add your source files here (one file per line), please SORT in alphabetical order for future maintenance
@@ -115,6 +122,12 @@ endif()
 
 ## section: add target
 ADD_LIBRARY(${this_target} SHARED ${${this_target}_SOURCE_FILES} )
+set_target_properties(${this_target} PROPERTIES
+  OUTPUT_NAME ${TARGET_LIB_NAME}
+  VERSION ${PROJECT_VERSION}
+  SOVERSION ${TARGET_MAJOR}
+  # CLEAN_DIRECT_OUTPUT 1
+)
 
 ## section: set link libraries
 TARGET_LINK_LIBRARIES( ${this_target}
@@ -126,6 +139,7 @@ TARGET_LINK_LIBRARIES( ${this_target}
 
 # Files to be installed
 INSTALL(FILES ${${this_target}_HEADER_FILES} DESTINATION include/datatypes)
+configure_file(${UCHRONIA_LIB_NAME}.pc.in ${UCHRONIA_LIB_NAME}.pc @ONLY)
 
 ########### Add uninstall target ###############
 # uninstall target
@@ -145,9 +159,15 @@ if(WIN32)
     RUNTIME DESTINATION bin
   )
 else()
-  INSTALL(TARGETS ${this_target}
-    LIBRARY DESTINATION lib
-  )
+INSTALL(TARGETS ${this_target}
+	# EXPORT libmoirai # apparently not in favor
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	# LIBRARY DESTINATION lib
+	)
+	install(FILES ${CMAKE_BINARY_DIR}/${UCHRONIA_LIB_NAME}.pc
+    # DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig) from examplar, but this appears not prevalent, most I see are under /usr/lib/x86_64-linux-gnu/pkgconfig, so:
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+    # The above also prevents a lintian error
 endif()
 
 # Packages - currently just an RPM

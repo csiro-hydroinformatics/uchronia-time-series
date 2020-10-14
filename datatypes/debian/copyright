@@ -1,0 +1,15 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: uchronia
+Upstream-Contact: Jean-Michel Perraud <per202@csiro.au>
+Source: <https://github.com/csiro-hydroinformatics/uchronia>
+
+Files: *
+Copyright:
+    Copyright (C) 2020 CSIRO
+
+License:
+    CSIRO Proprietary code
+    .
+    You may not access or use this software without prior permission.
+    Contact david.robertson@csiro.au or jean-miche.perraud@csiro.au to 
+    obtain information for condition of use.
