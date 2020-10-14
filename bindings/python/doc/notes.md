@@ -31,7 +31,7 @@ Looking for packages that depend on [xtensor-python](blah) as an example [Higra]
 ## Dependencies
 
 * [capigen](https://bitbucket.csiro.au/users/per202/repos/c-api-bindings/browse) is an ongoing refactor of the legacy package 'swiftdev',
-* which loads and runs some [C# based code generation](https://github.com/jmp75/rcpp-wrapper-generation),
+* which loads and runs some [C# based code generation](https://github.com/csiro-hydroinformatics/rcpp-wrapper-generation),
 * re-using [rClr](https://github.com/jmp75/rClr) for this mix of R and .net.
 
 ## Generating code:

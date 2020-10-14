@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.12)
 SET (VERSION 2.3.0)
 
 IF(DEFINED CMAKE_BUILD_TYPE)

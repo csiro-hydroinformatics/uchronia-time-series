@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.12)
 
 ## start setting
 SET (this_target datatypes)
@@ -124,7 +124,7 @@ TARGET_LINK_LIBRARIES( ${this_target}
     ${YAMLCPP_LIBRARIES}
 )
 
-# Files to be installed - used by packaging stuff below
+# Files to be installed
 INSTALL(FILES ${${this_target}_HEADER_FILES} DESTINATION include/datatypes)
 
 ########### Add uninstall target ###############
