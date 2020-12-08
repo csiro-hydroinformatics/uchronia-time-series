@@ -12,14 +12,16 @@ A package to handle multidimensional time series and ensemble thereof
 \tabular{ll}{
 Package: \tab uchronia \cr
 Type: \tab Package\cr
-Version: \tab 2.3.0 \cr
-Date: \tab 2020-01-10 \cr
-Release Notes: \tab Cumulative maintenance release. \cr
+Version: \tab 2.3.4 \cr
+Date: \tab 2020-12-08 \cr
+Release Notes: \tab Cumulative maintenance release; surface support for monthly time series \cr
 License: \tab BSD-3 \cr
 }
 
 \tabular{lll}{
 Version \tab Date \tab Notes \cr
+2.3.1 \tab 2020-01-27 \tab Surface support for monthly time series. Added to cater for the model GR2M. \cr
+2.3.0 \tab 2020-01-10 \tab Cumulative maintenance release. \cr
 2.1.2 \tab 2020-01-25 \tab Cumulative maintenance release. \cr
 2.1.1 \tab 2019-09-16 \tab Cumulative maintenance release. \cr
 0.4.5 \tab 2019-02-24 \tab Improve performance retrieving time series from providers and models. \cr
