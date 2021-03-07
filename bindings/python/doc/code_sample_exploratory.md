@@ -41,7 +41,7 @@ cd /home/per202/src/csiro/stash/datatypes/bindings/python/uchronia
 
 # Cannot get the VSCode debugger to work on linux drives me nuts.
 export LD_LIBRARY_PATH=/usr/local/lib # this needs a fix, in uchronia. Should be unnecessary.
-/home/per202/anaconda3/envs/pyuchronia/bin/python /home/per202/src/csiro/stash/datatypes/bindings/python/uchronia/tests/test_low_level.py
+python /home/per202/src/csiro/stash/datatypes/bindings/python/uchronia/tests/test_low_level.py
 
 
 ```
