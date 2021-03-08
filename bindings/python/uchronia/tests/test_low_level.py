@@ -16,8 +16,6 @@ pkg_dir = os.path.join(os.path.dirname(__file__),'..')
 sys.path.append(pkg_dir)
 
 from uchronia.wrap.ffi_interop import *
-import uchronia.wrap.uchronia_wrap_generated
-setattr(sys.modules['uchronia.wrap.uchronia_wrap_generated'], 'uchronia_so', uchronia_so)
 from uchronia.wrap.uchronia_wrap_generated import *
 
 from cffi import FFI
@@ -69,8 +67,6 @@ def create_struct_ensemble_series(n=365, n_ens=2, t_step=b'D'):
     mtsd = MultiTimeSeriesData(geom, values.shape[1], values_c)
     return mtsd
 
-
-
 def create_ensemble_series(n=365, n_ens=2, t_step=b'D'):
     data = np.random.rand(n, n_ens)
     locs = [str(i) for i in range(n_ens)]
@@ -106,6 +102,12 @@ def test_create_series():
 
 x = create_ensemble_series()
 mtsd = to_multi_regular_time_series_data(x)
+
+
+if __name__ == "__main__":
+    # test_wrapper_helper_functions()
+    pass
+
 
 # test_create_series()
 

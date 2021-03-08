@@ -5,695 +5,912 @@
 # 
 ##################
 
-
-
+from typing import *
 from refcount.interop import *
+from uchronia.wrap.ffi_interop import *
+import xarray as xr
+import pandas as pd
 
+def custom_wrap_cffi_native_handle(obj, type_id="", release_native = None):
+    '''Create a wrapper around a cffi pointer (if this is one), 
+    with the suitable native release function call specific to this external pointer. 
+    '''
+    if release_native is None:
+        release_native = DisposeSharedPointer_py
+    return wrap_cffi_native_handle(obj, type_id, release_native)
 
-def custom_wrap_cffi_native_handle(obj, type_id="", release_callback = None):
-    if release_callback is None:
-        release_callback = DisposeSharedPointer_py
-    return wrap_cffi_native_handle(obj, type_id, release_callback)
+# def lod_series_to_numeric_vector(xtr_ptr, dispose:bool=True) -> pd.Series:
+#     cffi_ptr = unwrap_cffi_native_handle(xtr_ptr)
+#     npx = marshal.as_numeric_np_array(cffi_ptr.data, cffi_ptr.size)
+#     if dispose:
+#         DisposeSeries_py(cffi_ptr)
+#     return pd.Series(npx)
 
-def GetLastStdExceptionMessage_py():
-    """
-    GetLastStdExceptionMessage_py
+# # variableIdentifier is a bit of a hack the way it is passed. Revise. 
+# def lod_matrix_2d_to_numeric_matrix(xtr_ptr, variableIdentifier, dispose:bool=True) -> xr.DataArray:
+#     cffi_ptr = unwrap_cffi_native_handle(xtr_ptr)
+#     npx = marshal.two_d_as_np_array_double(cffi_ptr.numeric_data, cffi_ptr.nrow, cffi_ptr.ncol, True)
+#     x = xr.DataArray(npx, dims=[TIME_DIMNAME, DEPTH_DIMNAME])
+#     if dispose:
+#         DisposeMatrix_py(cffi_ptr)
+#     x.name = variableIdentifierprependHeaderTemplate
+#     return x
+
+# def character_vector_to_list(xtr_ptr, dispose:bool=True) -> list:
+#     cffi_ptr = unwrap_cffi_native_handle(xtr_ptr)
+#     pystrings = marshal.character_vector_as_string_list(cffi_ptr.values, cffi_ptr.size)
+#     if dispose:
+#         DisposeCharVec_py(cffi_ptr)
+#     return pystrings
+
+def charp_array_to_py(values:CffiData, size:int, dispose:bool=True) -> List[str]:
+    pystrings = marshal.character_vector_as_string_list(values, size)
+    if dispose:
+        uchronia_so.DeleteAnsiStringArray(values, size)
+    return pystrings
+
+def charp_array_to_py(values:CffiData, size:int, dispose:bool=True) -> List[str]:
+    pystrings = marshal.c_charptrptr_as_string_list(values, size)
+    if dispose:
+        uchronia_so.DeleteAnsiStringArray(values, size)
+    return pystrings
+
+def opaque_ts_as_xarray_time_series(ptr:CffiData, dispose:bool=True) -> xr.DataArray:
+    res = marshal.as_xarray_time_series(ptr)
+    if dispose:
+        uchronia_so.DisposeMultiTimeSeriesData(ptr)
+    return res
+
+def py_time_series_dimensions_description(ptr:CffiData, dispose:bool=True) -> List[Tuple[str,int]]:
+    n = ptr.num_dimensions
+    def dim_spec(i):
+        d = ptr.dimensions[i]
+        return(marshal.c_string_as_py_string(d.dimension_type), d.size)
+    res = [dim_spec(i) for i in range(n)]
+    if dispose:
+        uchronia_so.DisposeDataDimensionsDescriptions(ptr)
+    return res
+
+class GenericWrapper:
+
+    def __init__(self, handle: Any):
+        self._handle = handle
+
+    @property
+    def ptr(self):
+        return self._handle
+
+def keep_wrap_cffi_native_handle(
+    obj_wrapper: Any, stringent: bool = False
+) -> Union[CffiData, Any, None]:
+    # 2016-01-28 allowing null pointers, to unlock behavior of EstimateERRISParameters.
+    # Reassess approach, even if other C API function will still catch the issue of null ptrs.
+    if obj_wrapper is None:
+        return None
+    elif isinstance(obj_wrapper, CffiNativeHandle):
+        return obj_wrapper
+    elif isinstance(obj_wrapper, FFI.CData):
+        return OwningCffiNativeHandle(obj_wrapper)
+    elif isinstance(obj_wrapper, bytes):
+        return GenericWrapper(obj_wrapper)
+    else:
+        if stringent:
+            raise Exception(
+                "Argument is neither a CffiNativeHandle nor a CFFI external pointer"
+            )
+        else:
+            return obj_wrapper
+
+@check_exceptions
+def GetLastStdExceptionMessage_py() -> str:
+    """GetLastStdExceptionMessage_py
     
-    GetLastStdExceptionMessage_py Wrapper function for GetLastStdExceptionMessage
+    GetLastStdExceptionMessage_py: generated wrapper function for API function GetLastStdExceptionMessage
     
+    Args:
+    
+    Returns:
+        (str): returned result
     
     """
     result = uchronia_so.GetLastStdExceptionMessage()
-    return custom_wrap_cffi_native_handle(result, 'char*')
+    return result
 
 
-def RegisterExceptionCallback_py(callback):
-    """
-    RegisterExceptionCallback_py
+@check_exceptions
+def RegisterExceptionCallback_py(callback:Any) -> None:
+    """RegisterExceptionCallback_py
     
-    RegisterExceptionCallback_py Wrapper function for RegisterExceptionCallback
+    RegisterExceptionCallback_py: generated wrapper function for API function RegisterExceptionCallback
     
-     callback Python type equivalent for C++ type const void*
+    Args:
+        callback (Any): callback
     
     """
     uchronia_so.RegisterExceptionCallback(callback)
 
 
-def DisposeSharedPointer_py(ptr):
+@check_exceptions
+def DisposeSharedPointer_py(ptr:Any) -> None:
+    """DisposeSharedPointer_py
+    
+    DisposeSharedPointer_py: generated wrapper function for API function DisposeSharedPointer
+    
+    Args:
+        ptr (Any): ptr
+    
     """
-    DisposeSharedPointer_py
-    
-    DisposeSharedPointer_py Wrapper function for DisposeSharedPointer
-    
-     ptr Python type equivalent for C++ type VOID_PTR_PROVIDER_PTR
-    
-    """
-    ptr_xptr = unwrap_cffi_native_handle(ptr)
-    uchronia_so.DisposeSharedPointer(ptr_xptr)
+    ptr_xptr = keep_wrap_cffi_native_handle(ptr)
+    uchronia_so.DisposeSharedPointer(ptr_xptr.ptr)
 
 
-def DeleteAnsiStringArray_py(values, arrayLength):
-    """
-    DeleteAnsiStringArray_py
+@check_exceptions
+def SetTimeSeriesMissingValueValue_py(missingValueValue:float) -> None:
+    """SetTimeSeriesMissingValueValue_py
     
-    DeleteAnsiStringArray_py Wrapper function for DeleteAnsiStringArray
+    SetTimeSeriesMissingValueValue_py: generated wrapper function for API function SetTimeSeriesMissingValueValue
     
-     values Python type equivalent for C++ type char**
-     arrayLength Python type equivalent for C++ type int
-    
-    """
-    values_charpp = to_c_char_ptrptr(values)
-    uchronia_so.DeleteAnsiStringArray(values_charpp, arrayLength)
-
-
-def DeleteAnsiString_py(value):
-    """
-    DeleteAnsiString_py
-    
-    DeleteAnsiString_py Wrapper function for DeleteAnsiString
-    
-     value Python type equivalent for C++ type const char*
-    
-    """
-    uchronia_so.DeleteAnsiString(value)
-
-
-def DeleteDoubleArray_py(value):
-    """
-    DeleteDoubleArray_py
-    
-    DeleteDoubleArray_py Wrapper function for DeleteDoubleArray
-    
-     value Python type equivalent for C++ type double*
-    
-    """
-    uchronia_so.DeleteDoubleArray(value)
-
-
-def SetTimeSeriesMissingValueValue_py(missingValueValue):
-    """
-    SetTimeSeriesMissingValueValue_py
-    
-    SetTimeSeriesMissingValueValue_py Wrapper function for SetTimeSeriesMissingValueValue
-    
-     missingValueValue Python type equivalent for C++ type double
+    Args:
+        missingValueValue (float): missingValueValue
     
     """
     uchronia_so.SetTimeSeriesMissingValueValue(missingValueValue)
 
 
-def LoadEnsembleDataset_py(libraryIdentifier, dataPath):
+@check_exceptions
+def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> Any:
+    """LoadEnsembleDataset_py
+    
+    LoadEnsembleDataset_py: generated wrapper function for API function LoadEnsembleDataset
+    
+    Args:
+        libraryIdentifier (str): libraryIdentifier
+        dataPath (str): dataPath
+    
+    Returns:
+        (Any): returned result
+    
     """
-    LoadEnsembleDataset_py
-    
-    LoadEnsembleDataset_py Wrapper function for LoadEnsembleDataset
-    
-     libraryIdentifier Python type equivalent for C++ type const char*
-     dataPath Python type equivalent for C++ type const char*
-    
-    """
-    result = uchronia_so.LoadEnsembleDataset(libraryIdentifier, dataPath)
+    libraryIdentifier_c_charp = keep_wrap_cffi_native_handle(as_bytes(libraryIdentifier))
+    dataPath_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataPath))
+    result = uchronia_so.LoadEnsembleDataset(libraryIdentifier_c_charp.ptr, dataPath_c_charp.ptr)
+    # no cleanup for const char*
+    # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_DATA_SET_PTR')
 
 
-def CreateEnsembleDataset_py(type):
+@check_exceptions
+def CreateEnsembleDataset_py(type:str) -> Any:
+    """CreateEnsembleDataset_py
+    
+    CreateEnsembleDataset_py: generated wrapper function for API function CreateEnsembleDataset
+    
+    Args:
+        type (str): type
+    
+    Returns:
+        (Any): returned result
+    
     """
-    CreateEnsembleDataset_py
-    
-    CreateEnsembleDataset_py Wrapper function for CreateEnsembleDataset
-    
-     type Python type equivalent for C++ type const char*
-    
-    """
-    result = uchronia_so.CreateEnsembleDataset(type)
+    type_c_charp = keep_wrap_cffi_native_handle(as_bytes(type))
+    result = uchronia_so.CreateEnsembleDataset(type_c_charp.ptr)
+    # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_DATA_SET_PTR')
 
 
 
-def GetEnsembleDatasetDataIdentifiers_py(dataLibrary):
+def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:Any):
+    """GetEnsembleDatasetDataIdentifiers_py
+    
+    GetEnsembleDatasetDataIdentifiers_py: generated wrapper function for API function GetEnsembleDatasetDataIdentifiers
+    
+    
     """
-    GetEnsembleDatasetDataIdentifiers_py
+
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+
+    size = marshal.new_int_scalar_ptr()
+    values = uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary_xptr.ptr, size)
     
-    GetEnsembleDatasetDataIdentifiers_py Wrapper function for GetEnsembleDatasetDataIdentifiers
-    
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    result = uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary)
-    return(custom_wrap_cffi_native_handle(result,'dummytype'))
+
+    result = charp_array_to_py(values, size[0], True)
+    return result
 
 
-def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary, dataCollectionId):
+def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:Any, dataCollectionId:str):
+    """GetEnsembleDatasetDataSubIdentifiers_py
+    
+    GetEnsembleDatasetDataSubIdentifiers_py: generated wrapper function for API function GetEnsembleDatasetDataSubIdentifiers
+    
+    
     """
-    GetEnsembleDatasetDataSubIdentifiers_py
+
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    dataCollectionId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataCollectionId))
+
+    size = marshal.new_int_scalar_ptr()
+    values = uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary_xptr.ptr, dataCollectionId_c_charp.ptr, size)
     
-    GetEnsembleDatasetDataSubIdentifiers_py Wrapper function for GetEnsembleDatasetDataSubIdentifiers
-    
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    result = uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary, dataCollectionId)
-    return(custom_wrap_cffi_native_handle(result,'dummytype'))
+    # no cleanup for const char*
+
+    result = charp_array_to_py(values, size[0], True)
+    return result
 
 
-def GetEnsembleDatasetDataSummaries_py(dataLibrary):
+def GetEnsembleDatasetDataSummaries_py(dataLibrary:Any):
+    """GetEnsembleDatasetDataSummaries_py
+    
+    GetEnsembleDatasetDataSummaries_py: generated wrapper function for API function GetEnsembleDatasetDataSummaries
+    
+    
     """
-    GetEnsembleDatasetDataSummaries_py
-    
-    GetEnsembleDatasetDataSummaries_py Wrapper function for GetEnsembleDatasetDataSummaries
-    
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    result = uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary)
-    return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
-def GetDataDimensionsDescription_py(dataLibrary, dataId):
-    """
-    GetDataDimensionsDescription_py
-    
-    GetDataDimensionsDescription_py Wrapper function for GetDataDimensionsDescription
-    
-     dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-     dataId Python type equivalent for C++ type const char*
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    result = uchronia_so.GetDataDimensionsDescription(dataLibrary_xptr, dataId)
-    return custom_wrap_cffi_native_handle(result, 'time_series_dimensions_description*')
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
 
+    size = marshal.new_int_scalar_ptr()
+    values = uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary_xptr.ptr, size)
+    
 
-def EnsembleSizeEnsembleTimeSeries_py(ensSeries):
+    result = charp_array_to_py(values, size[0], True)
+    return result
+
+@check_exceptions
+def GetDataDimensionsDescription_py(dataLibrary:Any, dataId:str) -> List:
+    """GetDataDimensionsDescription_py
+    
+    GetDataDimensionsDescription_py: generated wrapper function for API function GetDataDimensionsDescription
+    
+    Args:
+        dataLibrary (Any): dataLibrary
+        dataId (str): dataId
+    
+    Returns:
+        (List): returned result
+    
     """
-    EnsembleSizeEnsembleTimeSeries_py
-    
-    EnsembleSizeEnsembleTimeSeries_py Wrapper function for EnsembleSizeEnsembleTimeSeries
-    
-     ensSeries Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-    
-    """
-    ensSeries_xptr = unwrap_cffi_native_handle(ensSeries)
-    result = uchronia_so.EnsembleSizeEnsembleTimeSeries(ensSeries_xptr)
-    return custom_wrap_cffi_native_handle(result, 'int')
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    dataId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataId))
+    result = uchronia_so.GetDataDimensionsDescription(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
+    # no cleanup for const char*
+    return py_time_series_dimensions_description(result, dispose=True)
 
 
-def DisposeDataDimensionsDescriptions_py(data):
+@check_exceptions
+def EnsembleSizeEnsembleTimeSeries_py(ensSeries:Any) -> int:
+    """EnsembleSizeEnsembleTimeSeries_py
+    
+    EnsembleSizeEnsembleTimeSeries_py: generated wrapper function for API function EnsembleSizeEnsembleTimeSeries
+    
+    Args:
+        ensSeries (Any): ensSeries
+    
+    Returns:
+        (int): returned result
+    
     """
-    DisposeDataDimensionsDescriptions_py
+    ensSeries_xptr = keep_wrap_cffi_native_handle(ensSeries)
+    result = uchronia_so.EnsembleSizeEnsembleTimeSeries(ensSeries_xptr.ptr)
+    return result
+
+
+@check_exceptions
+def DisposeDataDimensionsDescriptions_py(data:List) -> None:
+    """DisposeDataDimensionsDescriptions_py
     
-    DisposeDataDimensionsDescriptions_py Wrapper function for DisposeDataDimensionsDescriptions
+    DisposeDataDimensionsDescriptions_py: generated wrapper function for API function DisposeDataDimensionsDescriptions
     
-     data Python type equivalent for C++ type time_series_dimensions_description*
+    Args:
+        data (List): data
     
     """
     uchronia_so.DisposeDataDimensionsDescriptions(data)
 
 
-def CreateEnsembleForecastTimeSeries_py(start, length, timeStepName):
+@check_exceptions
+def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName:str) -> Any:
+    """CreateEnsembleForecastTimeSeries_py
+    
+    CreateEnsembleForecastTimeSeries_py: generated wrapper function for API function CreateEnsembleForecastTimeSeries
+    
+    Args:
+        start (datetime): start
+        length (int): length
+        timeStepName (str): timeStepName
+    
+    Returns:
+        (Any): returned result
+    
     """
-    CreateEnsembleForecastTimeSeries_py
-    
-    CreateEnsembleForecastTimeSeries_py Wrapper function for CreateEnsembleForecastTimeSeries
-    
-     start Python type equivalent for C++ type date_time_to_second
-     length Python type equivalent for C++ type int
-     timeStepName Python type equivalent for C++ type const char*
-    
-    """
-    start_datetime = to_date_time_to_second(start)
-    result = uchronia_so.CreateEnsembleForecastTimeSeries(start_datetime, length, timeStepName)
-    # start_datetime - no cleanup needed
+    start_datetime = marshal.datetime_to_dtts(start)
+    timeStepName_c_charp = keep_wrap_cffi_native_handle(as_bytes(timeStepName))
+    result = uchronia_so.CreateEnsembleForecastTimeSeries(start_datetime.obj, length, timeStepName_c_charp.ptr)
+    # start_datetime - no cleanup needed?
+    # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
-def GetDatasetSingleTimeSeries_py(dataLibrary, dataId):
+@check_exceptions
+def GetDatasetSingleTimeSeries_py(dataLibrary:Any, dataId:str) -> Any:
+    """GetDatasetSingleTimeSeries_py
+    
+    GetDatasetSingleTimeSeries_py: generated wrapper function for API function GetDatasetSingleTimeSeries
+    
+    Args:
+        dataLibrary (Any): dataLibrary
+        dataId (str): dataId
+    
+    Returns:
+        (Any): returned result
+    
     """
-    GetDatasetSingleTimeSeries_py
-    
-    GetDatasetSingleTimeSeries_py Wrapper function for GetDatasetSingleTimeSeries
-    
-     dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-     dataId Python type equivalent for C++ type const char*
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    result = uchronia_so.GetDatasetSingleTimeSeries(dataLibrary_xptr, dataId)
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    dataId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataId))
+    result = uchronia_so.GetDatasetSingleTimeSeries(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
+    # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
-def GetDatasetEnsembleTimeSeries_py(dataLibrary, dataEnsembleId):
+@check_exceptions
+def GetDatasetEnsembleTimeSeries_py(dataLibrary:Any, dataEnsembleId:str) -> Any:
+    """GetDatasetEnsembleTimeSeries_py
+    
+    GetDatasetEnsembleTimeSeries_py: generated wrapper function for API function GetDatasetEnsembleTimeSeries
+    
+    Args:
+        dataLibrary (Any): dataLibrary
+        dataEnsembleId (str): dataEnsembleId
+    
+    Returns:
+        (Any): returned result
+    
     """
-    GetDatasetEnsembleTimeSeries_py
-    
-    GetDatasetEnsembleTimeSeries_py Wrapper function for GetDatasetEnsembleTimeSeries
-    
-     dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-     dataEnsembleId Python type equivalent for C++ type const char*
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    result = uchronia_so.GetDatasetEnsembleTimeSeries(dataLibrary_xptr, dataEnsembleId)
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    dataEnsembleId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataEnsembleId))
+    result = uchronia_so.GetDatasetEnsembleTimeSeries(dataLibrary_xptr.ptr, dataEnsembleId_c_charp.ptr)
+    # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
-def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary, dataId):
+@check_exceptions
+def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary:Any, dataId:str) -> Any:
+    """GetDatasetEnsembleForecastTimeSeries_py
+    
+    GetDatasetEnsembleForecastTimeSeries_py: generated wrapper function for API function GetDatasetEnsembleForecastTimeSeries
+    
+    Args:
+        dataLibrary (Any): dataLibrary
+        dataId (str): dataId
+    
+    Returns:
+        (Any): returned result
+    
     """
-    GetDatasetEnsembleForecastTimeSeries_py
-    
-    GetDatasetEnsembleForecastTimeSeries_py Wrapper function for GetDatasetEnsembleForecastTimeSeries
-    
-     dataLibrary Python type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-     dataId Python type equivalent for C++ type const char*
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    result = uchronia_so.GetDatasetEnsembleForecastTimeSeries(dataLibrary_xptr, dataId)
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    dataId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataId))
+    result = uchronia_so.GetDatasetEnsembleForecastTimeSeries(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
+    # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
-def SaveSingleTimeSeriesToNetcdf_py(timeSeries, filename, overwrite):
+@check_exceptions
+def SaveSingleTimeSeriesToNetcdf_py(timeSeries:Any, filename:str, overwrite:bool) -> None:
+    """SaveSingleTimeSeriesToNetcdf_py
+    
+    SaveSingleTimeSeriesToNetcdf_py: generated wrapper function for API function SaveSingleTimeSeriesToNetcdf
+    
+    Args:
+        timeSeries (Any): timeSeries
+        filename (str): filename
+        overwrite (bool): overwrite
+    
     """
-    SaveSingleTimeSeriesToNetcdf_py
-    
-    SaveSingleTimeSeriesToNetcdf_py Wrapper function for SaveSingleTimeSeriesToNetcdf
-    
-     timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
-     filename Python type equivalent for C++ type const char*
-     overwrite Python type equivalent for C++ type bool
-    
-    """
-    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
-    uchronia_so.SaveSingleTimeSeriesToNetcdf(timeSeries_xptr, filename, overwrite)
+    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
+    filename_c_charp = keep_wrap_cffi_native_handle(as_bytes(filename))
+    uchronia_so.SaveSingleTimeSeriesToNetcdf(timeSeries_xptr.ptr, filename_c_charp.ptr, overwrite)
+    # no cleanup for const char*
 
 
-def SaveEnsembleTimeSeriesToNetcdf_py(collection, filename, overwrite):
+@check_exceptions
+def SaveEnsembleTimeSeriesToNetcdf_py(collection:Any, filename:str, overwrite:bool) -> None:
+    """SaveEnsembleTimeSeriesToNetcdf_py
+    
+    SaveEnsembleTimeSeriesToNetcdf_py: generated wrapper function for API function SaveEnsembleTimeSeriesToNetcdf
+    
+    Args:
+        collection (Any): collection
+        filename (str): filename
+        overwrite (bool): overwrite
+    
     """
-    SaveEnsembleTimeSeriesToNetcdf_py
-    
-    SaveEnsembleTimeSeriesToNetcdf_py Wrapper function for SaveEnsembleTimeSeriesToNetcdf
-    
-     collection Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-     filename Python type equivalent for C++ type const char*
-     overwrite Python type equivalent for C++ type bool
-    
-    """
-    collection_xptr = unwrap_cffi_native_handle(collection)
-    uchronia_so.SaveEnsembleTimeSeriesToNetcdf(collection_xptr, filename, overwrite)
+    collection_xptr = keep_wrap_cffi_native_handle(collection)
+    filename_c_charp = keep_wrap_cffi_native_handle(as_bytes(filename))
+    uchronia_so.SaveEnsembleTimeSeriesToNetcdf(collection_xptr.ptr, filename_c_charp.ptr, overwrite)
+    # no cleanup for const char*
 
 
-def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs, filename, overwrite):
+@check_exceptions
+def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs:Any, filename:str, overwrite:bool) -> None:
+    """SaveEnsembleForecastTimeSeriesToNetcdf_py
+    
+    SaveEnsembleForecastTimeSeriesToNetcdf_py: generated wrapper function for API function SaveEnsembleForecastTimeSeriesToNetcdf
+    
+    Args:
+        tsEnsTs (Any): tsEnsTs
+        filename (str): filename
+        overwrite (bool): overwrite
+    
     """
-    SaveEnsembleForecastTimeSeriesToNetcdf_py
-    
-    SaveEnsembleForecastTimeSeriesToNetcdf_py Wrapper function for SaveEnsembleForecastTimeSeriesToNetcdf
-    
-     tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     filename Python type equivalent for C++ type const char*
-     overwrite Python type equivalent for C++ type bool
-    
-    """
-    tsEnsTs_xptr = unwrap_cffi_native_handle(tsEnsTs)
-    uchronia_so.SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs_xptr, filename, overwrite)
+    tsEnsTs_xptr = keep_wrap_cffi_native_handle(tsEnsTs)
+    filename_c_charp = keep_wrap_cffi_native_handle(as_bytes(filename))
+    uchronia_so.SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs_xptr.ptr, filename_c_charp.ptr, overwrite)
+    # no cleanup for const char*
 
 
-def IsMissingValueItemEnsembleForecastTimeSeries_py(series, i):
+@check_exceptions
+def IsMissingValueItemEnsembleForecastTimeSeries_py(series:Any, i:int) -> bool:
+    """IsMissingValueItemEnsembleForecastTimeSeries_py
+    
+    IsMissingValueItemEnsembleForecastTimeSeries_py: generated wrapper function for API function IsMissingValueItemEnsembleForecastTimeSeries
+    
+    Args:
+        series (Any): series
+        i (int): i
+    
+    Returns:
+        (bool): returned result
+    
     """
-    IsMissingValueItemEnsembleForecastTimeSeries_py
-    
-    IsMissingValueItemEnsembleForecastTimeSeries_py Wrapper function for IsMissingValueItemEnsembleForecastTimeSeries
-    
-     series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     i Python type equivalent for C++ type int
-    
-    """
-    series_xptr = unwrap_cffi_native_handle(series)
-    result = uchronia_so.IsMissingValueItemEnsembleForecastTimeSeries(series_xptr, i)
-    return custom_wrap_cffi_native_handle(result, 'bool')
+    series_xptr = keep_wrap_cffi_native_handle(series)
+    result = uchronia_so.IsMissingValueItemEnsembleForecastTimeSeries(series_xptr.ptr, i)
+    return result
 
 
-def GetItemEnsembleForecastTimeSeries_py(efts, i):
+@check_exceptions
+def GetItemEnsembleForecastTimeSeries_py(efts:Any, i:int) -> Any:
+    """GetItemEnsembleForecastTimeSeries_py
+    
+    GetItemEnsembleForecastTimeSeries_py: generated wrapper function for API function GetItemEnsembleForecastTimeSeries
+    
+    Args:
+        efts (Any): efts
+        i (int): i
+    
+    Returns:
+        (Any): returned result
+    
     """
-    GetItemEnsembleForecastTimeSeries_py
-    
-    GetItemEnsembleForecastTimeSeries_py Wrapper function for GetItemEnsembleForecastTimeSeries
-    
-     efts Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     i Python type equivalent for C++ type int
-    
-    """
-    efts_xptr = unwrap_cffi_native_handle(efts)
-    result = uchronia_so.GetItemEnsembleForecastTimeSeries(efts_xptr, i)
+    efts_xptr = keep_wrap_cffi_native_handle(efts)
+    result = uchronia_so.GetItemEnsembleForecastTimeSeries(efts_xptr.ptr, i)
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
-def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs, index):
+@check_exceptions
+def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs:Any, index:int) -> Any:
+    """TimeSeriesFromEnsembleOfTimeSeries_py
+    
+    TimeSeriesFromEnsembleOfTimeSeries_py: generated wrapper function for API function TimeSeriesFromEnsembleOfTimeSeries
+    
+    Args:
+        collectionTs (Any): collectionTs
+        index (int): index
+    
+    Returns:
+        (Any): returned result
+    
     """
-    TimeSeriesFromEnsembleOfTimeSeries_py
-    
-    TimeSeriesFromEnsembleOfTimeSeries_py Wrapper function for TimeSeriesFromEnsembleOfTimeSeries
-    
-     collectionTs Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-     index Python type equivalent for C++ type int
-    
-    """
-    collectionTs_xptr = unwrap_cffi_native_handle(collectionTs)
-    result = uchronia_so.TimeSeriesFromEnsembleOfTimeSeries(collectionTs_xptr, index)
+    collectionTs_xptr = keep_wrap_cffi_native_handle(collectionTs)
+    result = uchronia_so.TimeSeriesFromEnsembleOfTimeSeries(collectionTs_xptr.ptr, index)
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
-def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts, indexInIssueTime, indexInForecastTime):
+@check_exceptions
+def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts:Any, indexInIssueTime:int, indexInForecastTime:int) -> Any:
+    """TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py
+    
+    TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py: generated wrapper function for API function TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries
+    
+    Args:
+        efts (Any): efts
+        indexInIssueTime (int): indexInIssueTime
+        indexInForecastTime (int): indexInForecastTime
+    
+    Returns:
+        (Any): returned result
+    
     """
-    TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py
-    
-    TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py Wrapper function for TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries
-    
-     efts Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     indexInIssueTime Python type equivalent for C++ type int
-     indexInForecastTime Python type equivalent for C++ type int
-    
-    """
-    efts_xptr = unwrap_cffi_native_handle(efts)
-    result = uchronia_so.TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts_xptr, indexInIssueTime, indexInForecastTime)
+    efts_xptr = keep_wrap_cffi_native_handle(efts)
+    result = uchronia_so.TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts_xptr.ptr, indexInIssueTime, indexInForecastTime)
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
-def GetValueFromUnivariateTimeSeries_py(ts, index):
+@check_exceptions
+def GetValueFromUnivariateTimeSeries_py(ts:Any, index:int) -> float:
+    """GetValueFromUnivariateTimeSeries_py
+    
+    GetValueFromUnivariateTimeSeries_py: generated wrapper function for API function GetValueFromUnivariateTimeSeries
+    
+    Args:
+        ts (Any): ts
+        index (int): index
+    
+    Returns:
+        (float): returned result
+    
     """
-    GetValueFromUnivariateTimeSeries_py
-    
-    GetValueFromUnivariateTimeSeries_py Wrapper function for GetValueFromUnivariateTimeSeries
-    
-     ts Python type equivalent for C++ type TIME_SERIES_PTR
-     index Python type equivalent for C++ type int
-    
-    """
-    ts_xptr = unwrap_cffi_native_handle(ts)
-    result = uchronia_so.GetValueFromUnivariateTimeSeries(ts_xptr, index)
-    return custom_wrap_cffi_native_handle(result, 'double')
+    ts_xptr = keep_wrap_cffi_native_handle(ts)
+    result = uchronia_so.GetValueFromUnivariateTimeSeries(ts_xptr.ptr, index)
+    return result
 
 
-def TransformEachItem_py(tsEnsTs, method, methodArgument):
+@check_exceptions
+def TransformEachItem_py(tsEnsTs:Any, method:str, methodArgument:str) -> None:
+    """TransformEachItem_py
+    
+    TransformEachItem_py: generated wrapper function for API function TransformEachItem
+    
+    Args:
+        tsEnsTs (Any): tsEnsTs
+        method (str): method
+        methodArgument (str): methodArgument
+    
     """
-    TransformEachItem_py
-    
-    TransformEachItem_py Wrapper function for TransformEachItem
-    
-     tsEnsTs Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     method Python type equivalent for C++ type const char*
-     methodArgument Python type equivalent for C++ type const char*
-    
-    """
-    tsEnsTs_xptr = unwrap_cffi_native_handle(tsEnsTs)
-    uchronia_so.TransformEachItem(tsEnsTs_xptr, method, methodArgument)
+    tsEnsTs_xptr = keep_wrap_cffi_native_handle(tsEnsTs)
+    method_c_charp = keep_wrap_cffi_native_handle(as_bytes(method))
+    methodArgument_c_charp = keep_wrap_cffi_native_handle(as_bytes(methodArgument))
+    uchronia_so.TransformEachItem(tsEnsTs_xptr.ptr, method_c_charp.ptr, methodArgument_c_charp.ptr)
+    # no cleanup for const char*
+    # no cleanup for const char*
 
 
-def SetValueToUnivariateTimeSeries_py(ts, index, value):
+@check_exceptions
+def SetValueToUnivariateTimeSeries_py(ts:Any, index:int, value:float) -> None:
+    """SetValueToUnivariateTimeSeries_py
+    
+    SetValueToUnivariateTimeSeries_py: generated wrapper function for API function SetValueToUnivariateTimeSeries
+    
+    Args:
+        ts (Any): ts
+        index (int): index
+        value (float): value
+    
     """
-    SetValueToUnivariateTimeSeries_py
-    
-    SetValueToUnivariateTimeSeries_py Wrapper function for SetValueToUnivariateTimeSeries
-    
-     ts Python type equivalent for C++ type TIME_SERIES_PTR
-     index Python type equivalent for C++ type int
-     value Python type equivalent for C++ type double
-    
-    """
-    ts_xptr = unwrap_cffi_native_handle(ts)
-    uchronia_so.SetValueToUnivariateTimeSeries(ts_xptr, index, value)
+    ts_xptr = keep_wrap_cffi_native_handle(ts)
+    uchronia_so.SetValueToUnivariateTimeSeries(ts_xptr.ptr, index, value)
 
 
-def GetItemEnsembleForecastTimeSeriesAsStructure_py(series, i):
+@check_exceptions
+def GetItemEnsembleForecastTimeSeriesAsStructure_py(series:Any, i:int) -> xr.DataArray:
+    """GetItemEnsembleForecastTimeSeriesAsStructure_py
+    
+    GetItemEnsembleForecastTimeSeriesAsStructure_py: generated wrapper function for API function GetItemEnsembleForecastTimeSeriesAsStructure
+    
+    Args:
+        series (Any): series
+        i (int): i
+    
+    Returns:
+        (xr.DataArray): returned result
+    
     """
-    GetItemEnsembleForecastTimeSeriesAsStructure_py
-    
-    GetItemEnsembleForecastTimeSeriesAsStructure_py Wrapper function for GetItemEnsembleForecastTimeSeriesAsStructure
-    
-     series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     i Python type equivalent for C++ type int
-    
-    """
-    series_xptr = unwrap_cffi_native_handle(series)
-    result = uchronia_so.GetItemEnsembleForecastTimeSeriesAsStructure(series_xptr, i)
-    return custom_wrap_cffi_native_handle(result, 'multi_regular_time_series_data*')
+    series_xptr = keep_wrap_cffi_native_handle(series)
+    result = uchronia_so.GetItemEnsembleForecastTimeSeriesAsStructure(series_xptr.ptr, i)
+    return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
-def GetItemEnsembleTimeSeriesAsStructure_py(series, i):
+@check_exceptions
+def GetItemEnsembleTimeSeriesAsStructure_py(series:Any, i:int) -> xr.DataArray:
+    """GetItemEnsembleTimeSeriesAsStructure_py
+    
+    GetItemEnsembleTimeSeriesAsStructure_py: generated wrapper function for API function GetItemEnsembleTimeSeriesAsStructure
+    
+    Args:
+        series (Any): series
+        i (int): i
+    
+    Returns:
+        (xr.DataArray): returned result
+    
     """
-    GetItemEnsembleTimeSeriesAsStructure_py
-    
-    GetItemEnsembleTimeSeriesAsStructure_py Wrapper function for GetItemEnsembleTimeSeriesAsStructure
-    
-     series Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-     i Python type equivalent for C++ type int
-    
-    """
-    series_xptr = unwrap_cffi_native_handle(series)
-    result = uchronia_so.GetItemEnsembleTimeSeriesAsStructure(series_xptr, i)
-    return custom_wrap_cffi_native_handle(result, 'multi_regular_time_series_data*')
+    series_xptr = keep_wrap_cffi_native_handle(series)
+    result = uchronia_so.GetItemEnsembleTimeSeriesAsStructure(series_xptr.ptr, i)
+    return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
-def SetItemEnsembleForecastTimeSeriesAsStructure_py(series, i, values):
+@check_exceptions
+def SetItemEnsembleForecastTimeSeriesAsStructure_py(series:Any, i:int, values:xr.DataArray) -> None:
+    """SetItemEnsembleForecastTimeSeriesAsStructure_py
+    
+    SetItemEnsembleForecastTimeSeriesAsStructure_py: generated wrapper function for API function SetItemEnsembleForecastTimeSeriesAsStructure
+    
+    Args:
+        series (Any): series
+        i (int): i
+        values (xr.DataArray): values
+    
     """
-    SetItemEnsembleForecastTimeSeriesAsStructure_py
-    
-    SetItemEnsembleForecastTimeSeriesAsStructure_py Wrapper function for SetItemEnsembleForecastTimeSeriesAsStructure
-    
-     series Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     i Python type equivalent for C++ type int
-     values Python type equivalent for C++ type const multi_regular_time_series_data*
-    
-    """
-    series_xptr = unwrap_cffi_native_handle(series)
-    values_tsd_ptr = cinterop.timeseries.to_multi_regular_time_series_data(values)
-    uchronia_so.SetItemEnsembleForecastTimeSeriesAsStructure(series_xptr, i, values_tsd_ptr)
-    # cinterop::disposal::dispose_of<multi_regular_time_series_data>(values_tsd_ptr_x)
+    series_xptr = keep_wrap_cffi_native_handle(series)
+    values_tsd_ptr = marshal.as_native_time_series(values)
+    uchronia_so.SetItemEnsembleForecastTimeSeriesAsStructure(series_xptr.ptr, i, values_tsd_ptr.ptr)
+    # values_tsd_ptr - no cleanup needed?
 
 
-def SetItemEnsembleTimeSeriesAsStructure_py(collection, i, values):
+@check_exceptions
+def SetItemEnsembleTimeSeriesAsStructure_py(collection:Any, i:int, values:xr.DataArray) -> None:
+    """SetItemEnsembleTimeSeriesAsStructure_py
+    
+    SetItemEnsembleTimeSeriesAsStructure_py: generated wrapper function for API function SetItemEnsembleTimeSeriesAsStructure
+    
+    Args:
+        collection (Any): collection
+        i (int): i
+        values (xr.DataArray): values
+    
     """
-    SetItemEnsembleTimeSeriesAsStructure_py
-    
-    SetItemEnsembleTimeSeriesAsStructure_py Wrapper function for SetItemEnsembleTimeSeriesAsStructure
-    
-     collection Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-     i Python type equivalent for C++ type int
-     values Python type equivalent for C++ type const multi_regular_time_series_data*
-    
-    """
-    collection_xptr = unwrap_cffi_native_handle(collection)
-    values_tsd_ptr = cinterop.timeseries.to_multi_regular_time_series_data(values)
-    uchronia_so.SetItemEnsembleTimeSeriesAsStructure(collection_xptr, i, values_tsd_ptr)
-    # cinterop::disposal::dispose_of<multi_regular_time_series_data>(values_tsd_ptr_x)
+    collection_xptr = keep_wrap_cffi_native_handle(collection)
+    values_tsd_ptr = marshal.as_native_time_series(values)
+    uchronia_so.SetItemEnsembleTimeSeriesAsStructure(collection_xptr.ptr, i, values_tsd_ptr.ptr)
+    # values_tsd_ptr - no cleanup needed?
 
 
-def CreatePerfectForecastTimeSeries_py(observations, start, length, timeStepName, offsetForecasts, leadTime):
+@check_exceptions
+def CreatePerfectForecastTimeSeries_py(observations:Any, start:datetime, length:int, timeStepName:str, offsetForecasts:int, leadTime:int) -> Any:
+    """CreatePerfectForecastTimeSeries_py
+    
+    CreatePerfectForecastTimeSeries_py: generated wrapper function for API function CreatePerfectForecastTimeSeries
+    
+    Args:
+        observations (Any): observations
+        start (datetime): start
+        length (int): length
+        timeStepName (str): timeStepName
+        offsetForecasts (int): offsetForecasts
+        leadTime (int): leadTime
+    
+    Returns:
+        (Any): returned result
+    
     """
-    CreatePerfectForecastTimeSeries_py
-    
-    CreatePerfectForecastTimeSeries_py Wrapper function for CreatePerfectForecastTimeSeries
-    
-     observations Python type equivalent for C++ type TIME_SERIES_PTR
-     start Python type equivalent for C++ type date_time_to_second
-     length Python type equivalent for C++ type int
-     timeStepName Python type equivalent for C++ type const char*
-     offsetForecasts Python type equivalent for C++ type int
-     leadTime Python type equivalent for C++ type int
-    
-    """
-    observations_xptr = unwrap_cffi_native_handle(observations)
-    start_datetime = to_date_time_to_second(start)
-    result = uchronia_so.CreatePerfectForecastTimeSeries(observations_xptr, start_datetime, length, timeStepName, offsetForecasts, leadTime)
-    # start_datetime - no cleanup needed
+    observations_xptr = keep_wrap_cffi_native_handle(observations)
+    start_datetime = marshal.datetime_to_dtts(start)
+    timeStepName_c_charp = keep_wrap_cffi_native_handle(as_bytes(timeStepName))
+    result = uchronia_so.CreatePerfectForecastTimeSeries(observations_xptr.ptr, start_datetime.obj, length, timeStepName_c_charp.ptr, offsetForecasts, leadTime)
+    # start_datetime - no cleanup needed?
+    # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
-def ToStructEnsembleTimeSeriesData_py(ensSeries):
+@check_exceptions
+def ToStructEnsembleTimeSeriesData_py(ensSeries:Any) -> xr.DataArray:
+    """ToStructEnsembleTimeSeriesData_py
+    
+    ToStructEnsembleTimeSeriesData_py: generated wrapper function for API function ToStructEnsembleTimeSeriesData
+    
+    Args:
+        ensSeries (Any): ensSeries
+    
+    Returns:
+        (xr.DataArray): returned result
+    
     """
-    ToStructEnsembleTimeSeriesData_py
-    
-    ToStructEnsembleTimeSeriesData_py Wrapper function for ToStructEnsembleTimeSeriesData
-    
-     ensSeries Python type equivalent for C++ type ENSEMBLE_PTR_TIME_SERIES_PTR
-    
-    """
-    ensSeries_xptr = unwrap_cffi_native_handle(ensSeries)
-    result = uchronia_so.ToStructEnsembleTimeSeriesData(ensSeries_xptr)
-    return custom_wrap_cffi_native_handle(result, 'multi_regular_time_series_data*')
+    ensSeries_xptr = keep_wrap_cffi_native_handle(ensSeries)
+    result = uchronia_so.ToStructEnsembleTimeSeriesData(ensSeries_xptr.ptr)
+    return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
-def ToStructSingleTimeSeriesData_py(timeSeries):
+@check_exceptions
+def ToStructSingleTimeSeriesData_py(timeSeries:Any) -> xr.DataArray:
+    """ToStructSingleTimeSeriesData_py
+    
+    ToStructSingleTimeSeriesData_py: generated wrapper function for API function ToStructSingleTimeSeriesData
+    
+    Args:
+        timeSeries (Any): timeSeries
+    
+    Returns:
+        (xr.DataArray): returned result
+    
     """
-    ToStructSingleTimeSeriesData_py
-    
-    ToStructSingleTimeSeriesData_py Wrapper function for ToStructSingleTimeSeriesData
-    
-     timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
-    
-    """
-    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
-    result = uchronia_so.ToStructSingleTimeSeriesData(timeSeries_xptr)
-    return custom_wrap_cffi_native_handle(result, 'multi_regular_time_series_data*')
+    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
+    result = uchronia_so.ToStructSingleTimeSeriesData(timeSeries_xptr.ptr)
+    return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
-def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries):
+@check_exceptions
+def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> Any:
+    """CreateEnsembleTimeSeriesDataFromStruct_py
+    
+    CreateEnsembleTimeSeriesDataFromStruct_py: generated wrapper function for API function CreateEnsembleTimeSeriesDataFromStruct
+    
+    Args:
+        ensSeries (xr.DataArray): ensSeries
+    
+    Returns:
+        (Any): returned result
+    
     """
-    CreateEnsembleTimeSeriesDataFromStruct_py
-    
-    CreateEnsembleTimeSeriesDataFromStruct_py Wrapper function for CreateEnsembleTimeSeriesDataFromStruct
-    
-     ensSeries Python type equivalent for C++ type const multi_regular_time_series_data*
-    
-    """
-    ensSeries_tsd_ptr = cinterop.timeseries.to_multi_regular_time_series_data(ensSeries)
-    result = uchronia_so.CreateEnsembleTimeSeriesDataFromStruct(ensSeries_tsd_ptr)
-    # cinterop::disposal::dispose_of<multi_regular_time_series_data>(ensSeries_tsd_ptr_x)
+    ensSeries_tsd_ptr = marshal.as_native_time_series(ensSeries)
+    result = uchronia_so.CreateEnsembleTimeSeriesDataFromStruct(ensSeries_tsd_ptr.ptr)
+    # ensSeries_tsd_ptr - no cleanup needed?
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
-def CreateSingleTimeSeriesDataFromStruct_py(timeSeries):
+@check_exceptions
+def CreateSingleTimeSeriesDataFromStruct_py(timeSeries:xr.DataArray) -> Any:
+    """CreateSingleTimeSeriesDataFromStruct_py
+    
+    CreateSingleTimeSeriesDataFromStruct_py: generated wrapper function for API function CreateSingleTimeSeriesDataFromStruct
+    
+    Args:
+        timeSeries (xr.DataArray): timeSeries
+    
+    Returns:
+        (Any): returned result
+    
     """
-    CreateSingleTimeSeriesDataFromStruct_py
-    
-    CreateSingleTimeSeriesDataFromStruct_py Wrapper function for CreateSingleTimeSeriesDataFromStruct
-    
-     timeSeries Python type equivalent for C++ type const multi_regular_time_series_data*
-    
-    """
-    timeSeries_tsd_ptr = cinterop.timeseries.to_multi_regular_time_series_data(timeSeries)
-    result = uchronia_so.CreateSingleTimeSeriesDataFromStruct(timeSeries_tsd_ptr)
-    # cinterop::disposal::dispose_of<multi_regular_time_series_data>(timeSeries_tsd_ptr_x)
+    timeSeries_tsd_ptr = marshal.as_native_time_series(timeSeries)
+    result = uchronia_so.CreateSingleTimeSeriesDataFromStruct(timeSeries_tsd_ptr.ptr)
+    # timeSeries_tsd_ptr - no cleanup needed?
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
-def DisposeMultiTimeSeriesData_py(data):
-    """
-    DisposeMultiTimeSeriesData_py
+@check_exceptions
+def DisposeMultiTimeSeriesData_py(data:xr.DataArray) -> None:
+    """DisposeMultiTimeSeriesData_py
     
-    DisposeMultiTimeSeriesData_py Wrapper function for DisposeMultiTimeSeriesData
+    DisposeMultiTimeSeriesData_py: generated wrapper function for API function DisposeMultiTimeSeriesData
     
-     data Python type equivalent for C++ type multi_regular_time_series_data*
+    Args:
+        data (xr.DataArray): data
     
     """
     uchronia_so.DisposeMultiTimeSeriesData(data)
 
 
-def GetTimeSeriesGeometry_py(timeSeries, geom):
+@check_exceptions
+def GetTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometry) -> None:
+    """GetTimeSeriesGeometry_py
+    
+    GetTimeSeriesGeometry_py: generated wrapper function for API function GetTimeSeriesGeometry
+    
+    Args:
+        timeSeries (Any): timeSeries
+        geom (TimeSeriesGeometry): geom
+    
     """
-    GetTimeSeriesGeometry_py
-    
-    GetTimeSeriesGeometry_py Wrapper function for GetTimeSeriesGeometry
-    
-     timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
-     geom Python type equivalent for C++ type TS_GEOMETRY_PTR
-    
-    """
-    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
-    geom_tsgeom = cinterop.timeseries.to_regular_time_series_geometry_ptr(geom)
-    uchronia_so.GetTimeSeriesGeometry(timeSeries_xptr, geom_tsgeom)
+    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
+    geom_tsgeom = marshal.as_native_tsgeom(geom)
+    uchronia_so.GetTimeSeriesGeometry(timeSeries_xptr.ptr, geom_tsgeom.ptr)
     # delete geom_tsgeom
 
 
-def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries, geom):
+@check_exceptions
+def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometry) -> None:
+    """GetEnsembleForecastTimeSeriesGeometry_py
+    
+    GetEnsembleForecastTimeSeriesGeometry_py: generated wrapper function for API function GetEnsembleForecastTimeSeriesGeometry
+    
+    Args:
+        timeSeries (Any): timeSeries
+        geom (TimeSeriesGeometry): geom
+    
     """
-    GetEnsembleForecastTimeSeriesGeometry_py
-    
-    GetEnsembleForecastTimeSeriesGeometry_py Wrapper function for GetEnsembleForecastTimeSeriesGeometry
-    
-     timeSeries Python type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-     geom Python type equivalent for C++ type TS_GEOMETRY_PTR
-    
-    """
-    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
-    geom_tsgeom = cinterop.timeseries.to_regular_time_series_geometry_ptr(geom)
-    uchronia_so.GetEnsembleForecastTimeSeriesGeometry(timeSeries_xptr, geom_tsgeom)
+    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
+    geom_tsgeom = marshal.as_native_tsgeom(geom)
+    uchronia_so.GetEnsembleForecastTimeSeriesGeometry(timeSeries_xptr.ptr, geom_tsgeom.ptr)
     # delete geom_tsgeom
 
 
-def GetTimeSeriesValues_py(timeSeries, values, arrayLength):
+@check_exceptions
+def GetTimeSeriesValues_py(timeSeries:Any, values:np.ndarray, arrayLength:int) -> None:
+    """GetTimeSeriesValues_py
+    
+    GetTimeSeriesValues_py: generated wrapper function for API function GetTimeSeriesValues
+    
+    Args:
+        timeSeries (Any): timeSeries
+        values (np.ndarray): values
+        arrayLength (int): arrayLength
+    
     """
-    GetTimeSeriesValues_py
-    
-    GetTimeSeriesValues_py Wrapper function for GetTimeSeriesValues
-    
-     timeSeries Python type equivalent for C++ type TIME_SERIES_PTR
-     values Python type equivalent for C++ type double*
-     arrayLength Python type equivalent for C++ type int
-    
-    """
-    timeSeries_xptr = unwrap_cffi_native_handle(timeSeries)
-    uchronia_so.GetTimeSeriesValues(timeSeries_xptr, values, arrayLength)
+    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
+    values_numarray = marshal.as_c_double_array(values)
+    uchronia_so.GetTimeSeriesValues(timeSeries_xptr.ptr, values_numarray.ptr, arrayLength)
+    # values_numarray - no cleanup needed?
 
 
-def GetNumTimeSeries_py():
-    """
-    GetNumTimeSeries_py
+@check_exceptions
+def GetNumTimeSeries_py() -> int:
+    """GetNumTimeSeries_py
     
-    GetNumTimeSeries_py Wrapper function for GetNumTimeSeries
+    GetNumTimeSeries_py: generated wrapper function for API function GetNumTimeSeries
     
+    Args:
+    
+    Returns:
+        (int): returned result
     
     """
     result = uchronia_so.GetNumTimeSeries()
-    return custom_wrap_cffi_native_handle(result, 'int')
+    return result
 
 
-def GetProviderTsGeometry_py(dataLibrary, variableIdentifier, geom):
+@check_exceptions
+def GetProviderTsGeometry_py(dataLibrary:Any, variableIdentifier:str, geom:TimeSeriesGeometry) -> None:
+    """GetProviderTsGeometry_py
+    
+    GetProviderTsGeometry_py: generated wrapper function for API function GetProviderTsGeometry
+    
+    Args:
+        dataLibrary (Any): dataLibrary
+        variableIdentifier (str): variableIdentifier
+        geom (TimeSeriesGeometry): geom
+    
     """
-    GetProviderTsGeometry_py
-    
-    GetProviderTsGeometry_py Wrapper function for GetProviderTsGeometry
-    
-     dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
-     variableIdentifier Python type equivalent for C++ type const char*
-     geom Python type equivalent for C++ type TS_GEOMETRY_PTR
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    geom_tsgeom = cinterop.timeseries.to_regular_time_series_geometry_ptr(geom)
-    uchronia_so.GetProviderTsGeometry(dataLibrary_xptr, variableIdentifier, geom_tsgeom)
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    variableIdentifier_c_charp = keep_wrap_cffi_native_handle(as_bytes(variableIdentifier))
+    geom_tsgeom = marshal.as_native_tsgeom(geom)
+    uchronia_so.GetProviderTsGeometry(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, geom_tsgeom.ptr)
+    # no cleanup for const char*
     # delete geom_tsgeom
 
 
-def GetProviderTimeSeriesValues_py(dataLibrary, variableIdentifier, values, arrayLength):
+@check_exceptions
+def GetProviderTimeSeriesValues_py(dataLibrary:Any, variableIdentifier:str, values:np.ndarray, arrayLength:int) -> None:
+    """GetProviderTimeSeriesValues_py
+    
+    GetProviderTimeSeriesValues_py: generated wrapper function for API function GetProviderTimeSeriesValues
+    
+    Args:
+        dataLibrary (Any): dataLibrary
+        variableIdentifier (str): variableIdentifier
+        values (np.ndarray): values
+        arrayLength (int): arrayLength
+    
     """
-    GetProviderTimeSeriesValues_py
-    
-    GetProviderTimeSeriesValues_py Wrapper function for GetProviderTimeSeriesValues
-    
-     dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
-     variableIdentifier Python type equivalent for C++ type const char*
-     values Python type equivalent for C++ type double*
-     arrayLength Python type equivalent for C++ type int
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    uchronia_so.GetProviderTimeSeriesValues(dataLibrary_xptr, variableIdentifier, values, arrayLength)
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    variableIdentifier_c_charp = keep_wrap_cffi_native_handle(as_bytes(variableIdentifier))
+    values_numarray = marshal.as_c_double_array(values)
+    uchronia_so.GetProviderTimeSeriesValues(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, values_numarray.ptr, arrayLength)
+    # no cleanup for const char*
+    # values_numarray - no cleanup needed?
 
 
 
-def GetProviderTimeSeriesIdentifiers_py(dataLibrary):
+def GetProviderTimeSeriesIdentifiers_py(dataLibrary:Any):
+    """GetProviderTimeSeriesIdentifiers_py
+    
+    GetProviderTimeSeriesIdentifiers_py: generated wrapper function for API function GetProviderTimeSeriesIdentifiers
+    
+    
     """
-    GetProviderTimeSeriesIdentifiers_py
-    
-    GetProviderTimeSeriesIdentifiers_py Wrapper function for GetProviderTimeSeriesIdentifiers
-    
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    result = uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary)
-    return(custom_wrap_cffi_native_handle(result,'dummytype'))
 
-def TimeSeriesFromProviderTs_py(dataLibrary, variableIdentifier):
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+
+    size = marshal.new_int_scalar_ptr()
+    values = uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary_xptr.ptr, size)
+    
+
+    result = charp_array_to_py(values, size[0], True)
+    return result
+
+@check_exceptions
+def TimeSeriesFromProviderTs_py(dataLibrary:Any, variableIdentifier:str) -> Any:
+    """TimeSeriesFromProviderTs_py
+    
+    TimeSeriesFromProviderTs_py: generated wrapper function for API function TimeSeriesFromProviderTs
+    
+    Args:
+        dataLibrary (Any): dataLibrary
+        variableIdentifier (str): variableIdentifier
+    
+    Returns:
+        (Any): returned result
+    
     """
-    TimeSeriesFromProviderTs_py
-    
-    TimeSeriesFromProviderTs_py Wrapper function for TimeSeriesFromProviderTs
-    
-     dataLibrary Python type equivalent for C++ type TIME_SERIES_PROVIDER_PTR
-     variableIdentifier Python type equivalent for C++ type const char*
-    
-    """
-    dataLibrary_xptr = unwrap_cffi_native_handle(dataLibrary)
-    result = uchronia_so.TimeSeriesFromProviderTs(dataLibrary_xptr, variableIdentifier)
+    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    variableIdentifier_c_charp = keep_wrap_cffi_native_handle(as_bytes(variableIdentifier))
+    result = uchronia_so.TimeSeriesFromProviderTs(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr)
+    # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
