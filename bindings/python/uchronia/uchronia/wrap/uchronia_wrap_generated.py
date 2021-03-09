@@ -80,7 +80,7 @@ class GenericWrapper:
     def ptr(self):
         return self._handle
 
-def keep_wrap_cffi_native_handle(
+def wrap_as_pointer_handle(
     obj_wrapper: Any, stringent: bool = False
 ) -> Union[CffiData, Any, None]:
     # 2016-01-28 allowing null pointers, to unlock behavior of EstimateERRISParameters.
@@ -140,7 +140,7 @@ def DisposeSharedPointer_py(ptr:Any) -> None:
         ptr (Any): ptr
     
     """
-    ptr_xptr = keep_wrap_cffi_native_handle(ptr)
+    ptr_xptr = wrap_as_pointer_handle(ptr)
     uchronia_so.DisposeSharedPointer(ptr_xptr.ptr)
 
 
@@ -171,8 +171,8 @@ def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> Any:
         (Any): returned result
     
     """
-    libraryIdentifier_c_charp = keep_wrap_cffi_native_handle(as_bytes(libraryIdentifier))
-    dataPath_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataPath))
+    libraryIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(libraryIdentifier))
+    dataPath_c_charp = wrap_as_pointer_handle(as_bytes(dataPath))
     result = uchronia_so.LoadEnsembleDataset(libraryIdentifier_c_charp.ptr, dataPath_c_charp.ptr)
     # no cleanup for const char*
     # no cleanup for const char*
@@ -192,7 +192,7 @@ def CreateEnsembleDataset_py(type:str) -> Any:
         (Any): returned result
     
     """
-    type_c_charp = keep_wrap_cffi_native_handle(as_bytes(type))
+    type_c_charp = wrap_as_pointer_handle(as_bytes(type))
     result = uchronia_so.CreateEnsembleDataset(type_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_DATA_SET_PTR')
@@ -207,7 +207,7 @@ def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:Any):
     
     """
 
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
 
     size = marshal.new_int_scalar_ptr()
     values = uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary_xptr.ptr, size)
@@ -225,8 +225,8 @@ def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:Any, dataCollectionId:st
     
     """
 
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
-    dataCollectionId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataCollectionId))
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
+    dataCollectionId_c_charp = wrap_as_pointer_handle(as_bytes(dataCollectionId))
 
     size = marshal.new_int_scalar_ptr()
     values = uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary_xptr.ptr, dataCollectionId_c_charp.ptr, size)
@@ -245,7 +245,7 @@ def GetEnsembleDatasetDataSummaries_py(dataLibrary:Any):
     
     """
 
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
 
     size = marshal.new_int_scalar_ptr()
     values = uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary_xptr.ptr, size)
@@ -268,8 +268,8 @@ def GetDataDimensionsDescription_py(dataLibrary:Any, dataId:str) -> List:
         (List): returned result
     
     """
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
-    dataId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataId))
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
+    dataId_c_charp = wrap_as_pointer_handle(as_bytes(dataId))
     result = uchronia_so.GetDataDimensionsDescription(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
     # no cleanup for const char*
     return py_time_series_dimensions_description(result, dispose=True)
@@ -288,7 +288,7 @@ def EnsembleSizeEnsembleTimeSeries_py(ensSeries:Any) -> int:
         (int): returned result
     
     """
-    ensSeries_xptr = keep_wrap_cffi_native_handle(ensSeries)
+    ensSeries_xptr = wrap_as_pointer_handle(ensSeries)
     result = uchronia_so.EnsembleSizeEnsembleTimeSeries(ensSeries_xptr.ptr)
     return result
 
@@ -322,7 +322,7 @@ def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName
     
     """
     start_datetime = marshal.datetime_to_dtts(start)
-    timeStepName_c_charp = keep_wrap_cffi_native_handle(as_bytes(timeStepName))
+    timeStepName_c_charp = wrap_as_pointer_handle(as_bytes(timeStepName))
     result = uchronia_so.CreateEnsembleForecastTimeSeries(start_datetime.obj, length, timeStepName_c_charp.ptr)
     # start_datetime - no cleanup needed?
     # no cleanup for const char*
@@ -343,8 +343,8 @@ def GetDatasetSingleTimeSeries_py(dataLibrary:Any, dataId:str) -> Any:
         (Any): returned result
     
     """
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
-    dataId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataId))
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
+    dataId_c_charp = wrap_as_pointer_handle(as_bytes(dataId))
     result = uchronia_so.GetDatasetSingleTimeSeries(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
@@ -364,8 +364,8 @@ def GetDatasetEnsembleTimeSeries_py(dataLibrary:Any, dataEnsembleId:str) -> Any:
         (Any): returned result
     
     """
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
-    dataEnsembleId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataEnsembleId))
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
+    dataEnsembleId_c_charp = wrap_as_pointer_handle(as_bytes(dataEnsembleId))
     result = uchronia_so.GetDatasetEnsembleTimeSeries(dataLibrary_xptr.ptr, dataEnsembleId_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
@@ -385,8 +385,8 @@ def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary:Any, dataId:str) -> Any:
         (Any): returned result
     
     """
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
-    dataId_c_charp = keep_wrap_cffi_native_handle(as_bytes(dataId))
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
+    dataId_c_charp = wrap_as_pointer_handle(as_bytes(dataId))
     result = uchronia_so.GetDatasetEnsembleForecastTimeSeries(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
@@ -404,8 +404,8 @@ def SaveSingleTimeSeriesToNetcdf_py(timeSeries:Any, filename:str, overwrite:bool
         overwrite (bool): overwrite
     
     """
-    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
-    filename_c_charp = keep_wrap_cffi_native_handle(as_bytes(filename))
+    timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
+    filename_c_charp = wrap_as_pointer_handle(as_bytes(filename))
     uchronia_so.SaveSingleTimeSeriesToNetcdf(timeSeries_xptr.ptr, filename_c_charp.ptr, overwrite)
     # no cleanup for const char*
 
@@ -422,8 +422,8 @@ def SaveEnsembleTimeSeriesToNetcdf_py(collection:Any, filename:str, overwrite:bo
         overwrite (bool): overwrite
     
     """
-    collection_xptr = keep_wrap_cffi_native_handle(collection)
-    filename_c_charp = keep_wrap_cffi_native_handle(as_bytes(filename))
+    collection_xptr = wrap_as_pointer_handle(collection)
+    filename_c_charp = wrap_as_pointer_handle(as_bytes(filename))
     uchronia_so.SaveEnsembleTimeSeriesToNetcdf(collection_xptr.ptr, filename_c_charp.ptr, overwrite)
     # no cleanup for const char*
 
@@ -440,8 +440,8 @@ def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs:Any, filename:str, overwri
         overwrite (bool): overwrite
     
     """
-    tsEnsTs_xptr = keep_wrap_cffi_native_handle(tsEnsTs)
-    filename_c_charp = keep_wrap_cffi_native_handle(as_bytes(filename))
+    tsEnsTs_xptr = wrap_as_pointer_handle(tsEnsTs)
+    filename_c_charp = wrap_as_pointer_handle(as_bytes(filename))
     uchronia_so.SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs_xptr.ptr, filename_c_charp.ptr, overwrite)
     # no cleanup for const char*
 
@@ -460,7 +460,7 @@ def IsMissingValueItemEnsembleForecastTimeSeries_py(series:Any, i:int) -> bool:
         (bool): returned result
     
     """
-    series_xptr = keep_wrap_cffi_native_handle(series)
+    series_xptr = wrap_as_pointer_handle(series)
     result = uchronia_so.IsMissingValueItemEnsembleForecastTimeSeries(series_xptr.ptr, i)
     return result
 
@@ -479,7 +479,7 @@ def GetItemEnsembleForecastTimeSeries_py(efts:Any, i:int) -> Any:
         (Any): returned result
     
     """
-    efts_xptr = keep_wrap_cffi_native_handle(efts)
+    efts_xptr = wrap_as_pointer_handle(efts)
     result = uchronia_so.GetItemEnsembleForecastTimeSeries(efts_xptr.ptr, i)
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
@@ -498,7 +498,7 @@ def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs:Any, index:int) -> Any:
         (Any): returned result
     
     """
-    collectionTs_xptr = keep_wrap_cffi_native_handle(collectionTs)
+    collectionTs_xptr = wrap_as_pointer_handle(collectionTs)
     result = uchronia_so.TimeSeriesFromEnsembleOfTimeSeries(collectionTs_xptr.ptr, index)
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
@@ -518,7 +518,7 @@ def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts:Any, indexInIssueTime
         (Any): returned result
     
     """
-    efts_xptr = keep_wrap_cffi_native_handle(efts)
+    efts_xptr = wrap_as_pointer_handle(efts)
     result = uchronia_so.TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts_xptr.ptr, indexInIssueTime, indexInForecastTime)
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
@@ -537,7 +537,7 @@ def GetValueFromUnivariateTimeSeries_py(ts:Any, index:int) -> float:
         (float): returned result
     
     """
-    ts_xptr = keep_wrap_cffi_native_handle(ts)
+    ts_xptr = wrap_as_pointer_handle(ts)
     result = uchronia_so.GetValueFromUnivariateTimeSeries(ts_xptr.ptr, index)
     return result
 
@@ -554,9 +554,9 @@ def TransformEachItem_py(tsEnsTs:Any, method:str, methodArgument:str) -> None:
         methodArgument (str): methodArgument
     
     """
-    tsEnsTs_xptr = keep_wrap_cffi_native_handle(tsEnsTs)
-    method_c_charp = keep_wrap_cffi_native_handle(as_bytes(method))
-    methodArgument_c_charp = keep_wrap_cffi_native_handle(as_bytes(methodArgument))
+    tsEnsTs_xptr = wrap_as_pointer_handle(tsEnsTs)
+    method_c_charp = wrap_as_pointer_handle(as_bytes(method))
+    methodArgument_c_charp = wrap_as_pointer_handle(as_bytes(methodArgument))
     uchronia_so.TransformEachItem(tsEnsTs_xptr.ptr, method_c_charp.ptr, methodArgument_c_charp.ptr)
     # no cleanup for const char*
     # no cleanup for const char*
@@ -574,7 +574,7 @@ def SetValueToUnivariateTimeSeries_py(ts:Any, index:int, value:float) -> None:
         value (float): value
     
     """
-    ts_xptr = keep_wrap_cffi_native_handle(ts)
+    ts_xptr = wrap_as_pointer_handle(ts)
     uchronia_so.SetValueToUnivariateTimeSeries(ts_xptr.ptr, index, value)
 
 
@@ -592,7 +592,7 @@ def GetItemEnsembleForecastTimeSeriesAsStructure_py(series:Any, i:int) -> xr.Dat
         (xr.DataArray): returned result
     
     """
-    series_xptr = keep_wrap_cffi_native_handle(series)
+    series_xptr = wrap_as_pointer_handle(series)
     result = uchronia_so.GetItemEnsembleForecastTimeSeriesAsStructure(series_xptr.ptr, i)
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
@@ -611,7 +611,7 @@ def GetItemEnsembleTimeSeriesAsStructure_py(series:Any, i:int) -> xr.DataArray:
         (xr.DataArray): returned result
     
     """
-    series_xptr = keep_wrap_cffi_native_handle(series)
+    series_xptr = wrap_as_pointer_handle(series)
     result = uchronia_so.GetItemEnsembleTimeSeriesAsStructure(series_xptr.ptr, i)
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
@@ -628,7 +628,7 @@ def SetItemEnsembleForecastTimeSeriesAsStructure_py(series:Any, i:int, values:xr
         values (xr.DataArray): values
     
     """
-    series_xptr = keep_wrap_cffi_native_handle(series)
+    series_xptr = wrap_as_pointer_handle(series)
     values_tsd_ptr = marshal.as_native_time_series(values)
     uchronia_so.SetItemEnsembleForecastTimeSeriesAsStructure(series_xptr.ptr, i, values_tsd_ptr.ptr)
     # values_tsd_ptr - no cleanup needed?
@@ -646,7 +646,7 @@ def SetItemEnsembleTimeSeriesAsStructure_py(collection:Any, i:int, values:xr.Dat
         values (xr.DataArray): values
     
     """
-    collection_xptr = keep_wrap_cffi_native_handle(collection)
+    collection_xptr = wrap_as_pointer_handle(collection)
     values_tsd_ptr = marshal.as_native_time_series(values)
     uchronia_so.SetItemEnsembleTimeSeriesAsStructure(collection_xptr.ptr, i, values_tsd_ptr.ptr)
     # values_tsd_ptr - no cleanup needed?
@@ -670,9 +670,9 @@ def CreatePerfectForecastTimeSeries_py(observations:Any, start:datetime, length:
         (Any): returned result
     
     """
-    observations_xptr = keep_wrap_cffi_native_handle(observations)
+    observations_xptr = wrap_as_pointer_handle(observations)
     start_datetime = marshal.datetime_to_dtts(start)
-    timeStepName_c_charp = keep_wrap_cffi_native_handle(as_bytes(timeStepName))
+    timeStepName_c_charp = wrap_as_pointer_handle(as_bytes(timeStepName))
     result = uchronia_so.CreatePerfectForecastTimeSeries(observations_xptr.ptr, start_datetime.obj, length, timeStepName_c_charp.ptr, offsetForecasts, leadTime)
     # start_datetime - no cleanup needed?
     # no cleanup for const char*
@@ -692,7 +692,7 @@ def ToStructEnsembleTimeSeriesData_py(ensSeries:Any) -> xr.DataArray:
         (xr.DataArray): returned result
     
     """
-    ensSeries_xptr = keep_wrap_cffi_native_handle(ensSeries)
+    ensSeries_xptr = wrap_as_pointer_handle(ensSeries)
     result = uchronia_so.ToStructEnsembleTimeSeriesData(ensSeries_xptr.ptr)
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
@@ -710,7 +710,7 @@ def ToStructSingleTimeSeriesData_py(timeSeries:Any) -> xr.DataArray:
         (xr.DataArray): returned result
     
     """
-    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
+    timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
     result = uchronia_so.ToStructSingleTimeSeriesData(timeSeries_xptr.ptr)
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
@@ -777,7 +777,7 @@ def GetTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometry) -> None:
         geom (TimeSeriesGeometry): geom
     
     """
-    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
+    timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
     geom_tsgeom = marshal.as_native_tsgeom(geom)
     uchronia_so.GetTimeSeriesGeometry(timeSeries_xptr.ptr, geom_tsgeom.ptr)
     # delete geom_tsgeom
@@ -794,7 +794,7 @@ def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeom
         geom (TimeSeriesGeometry): geom
     
     """
-    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
+    timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
     geom_tsgeom = marshal.as_native_tsgeom(geom)
     uchronia_so.GetEnsembleForecastTimeSeriesGeometry(timeSeries_xptr.ptr, geom_tsgeom.ptr)
     # delete geom_tsgeom
@@ -812,7 +812,7 @@ def GetTimeSeriesValues_py(timeSeries:Any, values:np.ndarray, arrayLength:int) -
         arrayLength (int): arrayLength
     
     """
-    timeSeries_xptr = keep_wrap_cffi_native_handle(timeSeries)
+    timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
     values_numarray = marshal.as_c_double_array(values)
     uchronia_so.GetTimeSeriesValues(timeSeries_xptr.ptr, values_numarray.ptr, arrayLength)
     # values_numarray - no cleanup needed?
@@ -846,8 +846,8 @@ def GetProviderTsGeometry_py(dataLibrary:Any, variableIdentifier:str, geom:TimeS
         geom (TimeSeriesGeometry): geom
     
     """
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
-    variableIdentifier_c_charp = keep_wrap_cffi_native_handle(as_bytes(variableIdentifier))
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
+    variableIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(variableIdentifier))
     geom_tsgeom = marshal.as_native_tsgeom(geom)
     uchronia_so.GetProviderTsGeometry(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, geom_tsgeom.ptr)
     # no cleanup for const char*
@@ -867,8 +867,8 @@ def GetProviderTimeSeriesValues_py(dataLibrary:Any, variableIdentifier:str, valu
         arrayLength (int): arrayLength
     
     """
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
-    variableIdentifier_c_charp = keep_wrap_cffi_native_handle(as_bytes(variableIdentifier))
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
+    variableIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(variableIdentifier))
     values_numarray = marshal.as_c_double_array(values)
     uchronia_so.GetProviderTimeSeriesValues(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, values_numarray.ptr, arrayLength)
     # no cleanup for const char*
@@ -884,7 +884,7 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary:Any):
     
     """
 
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
 
     size = marshal.new_int_scalar_ptr()
     values = uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary_xptr.ptr, size)
@@ -907,8 +907,8 @@ def TimeSeriesFromProviderTs_py(dataLibrary:Any, variableIdentifier:str) -> Any:
         (Any): returned result
     
     """
-    dataLibrary_xptr = keep_wrap_cffi_native_handle(dataLibrary)
-    variableIdentifier_c_charp = keep_wrap_cffi_native_handle(as_bytes(variableIdentifier))
+    dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
+    variableIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(variableIdentifier))
     result = uchronia_so.TimeSeriesFromProviderTs(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
