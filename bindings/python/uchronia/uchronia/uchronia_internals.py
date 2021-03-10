@@ -45,7 +45,8 @@
 #   internalGetMultipleTimeSeries(provider, dataIds, GetTimeSeriesFromProvider_Pkg_R)
 # }
 
-from typing import Callable, List
+from typing import Callable, List, Type, Union
+from numpy.lib.arraysetops import isin
 from pandas.core.base import DataError
 import numpy as np
 import xarray as xr
@@ -54,30 +55,6 @@ import pandas as pd
 def _concatenate_series(tSeriesList:List, new_coord_names:List, new_dim_name) -> xr.DataArray:
     res = xr.concat(tSeriesList, dim=pd.Index(new_coord_names, name=new_dim_name))
     return res
-
-def slice_xr_time_series(data: xr.DataArray, from_date: pd.Timestamp = None, to_date: pd.Timestamp = None) -> xr.DataArray:
-    """Subset a time series to a period
-
-    Args:
-        data (xr.DataArray): input xarray time series
-        from_date (pd.Timestamp, optional): date, convertible to a timestamp. Defaults to None.
-        to_date (pd.Timestamp, optional): end date of the slice. Inclusive. Defaults to None.
-
-    Returns:
-        xr.DataArray: a subset time series
-
-    Examples:
-        slice_xr_time_series(unaccounted_indus, from_date='1980-04-01', to_date='2000-04-01')
-    """
-    dt = data.time.values
-    tt = np.empty_like(dt, np.bool)
-    tt[:] = True
-    if from_date is not None:
-        tt = np.logical_and(tt, (dt >= np.datetime64(from_date)))
-    if to_date is not None:
-        tt = np.logical_and(tt, (dt <= np.datetime64(to_date)))
-    return data.sel(time=tt)
-
 
 def internalGetMultipleTimeSeries(simulation, varIds, apiGetTsFunc:Callable):
     if isinstance(varIds, str):
