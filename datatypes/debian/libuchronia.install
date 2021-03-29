@@ -1,2 +1,4 @@
 # Shared libraries
-usr/lib/${DEB_HOST_MULTIARCH}/libdatatypes.so*    /usr/lib/${DEB_HOST_MULTIARCH}
+# Stopped working including on Debian???
+# usr/lib/${DEB_HOST_MULTIARCH}/libdatatypes.so*    /usr/lib/${DEB_HOST_MULTIARCH}
+usr/lib/x86_64-linux-gnu/libdatatypes.so*    /usr/lib/x86_64-linux-gnu

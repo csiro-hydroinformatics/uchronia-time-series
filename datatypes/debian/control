@@ -2,9 +2,9 @@ Source: uchronia
 Priority: optional
 Maintainer: Jean-Michel Perraud <per202@csiro.au>
 Build-Depends: cmake,
-               debhelper (>= 13~),
-	           debhelper-compat (= 13),
-               catch,
+               debhelper (>= 11~),
+	           debhelper-compat (= 11),
+#                catch,
                libboost-date-time-dev,
                libboost-system-dev,
                libboost-filesystem-dev,
@@ -31,7 +31,7 @@ Depends: libuchronia (= ${binary:Version}),
          libmoirai-dev,
          libyaml-dev,
          libnetcdf-dev,
-         libconfig-utils-dev,
+#         libconfig-utils-dev,
          ${misc:Depends}
 Conflicts: libuchronia-dev
 Description: C++ library for multidimensional time series -- header files
@@ -54,12 +54,13 @@ Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, 
-         libnetcdf18,
+#         libnetcdf18,
          libyaml-0-2,
-         libboost-date-time1.71.0,
-         libboost-system1.71.0,
-         libboost-filesystem1.71.0,
-         libboost-regex1.71.0,
+# boost binary pkgs have version numbers in them. This is problematic.
+#          libboost-date-time1.71.0,
+#          libboost-system1.71.0,
+#          libboost-filesystem1.71.0,
+#          libboost-regex1.71.0,
          libmoirai,
          ${misc:Depends}
 Description: C++ library for multidimensional time series -- shared library
