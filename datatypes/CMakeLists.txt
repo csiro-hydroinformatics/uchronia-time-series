@@ -37,7 +37,7 @@ ENDIF()
 
 ## section: include directory
 INCLUDE_DIRECTORIES(
-	../include
+	./include
 	${Boost_INCLUDE_DIRS}
 	${NETCDF_INCLUDE_DIRS}
 	${MOIRAI_INCLUDE_DIRS}
@@ -52,43 +52,43 @@ LINK_DIRECTORIES(
 ## section: source files
 # Add your source files here (one file per line), please SORT in alphabetical order for future maintenance
 SET (${this_target}_SOURCE_FILES
-	common.cpp
-	extern_c_api.cpp
-	interop_conversions.cpp
-	io_helper.cpp
-	tests/datatypes_test_helpers.cpp
-	time_series.cpp
-	time_series_io.cpp
-	time_series_store.cpp
-	time_step.cpp
-	time_step_implementation.cpp
+	src/common.cpp
+	src/extern_c_api.cpp
+	src/interop_conversions.cpp
+	src/io_helper.cpp
+	src/tests/datatypes_test_helpers.cpp
+	src/time_series.cpp
+	src/time_series_io.cpp
+	src/time_series_store.cpp
+	src/time_step.cpp
+	src/time_step_implementation.cpp
 
     )
 
 ## section: header files
 # Add your header files here(one file per line), please SORT in alphabetical order for future maintenance!
 SET(${this_target}_HEADER_FILES
-	../include/datatypes/common.h
-	../include/datatypes/datatypes_test_helpers.h
-	../include/datatypes/datatypes_test_helpers.hpp
-	../include/datatypes/exception_utilities.h
-	../include/datatypes/extern_c_api_as_opaque.h
-	../include/datatypes/extern_c_api_as_transparent.h
-	../include/datatypes/extern_c_api.h
-	../include/datatypes/extern_c_api_transparent_pointers.h
-	../include/datatypes/internals_c_api.hpp
-	../include/datatypes/interop_conversions.h
-	../include/datatypes/interop_conversions.hpp
-	../include/datatypes/interop_struct.h
-	../include/datatypes/io_helper.h
-	../include/datatypes/setup_exports.h
-	../include/datatypes/shared_pointer_conversions.hpp
-	../include/datatypes/time_series.hpp
-	../include/datatypes/time_series_io.hpp
-	../include/datatypes/time_series_store.hpp
-	../include/datatypes/time_series_strategies.hpp
-	../include/datatypes/time_step.h
-	../include/datatypes/time_step_implementation.h
+	./include/datatypes/common.h
+	./include/datatypes/datatypes_test_helpers.h
+	./include/datatypes/datatypes_test_helpers.hpp
+	./include/datatypes/exception_utilities.h
+	./include/datatypes/extern_c_api_as_opaque.h
+	./include/datatypes/extern_c_api_as_transparent.h
+	./include/datatypes/extern_c_api.h
+	./include/datatypes/extern_c_api_transparent_pointers.h
+	./include/datatypes/internals_c_api.hpp
+	./include/datatypes/interop_conversions.h
+	./include/datatypes/interop_conversions.hpp
+	./include/datatypes/interop_struct.h
+	./include/datatypes/io_helper.h
+	./include/datatypes/setup_exports.h
+	./include/datatypes/shared_pointer_conversions.hpp
+	./include/datatypes/time_series.hpp
+	./include/datatypes/time_series_io.hpp
+	./include/datatypes/time_series_store.hpp
+	./include/datatypes/time_series_strategies.hpp
+	./include/datatypes/time_step.h
+	./include/datatypes/time_step_implementation.h
 )
 
 IF (ENABLE_CODECOVERAGE)
