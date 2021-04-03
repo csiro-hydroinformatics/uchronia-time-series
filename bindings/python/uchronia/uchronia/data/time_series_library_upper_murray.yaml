@@ -1,0 +1,40 @@
+pet_fcast_ens:
+  Type: single
+  Id: pet_fcast_ens
+  Storage:
+    Type: single_nc_file
+    File: ./Fct_Data/Upper_Murray_pet_clim_1990_2010.nc
+    Identifier: 1
+    Var: pet_der
+pet_obs:
+  Type: single
+  Id: pet_obs
+  Storage:
+    Type: single_nc_file
+    File: ./Obs_data/Upper_Murray_pet_24h_89_2012.nc
+    Identifier: 1
+    Var: pet_der
+rain_obs:
+  Type: single
+  Id: rain_obs
+  Storage:
+    Type: single_nc_file
+    File: ./Obs_data/Upper_Murray_rain_1hr.nc
+    Identifier: 1
+    Var: rain_der
+rain_fcast_ens:
+  Type: ts_ensemble_ts
+  Id: rain_fcast_ens
+  # The following 6 values are placeholders - may not yet be used by time series library
+  TimeStep: 24:00:00
+  Start: 2010-08-01T21:00:00
+  Length: 5
+  EnsembleSize: 1000
+  EnsembleLength: 240
+  EnsembleTimeStep: 01:00:00
+  Storage:
+    Type: multiple_nc_files_filename_date_pattern
+    File: ./Fct_Data/Upper_Murray_F1_1_{0}21_shuffle.nc
+    Var: rain_fcast_ens
+    Identifier: 1
+    Index: 0
