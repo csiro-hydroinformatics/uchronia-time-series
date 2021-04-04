@@ -98,21 +98,21 @@ import uchronia.wrap.uchronia_wrap_generated as uwg
 #     return res
 # }
 
-# [[Rcpp::export]]
-def TimeSeriesToTsInfo_Pkg(timeSeries):
-    regular_time_series_geometry mtsg
-    void* ts = timeSeries
-    GetTimeSeriesGeometry(ts, &mtsg)
-    double * values = new double[mtsg.length]
-    GetTimeSeriesValues(ts, values, mtsg.length)
-    NumericVector data = to_custom_numeric_vector<NumericVector>(values, mtsg.length, false)
-    delete[] values
-    return cinterop::timeseries::make_time_series_info<List>(data, mtsg)
+# # [[Rcpp::export]]
+# def TimeSeriesToTsInfo_Pkg(timeSeries):
+#     regular_time_series_geometry mtsg
+#     void* ts = timeSeries
+#     GetTimeSeriesGeometry(ts, &mtsg)
+#     double * values = new double[mtsg.length]
+#     GetTimeSeriesValues(ts, values, mtsg.length)
+#     NumericVector data = to_custom_numeric_vector<NumericVector>(values, mtsg.length, false)
+#     delete[] values
+#     return cinterop::timeseries::make_time_series_info<List>(data, mtsg)
 
-Rcpp::S4 const XPtr<opaque_pointer_handle>& xptr, const string& type = "")
-{
-    return cinterop::create_rcpp_xptr_wrapper<opaque_pointer_handle>(xptr, type)
-}
+# Rcpp::S4 const XPtr<opaque_pointer_handle>& xptr, const string& type = "")
+# {
+#     return cinterop::create_rcpp_xptr_wrapper<opaque_pointer_handle>(xptr, type)
+# }
 
 # [[Rcpp::export]]
 def GetDatasetFromLibrary_Pkg(dataLibrary, dataIdentifier):
