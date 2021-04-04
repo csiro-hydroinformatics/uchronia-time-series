@@ -19,41 +19,23 @@ def custom_wrap_cffi_native_handle(obj, type_id="", release_native = None):
         release_native = DisposeSharedPointer_py
     return wrap_cffi_native_handle(obj, type_id, release_native)
 
-# def lod_series_to_numeric_vector(xtr_ptr, dispose:bool=True) -> pd.Series:
-#     cffi_ptr = unwrap_cffi_native_handle(xtr_ptr)
-#     npx = marshal.as_numeric_np_array(cffi_ptr.data, cffi_ptr.size)
-#     if dispose:
-#         DisposeSeries_py(cffi_ptr)
-#     return pd.Series(npx)
-
-# # variableIdentifier is a bit of a hack the way it is passed. Revise. 
-# def lod_matrix_2d_to_numeric_matrix(xtr_ptr, variableIdentifier, dispose:bool=True) -> xr.DataArray:
-#     cffi_ptr = unwrap_cffi_native_handle(xtr_ptr)
-#     npx = marshal.two_d_as_np_array_double(cffi_ptr.numeric_data, cffi_ptr.nrow, cffi_ptr.ncol, True)
-#     x = xr.DataArray(npx, dims=[TIME_DIMNAME, DEPTH_DIMNAME])
-#     if dispose:
-#         DisposeMatrix_py(cffi_ptr)
-#     x.name = variableIdentifierprependHeaderTemplate
-#     return x
-
-# def character_vector_to_list(xtr_ptr, dispose:bool=True) -> list:
-#     cffi_ptr = unwrap_cffi_native_handle(xtr_ptr)
-#     pystrings = marshal.character_vector_as_string_list(cffi_ptr.values, cffi_ptr.size)
-#     if dispose:
-#         DisposeCharVec_py(cffi_ptr)
-#     return pystrings
-
-def charp_array_to_py(values:CffiData, size:int, dispose:bool=True) -> List[str]:
-    pystrings = marshal.character_vector_as_string_list(values, size)
-    if dispose:
-        uchronia_so.DeleteAnsiStringArray(values, size)
-    return pystrings
-
 def charp_array_to_py(values:CffiData, size:int, dispose:bool=True) -> List[str]:
     pystrings = marshal.c_charptrptr_as_string_list(values, size)
     if dispose:
-        uchronia_so.DeleteAnsiStringArray(values, size)
+        swift_so.DeleteAnsiStringArray(values, size)
     return pystrings
+
+def char_array_to_py(values:CffiData, dispose:bool=True) -> str:
+    pystring = marshal.c_string_as_py_string(values)
+    if dispose:
+        uchronia_so.DeleteAnsiString(values)
+    return pystring
+
+def named_values_to_py(values:CffiData, dispose:bool=True) -> Dict[str,float]:
+    x = marshal.named_values_to_dict(values)
+    if dispose:
+        swift_so.DisposeNamedValuedVectorsSwift(values)
+    return x
 
 def opaque_ts_as_xarray_time_series(ptr:CffiData, dispose:bool=True) -> xr.DataArray:
     res = marshal.as_xarray_time_series(ptr)
@@ -71,35 +53,21 @@ def py_time_series_dimensions_description(ptr:CffiData, dispose:bool=True) -> Li
         uchronia_so.DisposeDataDimensionsDescriptions(ptr)
     return res
 
-class GenericWrapper:
+def toSceParametersNative(x:dict) -> OwningCffiNativeHandle:
+    res = marshal.new_native_struct('SceParameters*')
+    p = res.ptr
+    p.Alpha = int(x['Alpha'])
+    p.Beta = int(x['Beta'])
+    p.P = int(x['P'])
+    p.Pmin = int(x['Pmin'])
+    p.M = int(x['M'])
+    p.Q = int(x['Q'])
+    p.NumShuffle = x['NumShuffle']
+    p.TrapezoidalDensityParameter = float(x['TrapezoidalDensityParameter'])
+    p.ReflectionRatio = float(x['ReflectionRatio'])
+    p.ContractionRatio = float(x['ContractionRatio'])
+    return res
 
-    def __init__(self, handle: Any):
-        self._handle = handle
-
-    @property
-    def ptr(self):
-        return self._handle
-
-def wrap_as_pointer_handle(
-    obj_wrapper: Any, stringent: bool = False
-) -> Union[CffiData, Any, None]:
-    # 2016-01-28 allowing null pointers, to unlock behavior of EstimateERRISParameters.
-    # Reassess approach, even if other C API function will still catch the issue of null ptrs.
-    if obj_wrapper is None:
-        return None
-    elif isinstance(obj_wrapper, CffiNativeHandle):
-        return obj_wrapper
-    elif isinstance(obj_wrapper, FFI.CData):
-        return OwningCffiNativeHandle(obj_wrapper)
-    elif isinstance(obj_wrapper, bytes):
-        return GenericWrapper(obj_wrapper)
-    else:
-        if stringent:
-            raise Exception(
-                "Argument is neither a CffiNativeHandle nor a CFFI external pointer"
-            )
-        else:
-            return obj_wrapper
 
 @check_exceptions
 def GetLastStdExceptionMessage_py() -> str:
@@ -114,7 +82,7 @@ def GetLastStdExceptionMessage_py() -> str:
     
     """
     result = uchronia_so.GetLastStdExceptionMessage()
-    return result
+    return char_array_to_py(result, dispose=True)
 
 
 @check_exceptions
@@ -767,37 +735,35 @@ def DisposeMultiTimeSeriesData_py(data:xr.DataArray) -> None:
 
 
 @check_exceptions
-def GetTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometry) -> None:
+def GetTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometryNative) -> None:
     """GetTimeSeriesGeometry_py
     
     GetTimeSeriesGeometry_py: generated wrapper function for API function GetTimeSeriesGeometry
     
     Args:
         timeSeries (Any): timeSeries
-        geom (TimeSeriesGeometry): geom
+        geom (TimeSeriesGeometryNative): geom
     
     """
     timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
-    geom_tsgeom = marshal.as_native_tsgeom(geom)
-    uchronia_so.GetTimeSeriesGeometry(timeSeries_xptr.ptr, geom_tsgeom.ptr)
-    # delete geom_tsgeom
+    geom_xptr = wrap_as_pointer_handle(geom)
+    uchronia_so.GetTimeSeriesGeometry(timeSeries_xptr.ptr, geom_xptr.ptr)
 
 
 @check_exceptions
-def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometry) -> None:
+def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometryNative) -> None:
     """GetEnsembleForecastTimeSeriesGeometry_py
     
     GetEnsembleForecastTimeSeriesGeometry_py: generated wrapper function for API function GetEnsembleForecastTimeSeriesGeometry
     
     Args:
         timeSeries (Any): timeSeries
-        geom (TimeSeriesGeometry): geom
+        geom (TimeSeriesGeometryNative): geom
     
     """
     timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
-    geom_tsgeom = marshal.as_native_tsgeom(geom)
-    uchronia_so.GetEnsembleForecastTimeSeriesGeometry(timeSeries_xptr.ptr, geom_tsgeom.ptr)
-    # delete geom_tsgeom
+    geom_xptr = wrap_as_pointer_handle(geom)
+    uchronia_so.GetEnsembleForecastTimeSeriesGeometry(timeSeries_xptr.ptr, geom_xptr.ptr)
 
 
 @check_exceptions
@@ -835,7 +801,7 @@ def GetNumTimeSeries_py() -> int:
 
 
 @check_exceptions
-def GetProviderTsGeometry_py(dataLibrary:Any, variableIdentifier:str, geom:TimeSeriesGeometry) -> None:
+def GetProviderTsGeometry_py(dataLibrary:Any, variableIdentifier:str, geom:TimeSeriesGeometryNative) -> None:
     """GetProviderTsGeometry_py
     
     GetProviderTsGeometry_py: generated wrapper function for API function GetProviderTsGeometry
@@ -843,15 +809,14 @@ def GetProviderTsGeometry_py(dataLibrary:Any, variableIdentifier:str, geom:TimeS
     Args:
         dataLibrary (Any): dataLibrary
         variableIdentifier (str): variableIdentifier
-        geom (TimeSeriesGeometry): geom
+        geom (TimeSeriesGeometryNative): geom
     
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     variableIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(variableIdentifier))
-    geom_tsgeom = marshal.as_native_tsgeom(geom)
-    uchronia_so.GetProviderTsGeometry(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, geom_tsgeom.ptr)
+    geom_xptr = wrap_as_pointer_handle(geom)
+    uchronia_so.GetProviderTsGeometry(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, geom_xptr.ptr)
     # no cleanup for const char*
-    # delete geom_tsgeom
 
 
 @check_exceptions
