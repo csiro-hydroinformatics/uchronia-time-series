@@ -779,7 +779,7 @@ def GetTimeSeriesValues_py(timeSeries:Any, values:np.ndarray, arrayLength:int) -
     
     """
     timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
-    values_numarray = marshal.as_c_double_array(values)
+    values_numarray = marshal.as_c_double_array(values, shallow=True)
     uchronia_so.GetTimeSeriesValues(timeSeries_xptr.ptr, values_numarray.ptr, arrayLength)
     # values_numarray - no cleanup needed?
 
@@ -834,7 +834,7 @@ def GetProviderTimeSeriesValues_py(dataLibrary:Any, variableIdentifier:str, valu
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     variableIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(variableIdentifier))
-    values_numarray = marshal.as_c_double_array(values)
+    values_numarray = marshal.as_c_double_array(values, shallow=True)
     uchronia_so.GetProviderTimeSeriesValues(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, values_numarray.ptr, arrayLength)
     # no cleanup for const char*
     # values_numarray - no cleanup needed?

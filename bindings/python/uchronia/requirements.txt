@@ -1,0 +1,6 @@
+cffi>=1.11.5
+refcount>=0.9.1
+cinterop>=0.8.1
+xarray
+numpy
+pandas
