@@ -22,7 +22,7 @@ def custom_wrap_cffi_native_handle(obj, type_id="", release_native = None):
 def charp_array_to_py(values:CffiData, size:int, dispose:bool=True) -> List[str]:
     pystrings = marshal.c_charptrptr_as_string_list(values, size)
     if dispose:
-        swift_so.DeleteAnsiStringArray(values, size)
+        uchronia_so.DeleteAnsiStringArray(values, size)
     return pystrings
 
 def char_array_to_py(values:CffiData, dispose:bool=True) -> str:
@@ -34,7 +34,7 @@ def char_array_to_py(values:CffiData, dispose:bool=True) -> str:
 def named_values_to_py(values:CffiData, dispose:bool=True) -> Dict[str,float]:
     x = marshal.named_values_to_dict(values)
     if dispose:
-        swift_so.DisposeNamedValuedVectorsSwift(values)
+        uchronia_so.DisposeNamedValuedVectorsSwift(values)
     return x
 
 def opaque_ts_as_xarray_time_series(ptr:CffiData, dispose:bool=True) -> xr.DataArray:
