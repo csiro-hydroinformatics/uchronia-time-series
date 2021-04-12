@@ -20,7 +20,7 @@ import uchronia.wrap.uchronia_wrap_custom as uwc
 #' @return a POSIXct date/time object
 #' @export
 def mkDate(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
-    return pd.Timestamp(year=year, month=month, day=day, hour=hour, min=min, sec=sec, tz=tz) 
+    return pd.Timestamp(year=year, month=month, day=day, hour=hour, minute=min, second=sec, tz=tz) 
 
 # #' Gets information about the dimension(s) of data
 # #'
