@@ -68,5 +68,5 @@ setup(
         'Source': 'https://github.com/csiro-hydroinformatics/uchronia-time-series',
     },
     include_package_data=True, # C definitions for CFFI 
-    package_data={'': ['data/*.h']},
+    package_data={'': ['data/*.h', 'data/*.yaml']},
 )
