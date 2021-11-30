@@ -3,6 +3,10 @@
 export DH_VERBOSE = 1
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+# Need to specify CMAKE_MODULE_PATH for cmake to find specific cmake modules 
+# not in the standard cmake install: 
+# e.g. "FindNetCDF.cmake" 
+CMAKE_MODULE_PATH ?= "/usr/local/share/cmake/Modules/"
 
 %:
 	dh $@ --buildsystem=cmake
@@ -11,4 +15,5 @@ DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 # This is example for Cmake (See https://bugs.debian.org/641051 )
 override_dh_auto_configure:
 	dh_auto_configure -- \
-	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
+	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH) \
+	-DCMAKE_MODULE_PATH=$(CMAKE_MODULE_PATH) 
