@@ -10,7 +10,7 @@ Build-Depends: cmake,
                libboost-filesystem-dev,
                libboost-regex-dev,
                libmoirai-dev,
-               libyaml-dev,
+               libyaml-cpp-dev,
                libnetcdf-dev
 Standards-Version: 4.5.0
 Section: libs
@@ -29,7 +29,7 @@ Depends: libuchronia (= ${binary:Version}),
          libboost-filesystem-dev,
          libboost-regex-dev,
          libmoirai-dev,
-         libyaml-dev,
+         libyaml-cpp-dev,
          libnetcdf-dev,
 #         libconfig-utils-dev,
          ${misc:Depends}
