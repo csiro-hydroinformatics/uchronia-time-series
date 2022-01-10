@@ -15,7 +15,7 @@ import os
 #' @examples
 #' \dontrun{
 #' internalGetRecordedTts(simulation, varIds):
-#'   uchronia::getMultipleTimeSeriesFromProvider(simulation, varIds, GetRecorded_Pkg_R)
+#'   uchronia::getMultipleTimeSeriesFromProvider(simulation, varIds, get_recorded_pkg_R)
 #' }
 #' }
 #' @export
@@ -43,9 +43,9 @@ def getMultipleTimeSeriesFromProvider(tsProvider, varIds, apiGetTsFunc):
 #'  (ensFcast = uchronia::getDataSet(dataSet, "pet_fcast_ens"))
 #'  plot(asXts(univTs))
 #'  zoo::plot.zoo(asXts(multivTs))
-#'  ## precipIds = paste( 'subarea', getSubareaIds(simulation), 'P', sep='.')
+#'  ## precip_ids = paste( 'subarea', getSubareaIds(simulation), 'P', sep='.')
 #'  ## evapIds = paste( 'subarea', getSubareaIds(simulation), 'E', sep='.')
-#'  ## swift::playInputs(simulation, dataSet, precipIds, rep('rain_obs', length(precipIds)))
+#'  ## swift::playInputs(simulation, dataSet, precip_ids, rep('rain_obs', length(precip_ids)))
 #'  ## swift::playInputs(simulation, dataSet, evapIds, rep('pet_obs', length(evapIds)), 'daily_to_hourly')
 #' }
 #' @export
@@ -213,14 +213,14 @@ def asXts(tsInfo):
 #   }
 # }
 
-# createTimeSeriesIndex(startDate, n, deltaTSec=as.numeric(3600)):
+# createTimeSeriesIndex(startDate, n, delta_t_sec=as.numeric(3600)):
 #   stopifnot(is(startDate, "POSIXct"))
 #   # we need to make sure we work with numeric values, not integers, here, otherwise 
 #   # we will quickly bump into integer overflow. Ouch. Compare:
 #   # len = 29618
 #   # tail(0:(len - 1) * tssec)
 #   # tail(0:(len - 1) * as.numeric(tssec))
-#   return(startDate+(0:(n-1))*as.numeric(deltaTSec))
+#   return(startDate+(0:(n-1))*as.numeric(delta_t_sec))
 # }
 
 
@@ -288,13 +288,13 @@ def asXts(tsInfo):
 #         tStepDuration = as.integer(tsName)
 #         if(!is.na(tStepDuration))
 #         {
-#           return(mkSeriesRegularTstep(s, values, NULL, deltaTSec=tStepDuration))
+#           return(mkSeriesRegularTstep(s, values, NULL, delta_t_sec=tStepDuration))
 #         }
 #         stop(paste('Unsupported time step specification:', tsName))
 #       }
 #     elif  (is.integer(tStep)){
 #       tStepDuration = tStep
-#       mkSeriesRegularTstep(s, values, NULL, deltaTSec=tStepDuration)
+#       mkSeriesRegularTstep(s, values, NULL, delta_t_sec=tStepDuration)
 #     else:
 #       stop(paste('Unsupported time step specification:', tStep))
 #     }

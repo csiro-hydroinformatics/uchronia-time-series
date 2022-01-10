@@ -55,8 +55,8 @@ def internalGetTimeSeriesFromProvider (provider, dataIds):
 
 
 
-def _concatenate_series(tSeriesList:List, new_coord_names:List, new_dim_name) -> xr.DataArray:
-    res = xr.concat(tSeriesList, dim=pd.Index(new_coord_names, name=new_dim_name))
+def _concatenate_series(t_series_list:List, new_coord_names:List, new_dim_name) -> xr.DataArray:
+    res = xr.concat(t_series_list, dim=pd.Index(new_coord_names, name=new_dim_name))
     return res
 
 def internalGetMultipleTimeSeries(simulation, varIds, apiGetTsFunc:Callable):
@@ -66,11 +66,11 @@ def internalGetMultipleTimeSeries(simulation, varIds, apiGetTsFunc:Callable):
         return None
     def f(varId):
         return internalGetSingleModelTts(simulation, varId, apiGetTsFunc)
-    tSeriesList = [f(varId) for varId in varIds]
+    t_series_list = [f(varId) for varId in varIds]
     # This function used to use do.call(merge,etc.) however tests done with xts_0.11-0 on R 3.4.4 showed that using a loop
     # is actually much faster. Completely unexpected but pretty clear. See a revisited https://jira.csiro.au/browse/WIRADA-147
-    n = len(tSeriesList)
-    return _concatenate_series(tSeriesList, varIds, "variable_identifiers")
+    n = len(t_series_list)
+    return _concatenate_series(t_series_list, varIds, "variable_identifiers")
 
 
 #' Internal only - Perform an action on a uchronia object that is expected to return a time series

@@ -130,7 +130,7 @@ def GetDatasetFromLibrary_Pkg(dataLibrary, dataIdentifier):
 
 # # ??
 # # [[Rcpp::export]]
-# def GetTimeSeriesFromProvider_Pkg(provider, variableIdentifier):
-#     auto values = GetTimeSeriesDataFromProvider(provider, variableIdentifier, mtsg);
+# def GetTimeSeriesFromProvider_Pkg(provider, variable_identifier):
+#     auto values = get_time_series_data_from_provider(provider, variable_identifier, mtsg);
 #     return CreateTsInfo(values, mtsg);
 # }

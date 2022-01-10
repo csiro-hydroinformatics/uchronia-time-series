@@ -37,7 +37,7 @@ def to_daily_time_series(data_array, start_date):
 
 def _is_negative(x): return x < 0
 
-def mkSeriesRegularTstep (startDate, x, isMissingFunc = _is_negative, deltaTSec=3600):
+def mkSeriesRegularTstep (startDate, x, isMissingFunc = _is_negative, delta_t_sec=3600):
     #   stopifnot(is(startDate, "POSIXct"))
     if not isMissingFunc is None:
         isMissing = isMissingFunc(x)
@@ -96,19 +96,19 @@ m.SetItemEnsembleTimeSeriesAsStructure(ensFcTs, i, mts)
 
 def uchronia.setItem(ensFcTs, i, multiTimeSeriesIn):
 
-def buildTestTsEnsTs(deltaT=3600, n=100, p=80, deltaTLead=180, nLead=5, nEns=4):
+def buildTestTsEnsTs(deltaT=3600, n=100, p=80, delta_t_lead=180, nLead=5, nEns=4):
     # if(p > n) 
     # stop("start of non-null ensemble is past the end of the time series")
     tt = mainTimeAxis(deltaT, n, p)
     ensFcTs = createEnsembleForecastTimeSeries(tt['tsStartDate'], n, deltaT)
     for i in range(p, n):
-        multiTimeSeriesIn = buildTestEnsTs(i,n=nLead, deltaT=deltaTLead)
+        multiTimeSeriesIn = buildTestEnsTs(i,n=nLead, deltaT=delta_t_lead)
         uchronia.setItem(ensFcTs, i, multiTimeSeriesIn)
     return ensFcTs
 
 
 deltaT = 3600*3
-deltaTLead = 180
+delta_t_lead = 180
 n = 20
 p = 8
 nLead = 5
@@ -116,19 +116,19 @@ nEns = 4
 tt = mainTimeAxis(deltaT, n, p)
 ensFcTs = createEnsembleForecastTimeSeries(tt['tsStartDate'], n, deltaT)
 for i in range(p, n):
-    multiTimeSeriesIn = buildTestEnsTs(i,n=nLead, deltaT=deltaTLead)
+    multiTimeSeriesIn = buildTestEnsTs(i,n=nLead, deltaT=delta_t_lead)
     uchronia.setItem(ensFcTs, i, multiTimeSeriesIn)
 return ensFcTs
 
 
 def test_getting_data_from_efts(): 
 deltaT = 3600*3
-deltaTLead = 180
+delta_t_lead = 180
 n = 20
 p = 8
 nLead = 5
 nEns = 4
-ensFcTs = buildTestTsEnsTs(deltaT=deltaT,deltaTLead=deltaTLead,n=n,p=p,nLead=nLead,nEns=nEns)
+ensFcTs = buildTestTsEnsTs(deltaT=deltaT,delta_t_lead=delta_t_lead,n=n,p=p,nLead=nLead,nEns=nEns)
 q = n-p-1
 tt = mainTimeAxis(deltaT, n, p)
 for i in range(n):
@@ -136,7 +136,7 @@ for i in range(n):
     if i < p:
         assert np.isnan(ensTs)
     else:
-        multiTimeSeriesExpected = buildTestHourlyXts(i, tt['tsStartDate'], n=nLead, nEns=nEns,deltaT=deltaTLead)
+        multiTimeSeriesExpected = buildTestHourlyXts(i, tt['tsStartDate'], n=nLead, nEns=nEns,deltaT=delta_t_lead)
         expect_true(all(ensTs == multiTimeSeriesExpected))
 
 # test_that("Splicing - round trip setting/getting data from an ensemble of time series", {
@@ -169,12 +169,12 @@ def test_splicing():
 # test_that("Time indices are correctly retrieved", {
 def test_time_indices_correctly_retrieved():
     deltaT = 3600 * 3
-    deltaTLead = 3600 / 4
+    delta_t_lead = 3600 / 4
     n = 20
     p = 8
     nLead = 5
     nEns = 4
-    ensFcTs = buildTestTsEnsTs(deltaT=deltaT,deltaTLead=deltaTLead,n=n,p=p,nLead=nLead,nEns=nEns)
+    ensFcTs = buildTestTsEnsTs(deltaT=deltaT,delta_t_lead=delta_t_lead,n=n,p=p,nLead=nLead,nEns=nEns)
     tt = timeIndex(ensFcTs)
     tst = mainTimeAxis(deltaT, n, p)
     expectedTaxis = tst['tsStartDate'] + (0:(n-1)) * deltaT
@@ -204,12 +204,12 @@ def test_data_dimensions_correctly_retrieved():
     expect_equal(lubridate::as.duration(dt.timedelta(deltaT)), g$temporal$time_step)
 
     deltaTMain = 3*3600
-    deltaTLead = 3600 / 4
+    delta_t_lead = 3600 / 4
     # we deliberately leave missing values in the first three items... Tricky!
     p = 3
     nLead = 8
 
-    ensFcTs = buildTestTsEnsTs(deltaT=deltaTMain, deltaTLead=deltaTLead,n=n,p=p,nLead=nLead,nEns=nEns)
+    ensFcTs = buildTestTsEnsTs(deltaT=deltaTMain, delta_t_lead=delta_t_lead,n=n,p=p,nLead=nLead,nEns=nEns)
     g = geometryOf(ensFcTs)
 
     tst = mainTimeAxis(deltaT, n, p=p)

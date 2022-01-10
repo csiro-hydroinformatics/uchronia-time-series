@@ -157,7 +157,7 @@ if __name__ == "__main__":
 # GetEnsembleForecastTimeSeriesGeometry_py(timeSeries, geom):
 # GetTimeSeriesValues_py(timeSeries, values, arrayLength):
 # GetNumTimeSeries_py():
-# GetProviderTsGeometry_py(dataLibrary, variableIdentifier, geom):
-# GetProviderTimeSeriesValues_py(dataLibrary, variableIdentifier, values, arrayLength):
+# GetProviderTsGeometry_py(dataLibrary, variable_identifier, geom):
+# GetProviderTimeSeriesValues_py(dataLibrary, variable_identifier, values, arrayLength):
 # GetProviderTimeSeriesIdentifiers_py(dataLibrary):
-# TimeSeriesFromProviderTs_py(dataLibrary, variableIdentifier):
+# TimeSeriesFromProviderTs_py(dataLibrary, variable_identifier):

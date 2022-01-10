@@ -307,7 +307,7 @@ def getItem(ensFcTs:DeletableCffiNativeHandle, i, convertToXts=True):
 # #' mkHourlySeries(lubridate::origin, -2:3/3.0)
 # #' }
 # mkHourlySeries(startDate, x, isMissingFunc= function(val){val < 0}):
-#   mkSeriesRegularTstep(startDate, x, isMissingFunc=isMissingFunc, deltaTSec=3600)
+#   mkSeriesRegularTstep(startDate, x, isMissingFunc=isMissingFunc, delta_t_sec=3600)
 # }
 
 # #' Make an daily time series
@@ -324,7 +324,7 @@ def getItem(ensFcTs:DeletableCffiNativeHandle, i, convertToXts=True):
 # #' mkDailySeries(lubridate::origin, -2:3/3.0)
 # #' }
 # mkDailySeries(startDate, x, isMissingFunc = function(val):val < 0}):
-#   mkSeriesRegularTstep(startDate, x, isMissingFunc=isMissingFunc, deltaTSec=3600*24)
+#   mkSeriesRegularTstep(startDate, x, isMissingFunc=isMissingFunc, delta_t_sec=3600*24)
 # }
 
 # #' Make a time series with a regular time step
@@ -334,16 +334,16 @@ def getItem(ensFcTs:DeletableCffiNativeHandle, i, convertToXts=True):
 # #' @param startDate the start date of the time series. It must be a POSIXct object.
 # #' @param x the numeric vector.
 # #' @param isMissingFunc a function, or NULL. The function should return a logical vector. Used to detect missing values in the raw data that are not already identified as NA
-# #' @param deltaTSec the time step duration in seconds
+# #' @param delta_t_sec the time step duration in seconds
 # #' @return an xts time series. 
 # #' @examples
 # #' \dontrun{
 # #' # make a time series with a time step of 10 minutes
-# #' mkSeriesRegularTstep(lubridate::origin, -2:3/3.0, deltaTSec=600)
+# #' mkSeriesRegularTstep(lubridate::origin, -2:3/3.0, delta_t_sec=600)
 # #' }
 # #' @export
 # #' @importFrom xts xts
-# mkSeriesRegularTstep(startDate, x, isMissingFunc= function(val){val < 0}, deltaTSec=3600):
+# mkSeriesRegularTstep(startDate, x, isMissingFunc= function(val){val < 0}, delta_t_sec=3600):
 #   # POSIXct[1:1], format: "1999-12-31 12:00:00"
 #   # [1] "1999-12-31 12:00:00 UTC"
 #   stopifnot(is(startDate, "POSIXct"))
@@ -353,7 +353,7 @@ def getItem(ensFcTs:DeletableCffiNativeHandle, i, convertToXts=True):
 #   }
 #   dimFunc = getDataDimensionFunction(x)
 #   n = dimFunc(x)
-#   xts::xts(x, createTimeSeriesIndex(startDate, n, deltaTSec))
+#   xts::xts(x, createTimeSeriesIndex(startDate, n, delta_t_sec))
 # }
 
 # #' Make a time series with a monthly step
@@ -395,7 +395,7 @@ def getItem(ensFcTs:DeletableCffiNativeHandle, i, convertToXts=True):
 # #' @examples
 # #' \dontrun{
 # #' # make a time series with a time step of 10 minutes
-# #' x = mkSeriesRegularTstep(lubridate::origin, -2:3/3.0, deltaTSec=600)
+# #' x = mkSeriesRegularTstep(lubridate::origin, -2:3/3.0, delta_t_sec=600)
 # #' serializableTs(x)
 # #' }
 # #' @export
