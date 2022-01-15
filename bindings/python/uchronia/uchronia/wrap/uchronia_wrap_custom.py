@@ -115,15 +115,15 @@ import uchronia.wrap.uchronia_wrap_generated as uwg
 # }
 
 # [[Rcpp::export]]
-def GetDatasetFromLibrary_Pkg(dataLibrary, dataIdentifier):
-    desc = uwg.GetDataDimensionsDescription_py(dataLibrary, dataIdentifier)
+def GetDatasetFromLibrary_Pkg(data_library, data_identifier):
+    desc = uwg.GetDataDimensionsDescription_py(data_library, data_identifier)
     dimensions = len(desc)
     if dimensions == 1:
-        return uwg.GetDatasetSingleTimeSeries_py(dataLibrary, dataIdentifier)
+        return uwg.GetDatasetSingleTimeSeries_py(data_library, data_identifier)
     elif dimensions == 2:
-        return uwg.GetDatasetEnsembleTimeSeries_py(dataLibrary, dataIdentifier)
+        return uwg.GetDatasetEnsembleTimeSeries_py(data_library, data_identifier)
     elif dimensions == 3:
-        return uwg.GetDatasetEnsembleForecastTimeSeries_py(dataLibrary, dataIdentifier)
+        return uwg.GetDatasetEnsembleForecastTimeSeries_py(data_library, data_identifier)
     else:
         raise Exception("Number of dimensions for a data set is not supported: " + str(dimensions))
 

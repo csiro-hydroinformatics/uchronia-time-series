@@ -5,9 +5,22 @@
 # 
 ##################
 
-from typing import *
-from refcount.interop import *
-from uchronia.wrap.ffi_interop import *
+from typing import TYPE_CHECKING, Dict, List, Tuple, Any
+from datetime import datetime
+from refcount.interop import CffiData, OwningCffiNativeHandle, wrap_as_pointer_handle
+from cinterop.cffi.marshal import as_bytes
+from uchronia.wrap.ffi_interop import marshal, uchronia_so, check_exceptions
+from uchronia.classes import wrap_cffi_native_handle
+
+if TYPE_CHECKING:
+    from uchronia.classes import (
+        EnsembleTimeSeries,
+        TimeSeriesLibrary,
+        EnsembleForecastTimeSeries,
+        TimeSeries,
+        EnsemblePtrTimeSeries,
+        TimeSeriesProvider,
+)
 import xarray as xr
 import pandas as pd
 
@@ -126,7 +139,7 @@ def SetTimeSeriesMissingValueValue_py(missingValueValue:float) -> None:
 
 
 @check_exceptions
-def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> Any:
+def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> 'TimeSeriesLibrary':
     """LoadEnsembleDataset_py
     
     LoadEnsembleDataset_py: generated wrapper function for API function LoadEnsembleDataset
@@ -136,7 +149,7 @@ def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> Any:
         dataPath (str): dataPath
     
     Returns:
-        (Any): returned result
+        ('TimeSeriesLibrary'): returned result
     
     """
     libraryIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(libraryIdentifier))
@@ -148,7 +161,7 @@ def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> Any:
 
 
 @check_exceptions
-def CreateEnsembleDataset_py(type:str) -> Any:
+def CreateEnsembleDataset_py(type:str) -> 'TimeSeriesLibrary':
     """CreateEnsembleDataset_py
     
     CreateEnsembleDataset_py: generated wrapper function for API function CreateEnsembleDataset
@@ -157,7 +170,7 @@ def CreateEnsembleDataset_py(type:str) -> Any:
         type (str): type
     
     Returns:
-        (Any): returned result
+        ('TimeSeriesLibrary'): returned result
     
     """
     type_c_charp = wrap_as_pointer_handle(as_bytes(type))
@@ -167,7 +180,7 @@ def CreateEnsembleDataset_py(type:str) -> Any:
 
 
 
-def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:Any):
+def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:'TimeSeriesLibrary'):
     """GetEnsembleDatasetDataIdentifiers_py
     
     GetEnsembleDatasetDataIdentifiers_py: generated wrapper function for API function GetEnsembleDatasetDataIdentifiers
@@ -185,7 +198,7 @@ def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:Any):
     return result
 
 
-def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:Any, dataCollectionId:str):
+def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:'TimeSeriesLibrary', dataCollectionId:str):
     """GetEnsembleDatasetDataSubIdentifiers_py
     
     GetEnsembleDatasetDataSubIdentifiers_py: generated wrapper function for API function GetEnsembleDatasetDataSubIdentifiers
@@ -205,7 +218,7 @@ def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:Any, dataCollectionId:st
     return result
 
 
-def GetEnsembleDatasetDataSummaries_py(dataLibrary:Any):
+def GetEnsembleDatasetDataSummaries_py(dataLibrary:'TimeSeriesLibrary'):
     """GetEnsembleDatasetDataSummaries_py
     
     GetEnsembleDatasetDataSummaries_py: generated wrapper function for API function GetEnsembleDatasetDataSummaries
@@ -223,13 +236,13 @@ def GetEnsembleDatasetDataSummaries_py(dataLibrary:Any):
     return result
 
 @check_exceptions
-def GetDataDimensionsDescription_py(dataLibrary:Any, dataId:str) -> List:
+def GetDataDimensionsDescription_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -> List:
     """GetDataDimensionsDescription_py
     
     GetDataDimensionsDescription_py: generated wrapper function for API function GetDataDimensionsDescription
     
     Args:
-        dataLibrary (Any): dataLibrary
+        dataLibrary ('TimeSeriesLibrary'): dataLibrary
         dataId (str): dataId
     
     Returns:
@@ -244,13 +257,13 @@ def GetDataDimensionsDescription_py(dataLibrary:Any, dataId:str) -> List:
 
 
 @check_exceptions
-def EnsembleSizeEnsembleTimeSeries_py(ensSeries:Any) -> int:
+def EnsembleSizeEnsembleTimeSeries_py(ensSeries:'EnsemblePtrTimeSeries') -> int:
     """EnsembleSizeEnsembleTimeSeries_py
     
     EnsembleSizeEnsembleTimeSeries_py: generated wrapper function for API function EnsembleSizeEnsembleTimeSeries
     
     Args:
-        ensSeries (Any): ensSeries
+        ensSeries ('EnsemblePtrTimeSeries'): ensSeries
     
     Returns:
         (int): returned result
@@ -275,7 +288,7 @@ def DisposeDataDimensionsDescriptions_py(data:List) -> None:
 
 
 @check_exceptions
-def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName:str) -> Any:
+def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName:str) -> 'EnsembleForecastTimeSeries':
     """CreateEnsembleForecastTimeSeries_py
     
     CreateEnsembleForecastTimeSeries_py: generated wrapper function for API function CreateEnsembleForecastTimeSeries
@@ -286,7 +299,7 @@ def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName
         timeStepName (str): timeStepName
     
     Returns:
-        (Any): returned result
+        ('EnsembleForecastTimeSeries'): returned result
     
     """
     start_datetime = marshal.datetime_to_dtts(start)
@@ -298,17 +311,17 @@ def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName
 
 
 @check_exceptions
-def GetDatasetSingleTimeSeries_py(dataLibrary:Any, dataId:str) -> Any:
+def GetDatasetSingleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -> 'TimeSeries':
     """GetDatasetSingleTimeSeries_py
     
     GetDatasetSingleTimeSeries_py: generated wrapper function for API function GetDatasetSingleTimeSeries
     
     Args:
-        dataLibrary (Any): dataLibrary
+        dataLibrary ('TimeSeriesLibrary'): dataLibrary
         dataId (str): dataId
     
     Returns:
-        (Any): returned result
+        ('TimeSeries'): returned result
     
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
@@ -319,17 +332,17 @@ def GetDatasetSingleTimeSeries_py(dataLibrary:Any, dataId:str) -> Any:
 
 
 @check_exceptions
-def GetDatasetEnsembleTimeSeries_py(dataLibrary:Any, dataEnsembleId:str) -> Any:
+def GetDatasetEnsembleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataEnsembleId:str) -> 'EnsemblePtrTimeSeries':
     """GetDatasetEnsembleTimeSeries_py
     
     GetDatasetEnsembleTimeSeries_py: generated wrapper function for API function GetDatasetEnsembleTimeSeries
     
     Args:
-        dataLibrary (Any): dataLibrary
+        dataLibrary ('TimeSeriesLibrary'): dataLibrary
         dataEnsembleId (str): dataEnsembleId
     
     Returns:
-        (Any): returned result
+        ('EnsemblePtrTimeSeries'): returned result
     
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
@@ -340,17 +353,17 @@ def GetDatasetEnsembleTimeSeries_py(dataLibrary:Any, dataEnsembleId:str) -> Any:
 
 
 @check_exceptions
-def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary:Any, dataId:str) -> Any:
+def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -> 'EnsembleForecastTimeSeries':
     """GetDatasetEnsembleForecastTimeSeries_py
     
     GetDatasetEnsembleForecastTimeSeries_py: generated wrapper function for API function GetDatasetEnsembleForecastTimeSeries
     
     Args:
-        dataLibrary (Any): dataLibrary
+        dataLibrary ('TimeSeriesLibrary'): dataLibrary
         dataId (str): dataId
     
     Returns:
-        (Any): returned result
+        ('EnsembleForecastTimeSeries'): returned result
     
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
@@ -361,13 +374,13 @@ def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary:Any, dataId:str) -> Any:
 
 
 @check_exceptions
-def SaveSingleTimeSeriesToNetcdf_py(timeSeries:Any, filename:str, overwrite:bool) -> None:
+def SaveSingleTimeSeriesToNetcdf_py(timeSeries:'TimeSeries', filename:str, overwrite:bool) -> None:
     """SaveSingleTimeSeriesToNetcdf_py
     
     SaveSingleTimeSeriesToNetcdf_py: generated wrapper function for API function SaveSingleTimeSeriesToNetcdf
     
     Args:
-        timeSeries (Any): timeSeries
+        timeSeries ('TimeSeries'): timeSeries
         filename (str): filename
         overwrite (bool): overwrite
     
@@ -379,13 +392,13 @@ def SaveSingleTimeSeriesToNetcdf_py(timeSeries:Any, filename:str, overwrite:bool
 
 
 @check_exceptions
-def SaveEnsembleTimeSeriesToNetcdf_py(collection:Any, filename:str, overwrite:bool) -> None:
+def SaveEnsembleTimeSeriesToNetcdf_py(collection:'EnsemblePtrTimeSeries', filename:str, overwrite:bool) -> None:
     """SaveEnsembleTimeSeriesToNetcdf_py
     
     SaveEnsembleTimeSeriesToNetcdf_py: generated wrapper function for API function SaveEnsembleTimeSeriesToNetcdf
     
     Args:
-        collection (Any): collection
+        collection ('EnsemblePtrTimeSeries'): collection
         filename (str): filename
         overwrite (bool): overwrite
     
@@ -397,13 +410,13 @@ def SaveEnsembleTimeSeriesToNetcdf_py(collection:Any, filename:str, overwrite:bo
 
 
 @check_exceptions
-def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs:Any, filename:str, overwrite:bool) -> None:
+def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs:'EnsembleForecastTimeSeries', filename:str, overwrite:bool) -> None:
     """SaveEnsembleForecastTimeSeriesToNetcdf_py
     
     SaveEnsembleForecastTimeSeriesToNetcdf_py: generated wrapper function for API function SaveEnsembleForecastTimeSeriesToNetcdf
     
     Args:
-        tsEnsTs (Any): tsEnsTs
+        tsEnsTs ('EnsembleForecastTimeSeries'): tsEnsTs
         filename (str): filename
         overwrite (bool): overwrite
     
@@ -415,13 +428,13 @@ def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs:Any, filename:str, overwri
 
 
 @check_exceptions
-def IsMissingValueItemEnsembleForecastTimeSeries_py(series:Any, i:int) -> bool:
+def IsMissingValueItemEnsembleForecastTimeSeries_py(series:'EnsembleForecastTimeSeries', i:int) -> bool:
     """IsMissingValueItemEnsembleForecastTimeSeries_py
     
     IsMissingValueItemEnsembleForecastTimeSeries_py: generated wrapper function for API function IsMissingValueItemEnsembleForecastTimeSeries
     
     Args:
-        series (Any): series
+        series ('EnsembleForecastTimeSeries'): series
         i (int): i
     
     Returns:
@@ -434,17 +447,17 @@ def IsMissingValueItemEnsembleForecastTimeSeries_py(series:Any, i:int) -> bool:
 
 
 @check_exceptions
-def GetItemEnsembleForecastTimeSeries_py(efts:Any, i:int) -> Any:
+def GetItemEnsembleForecastTimeSeries_py(efts:'EnsembleForecastTimeSeries', i:int) -> 'EnsemblePtrTimeSeries':
     """GetItemEnsembleForecastTimeSeries_py
     
     GetItemEnsembleForecastTimeSeries_py: generated wrapper function for API function GetItemEnsembleForecastTimeSeries
     
     Args:
-        efts (Any): efts
+        efts ('EnsembleForecastTimeSeries'): efts
         i (int): i
     
     Returns:
-        (Any): returned result
+        ('EnsemblePtrTimeSeries'): returned result
     
     """
     efts_xptr = wrap_as_pointer_handle(efts)
@@ -453,17 +466,17 @@ def GetItemEnsembleForecastTimeSeries_py(efts:Any, i:int) -> Any:
 
 
 @check_exceptions
-def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs:Any, index:int) -> Any:
+def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs:'EnsemblePtrTimeSeries', index:int) -> 'TimeSeries':
     """TimeSeriesFromEnsembleOfTimeSeries_py
     
     TimeSeriesFromEnsembleOfTimeSeries_py: generated wrapper function for API function TimeSeriesFromEnsembleOfTimeSeries
     
     Args:
-        collectionTs (Any): collectionTs
+        collectionTs ('EnsemblePtrTimeSeries'): collectionTs
         index (int): index
     
     Returns:
-        (Any): returned result
+        ('TimeSeries'): returned result
     
     """
     collectionTs_xptr = wrap_as_pointer_handle(collectionTs)
@@ -472,18 +485,18 @@ def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs:Any, index:int) -> Any:
 
 
 @check_exceptions
-def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts:Any, indexInIssueTime:int, indexInForecastTime:int) -> Any:
+def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts:'EnsembleForecastTimeSeries', indexInIssueTime:int, indexInForecastTime:int) -> 'TimeSeries':
     """TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py
     
     TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py: generated wrapper function for API function TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries
     
     Args:
-        efts (Any): efts
+        efts ('EnsembleForecastTimeSeries'): efts
         indexInIssueTime (int): indexInIssueTime
         indexInForecastTime (int): indexInForecastTime
     
     Returns:
-        (Any): returned result
+        ('TimeSeries'): returned result
     
     """
     efts_xptr = wrap_as_pointer_handle(efts)
@@ -492,13 +505,13 @@ def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts:Any, indexInIssueTime
 
 
 @check_exceptions
-def GetValueFromUnivariateTimeSeries_py(ts:Any, index:int) -> float:
+def GetValueFromUnivariateTimeSeries_py(ts:'TimeSeries', index:int) -> float:
     """GetValueFromUnivariateTimeSeries_py
     
     GetValueFromUnivariateTimeSeries_py: generated wrapper function for API function GetValueFromUnivariateTimeSeries
     
     Args:
-        ts (Any): ts
+        ts ('TimeSeries'): ts
         index (int): index
     
     Returns:
@@ -511,13 +524,13 @@ def GetValueFromUnivariateTimeSeries_py(ts:Any, index:int) -> float:
 
 
 @check_exceptions
-def TransformEachItem_py(tsEnsTs:Any, method:str, methodArgument:str) -> None:
+def TransformEachItem_py(tsEnsTs:'EnsembleForecastTimeSeries', method:str, methodArgument:str) -> None:
     """TransformEachItem_py
     
     TransformEachItem_py: generated wrapper function for API function TransformEachItem
     
     Args:
-        tsEnsTs (Any): tsEnsTs
+        tsEnsTs ('EnsembleForecastTimeSeries'): tsEnsTs
         method (str): method
         methodArgument (str): methodArgument
     
@@ -531,13 +544,13 @@ def TransformEachItem_py(tsEnsTs:Any, method:str, methodArgument:str) -> None:
 
 
 @check_exceptions
-def SetValueToUnivariateTimeSeries_py(ts:Any, index:int, value:float) -> None:
+def SetValueToUnivariateTimeSeries_py(ts:'TimeSeries', index:int, value:float) -> None:
     """SetValueToUnivariateTimeSeries_py
     
     SetValueToUnivariateTimeSeries_py: generated wrapper function for API function SetValueToUnivariateTimeSeries
     
     Args:
-        ts (Any): ts
+        ts ('TimeSeries'): ts
         index (int): index
         value (float): value
     
@@ -547,13 +560,13 @@ def SetValueToUnivariateTimeSeries_py(ts:Any, index:int, value:float) -> None:
 
 
 @check_exceptions
-def GetItemEnsembleForecastTimeSeriesAsStructure_py(series:Any, i:int) -> xr.DataArray:
+def GetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTimeSeries', i:int) -> xr.DataArray:
     """GetItemEnsembleForecastTimeSeriesAsStructure_py
     
     GetItemEnsembleForecastTimeSeriesAsStructure_py: generated wrapper function for API function GetItemEnsembleForecastTimeSeriesAsStructure
     
     Args:
-        series (Any): series
+        series ('EnsembleForecastTimeSeries'): series
         i (int): i
     
     Returns:
@@ -566,13 +579,13 @@ def GetItemEnsembleForecastTimeSeriesAsStructure_py(series:Any, i:int) -> xr.Dat
 
 
 @check_exceptions
-def GetItemEnsembleTimeSeriesAsStructure_py(series:Any, i:int) -> xr.DataArray:
+def GetItemEnsembleTimeSeriesAsStructure_py(series:'EnsemblePtrTimeSeries', i:int) -> xr.DataArray:
     """GetItemEnsembleTimeSeriesAsStructure_py
     
     GetItemEnsembleTimeSeriesAsStructure_py: generated wrapper function for API function GetItemEnsembleTimeSeriesAsStructure
     
     Args:
-        series (Any): series
+        series ('EnsemblePtrTimeSeries'): series
         i (int): i
     
     Returns:
@@ -585,13 +598,13 @@ def GetItemEnsembleTimeSeriesAsStructure_py(series:Any, i:int) -> xr.DataArray:
 
 
 @check_exceptions
-def SetItemEnsembleForecastTimeSeriesAsStructure_py(series:Any, i:int, values:xr.DataArray) -> None:
+def SetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTimeSeries', i:int, values:xr.DataArray) -> None:
     """SetItemEnsembleForecastTimeSeriesAsStructure_py
     
     SetItemEnsembleForecastTimeSeriesAsStructure_py: generated wrapper function for API function SetItemEnsembleForecastTimeSeriesAsStructure
     
     Args:
-        series (Any): series
+        series ('EnsembleForecastTimeSeries'): series
         i (int): i
         values (xr.DataArray): values
     
@@ -603,13 +616,13 @@ def SetItemEnsembleForecastTimeSeriesAsStructure_py(series:Any, i:int, values:xr
 
 
 @check_exceptions
-def SetItemEnsembleTimeSeriesAsStructure_py(collection:Any, i:int, values:xr.DataArray) -> None:
+def SetItemEnsembleTimeSeriesAsStructure_py(collection:'EnsemblePtrTimeSeries', i:int, values:xr.DataArray) -> None:
     """SetItemEnsembleTimeSeriesAsStructure_py
     
     SetItemEnsembleTimeSeriesAsStructure_py: generated wrapper function for API function SetItemEnsembleTimeSeriesAsStructure
     
     Args:
-        collection (Any): collection
+        collection ('EnsemblePtrTimeSeries'): collection
         i (int): i
         values (xr.DataArray): values
     
@@ -621,13 +634,13 @@ def SetItemEnsembleTimeSeriesAsStructure_py(collection:Any, i:int, values:xr.Dat
 
 
 @check_exceptions
-def CreatePerfectForecastTimeSeries_py(observations:Any, start:datetime, length:int, timeStepName:str, offsetForecasts:int, leadTime:int) -> Any:
+def CreatePerfectForecastTimeSeries_py(observations:'TimeSeries', start:datetime, length:int, timeStepName:str, offsetForecasts:int, leadTime:int) -> 'EnsembleForecastTimeSeries':
     """CreatePerfectForecastTimeSeries_py
     
     CreatePerfectForecastTimeSeries_py: generated wrapper function for API function CreatePerfectForecastTimeSeries
     
     Args:
-        observations (Any): observations
+        observations ('TimeSeries'): observations
         start (datetime): start
         length (int): length
         timeStepName (str): timeStepName
@@ -635,7 +648,7 @@ def CreatePerfectForecastTimeSeries_py(observations:Any, start:datetime, length:
         leadTime (int): leadTime
     
     Returns:
-        (Any): returned result
+        ('EnsembleForecastTimeSeries'): returned result
     
     """
     observations_xptr = wrap_as_pointer_handle(observations)
@@ -648,13 +661,13 @@ def CreatePerfectForecastTimeSeries_py(observations:Any, start:datetime, length:
 
 
 @check_exceptions
-def ToStructEnsembleTimeSeriesData_py(ensSeries:Any) -> xr.DataArray:
+def ToStructEnsembleTimeSeriesData_py(ensSeries:'EnsemblePtrTimeSeries') -> xr.DataArray:
     """ToStructEnsembleTimeSeriesData_py
     
     ToStructEnsembleTimeSeriesData_py: generated wrapper function for API function ToStructEnsembleTimeSeriesData
     
     Args:
-        ensSeries (Any): ensSeries
+        ensSeries ('EnsemblePtrTimeSeries'): ensSeries
     
     Returns:
         (xr.DataArray): returned result
@@ -666,13 +679,13 @@ def ToStructEnsembleTimeSeriesData_py(ensSeries:Any) -> xr.DataArray:
 
 
 @check_exceptions
-def ToStructSingleTimeSeriesData_py(timeSeries:Any) -> xr.DataArray:
+def ToStructSingleTimeSeriesData_py(timeSeries:'TimeSeries') -> xr.DataArray:
     """ToStructSingleTimeSeriesData_py
     
     ToStructSingleTimeSeriesData_py: generated wrapper function for API function ToStructSingleTimeSeriesData
     
     Args:
-        timeSeries (Any): timeSeries
+        timeSeries ('TimeSeries'): timeSeries
     
     Returns:
         (xr.DataArray): returned result
@@ -684,7 +697,7 @@ def ToStructSingleTimeSeriesData_py(timeSeries:Any) -> xr.DataArray:
 
 
 @check_exceptions
-def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> Any:
+def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> 'EnsemblePtrTimeSeries':
     """CreateEnsembleTimeSeriesDataFromStruct_py
     
     CreateEnsembleTimeSeriesDataFromStruct_py: generated wrapper function for API function CreateEnsembleTimeSeriesDataFromStruct
@@ -693,7 +706,7 @@ def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> Any:
         ensSeries (xr.DataArray): ensSeries
     
     Returns:
-        (Any): returned result
+        ('EnsemblePtrTimeSeries'): returned result
     
     """
     ensSeries_tsd_ptr = marshal.as_native_time_series(ensSeries)
@@ -703,7 +716,7 @@ def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> Any:
 
 
 @check_exceptions
-def CreateSingleTimeSeriesDataFromStruct_py(timeSeries:xr.DataArray) -> Any:
+def CreateSingleTimeSeriesDataFromStruct_py(timeSeries:xr.DataArray) -> 'TimeSeries':
     """CreateSingleTimeSeriesDataFromStruct_py
     
     CreateSingleTimeSeriesDataFromStruct_py: generated wrapper function for API function CreateSingleTimeSeriesDataFromStruct
@@ -712,7 +725,7 @@ def CreateSingleTimeSeriesDataFromStruct_py(timeSeries:xr.DataArray) -> Any:
         timeSeries (xr.DataArray): timeSeries
     
     Returns:
-        (Any): returned result
+        ('TimeSeries'): returned result
     
     """
     timeSeries_tsd_ptr = marshal.as_native_time_series(timeSeries)
@@ -735,13 +748,13 @@ def DisposeMultiTimeSeriesData_py(data:xr.DataArray) -> None:
 
 
 @check_exceptions
-def GetTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometryNative) -> None:
+def GetTimeSeriesGeometry_py(timeSeries:'TimeSeries', geom:TimeSeriesGeometryNative) -> None:
     """GetTimeSeriesGeometry_py
     
     GetTimeSeriesGeometry_py: generated wrapper function for API function GetTimeSeriesGeometry
     
     Args:
-        timeSeries (Any): timeSeries
+        timeSeries ('TimeSeries'): timeSeries
         geom (TimeSeriesGeometryNative): geom
     
     """
@@ -751,13 +764,13 @@ def GetTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometryNative) -> N
 
 
 @check_exceptions
-def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeometryNative) -> None:
+def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:'EnsembleForecastTimeSeries', geom:TimeSeriesGeometryNative) -> None:
     """GetEnsembleForecastTimeSeriesGeometry_py
     
     GetEnsembleForecastTimeSeriesGeometry_py: generated wrapper function for API function GetEnsembleForecastTimeSeriesGeometry
     
     Args:
-        timeSeries (Any): timeSeries
+        timeSeries ('EnsembleForecastTimeSeries'): timeSeries
         geom (TimeSeriesGeometryNative): geom
     
     """
@@ -767,13 +780,13 @@ def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:Any, geom:TimeSeriesGeom
 
 
 @check_exceptions
-def GetTimeSeriesValues_py(timeSeries:Any, values:np.ndarray, arrayLength:int) -> None:
+def GetTimeSeriesValues_py(timeSeries:'TimeSeries', values:np.ndarray, arrayLength:int) -> None:
     """GetTimeSeriesValues_py
     
     GetTimeSeriesValues_py: generated wrapper function for API function GetTimeSeriesValues
     
     Args:
-        timeSeries (Any): timeSeries
+        timeSeries ('TimeSeries'): timeSeries
         values (np.ndarray): values
         arrayLength (int): arrayLength
     
@@ -801,13 +814,13 @@ def GetNumTimeSeries_py() -> int:
 
 
 @check_exceptions
-def GetProviderTsGeometry_py(dataLibrary:Any, variableIdentifier:str, geom:TimeSeriesGeometryNative) -> None:
+def GetProviderTsGeometry_py(dataLibrary:'TimeSeriesProvider', variableIdentifier:str, geom:TimeSeriesGeometryNative) -> None:
     """GetProviderTsGeometry_py
     
     GetProviderTsGeometry_py: generated wrapper function for API function GetProviderTsGeometry
     
     Args:
-        dataLibrary (Any): dataLibrary
+        dataLibrary ('TimeSeriesProvider'): dataLibrary
         variableIdentifier (str): variableIdentifier
         geom (TimeSeriesGeometryNative): geom
     
@@ -820,13 +833,13 @@ def GetProviderTsGeometry_py(dataLibrary:Any, variableIdentifier:str, geom:TimeS
 
 
 @check_exceptions
-def GetProviderTimeSeriesValues_py(dataLibrary:Any, variableIdentifier:str, values:np.ndarray, arrayLength:int) -> None:
+def GetProviderTimeSeriesValues_py(dataLibrary:'TimeSeriesProvider', variableIdentifier:str, values:np.ndarray, arrayLength:int) -> None:
     """GetProviderTimeSeriesValues_py
     
     GetProviderTimeSeriesValues_py: generated wrapper function for API function GetProviderTimeSeriesValues
     
     Args:
-        dataLibrary (Any): dataLibrary
+        dataLibrary ('TimeSeriesProvider'): dataLibrary
         variableIdentifier (str): variableIdentifier
         values (np.ndarray): values
         arrayLength (int): arrayLength
@@ -841,7 +854,7 @@ def GetProviderTimeSeriesValues_py(dataLibrary:Any, variableIdentifier:str, valu
 
 
 
-def GetProviderTimeSeriesIdentifiers_py(dataLibrary:Any):
+def GetProviderTimeSeriesIdentifiers_py(dataLibrary:'TimeSeriesProvider'):
     """GetProviderTimeSeriesIdentifiers_py
     
     GetProviderTimeSeriesIdentifiers_py: generated wrapper function for API function GetProviderTimeSeriesIdentifiers
@@ -859,17 +872,17 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary:Any):
     return result
 
 @check_exceptions
-def TimeSeriesFromProviderTs_py(dataLibrary:Any, variableIdentifier:str) -> Any:
+def TimeSeriesFromProviderTs_py(dataLibrary:'TimeSeriesProvider', variableIdentifier:str) -> 'TimeSeries':
     """TimeSeriesFromProviderTs_py
     
     TimeSeriesFromProviderTs_py: generated wrapper function for API function TimeSeriesFromProviderTs
     
     Args:
-        dataLibrary (Any): dataLibrary
+        dataLibrary ('TimeSeriesProvider'): dataLibrary
         variableIdentifier (str): variableIdentifier
     
     Returns:
-        (Any): returned result
+        ('TimeSeries'): returned result
     
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)

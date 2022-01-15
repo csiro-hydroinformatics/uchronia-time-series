@@ -126,16 +126,16 @@ if __name__ == "__main__":
 # DeleteAnsiStringArray_py(values, arrayLength):
 # DeleteAnsiString_py(value):
 # DeleteDoubleArray_py(value):
-# LoadEnsembleDataset_py(libraryIdentifier, dataPath):
-# GetEnsembleDatasetDataIdentifiers_py(dataLibrary):
-# GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary, dataCollectionId):
-# GetEnsembleDatasetDataSummaries_py(dataLibrary):
-# GetDataDimensionsDescription_py(dataLibrary, dataId):
+# LoadEnsembleDataset_py(libraryIdentifier, data_path):
+# GetEnsembleDatasetDataIdentifiers_py(data_library):
+# GetEnsembleDatasetDataSubIdentifiers_py(data_library, dataCollectionId):
+# GetEnsembleDatasetDataSummaries_py(data_library):
+# GetDataDimensionsDescription_py(data_library, data_id):
 # EnsembleSizeEnsembleTimeSeries_py(ensSeries):
 # DisposeDataDimensionsDescriptions_py(data):
-# GetDatasetSingleTimeSeries_py(dataLibrary, dataId):
-# GetDatasetEnsembleTimeSeries_py(dataLibrary, dataEnsembleId):
-# GetDatasetEnsembleForecastTimeSeries_py(dataLibrary, dataId):
+# GetDatasetSingleTimeSeries_py(data_library, data_id):
+# GetDatasetEnsembleTimeSeries_py(data_library, dataEnsembleId):
+# GetDatasetEnsembleForecastTimeSeries_py(data_library, data_id):
 # SaveSingleTimeSeriesToNetcdf_py(timeSeries, filename, overwrite):
 # SaveEnsembleTimeSeriesToNetcdf_py(collection, filename, overwrite):
 # SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs, filename, overwrite):
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 # GetEnsembleForecastTimeSeriesGeometry_py(timeSeries, geom):
 # GetTimeSeriesValues_py(timeSeries, values, arrayLength):
 # GetNumTimeSeries_py():
-# GetProviderTsGeometry_py(dataLibrary, variable_identifier, geom):
-# GetProviderTimeSeriesValues_py(dataLibrary, variable_identifier, values, arrayLength):
-# GetProviderTimeSeriesIdentifiers_py(dataLibrary):
-# TimeSeriesFromProviderTs_py(dataLibrary, variable_identifier):
+# GetProviderTsGeometry_py(data_library, variable_identifier, geom):
+# GetProviderTimeSeriesValues_py(data_library, variable_identifier, values, arrayLength):
+# GetProviderTimeSeriesIdentifiers_py(data_library):
+# TimeSeriesFromProviderTs_py(data_library, variable_identifier):
