@@ -5,10 +5,13 @@
 # 
 ##################
 
+import xarray as xr
+import pandas as pd
+import numpy as np
 from typing import TYPE_CHECKING, Dict, List, Tuple, Any
 from datetime import datetime
-from refcount.interop import CffiData, OwningCffiNativeHandle, wrap_as_pointer_handle
-from cinterop.cffi.marshal import as_bytes
+from refcount.interop import CffiData, OwningCffiNativeHandle, DeletableCffiNativeHandle, wrap_as_pointer_handle
+from cinterop.cffi.marshal import as_bytes, TimeSeriesGeometryNative
 from uchronia.wrap.ffi_interop import marshal, uchronia_so, check_exceptions
 from uchronia.classes import wrap_cffi_native_handle
 
@@ -20,9 +23,8 @@ if TYPE_CHECKING:
         TimeSeries,
         EnsemblePtrTimeSeries,
         TimeSeriesProvider,
-)
-import xarray as xr
-import pandas as pd
+    )
+
 
 def custom_wrap_cffi_native_handle(obj, type_id="", release_native = None):
     '''Create a wrapper around a cffi pointer (if this is one), 
