@@ -17,7 +17,17 @@ class TimeSeriesProvider(DeletableCffiNativeHandle):
             handle, release_native, type_id, prior_ref_count
         )
 
-class EnsembleForecastTimeSeries(DeletableCffiNativeHandle):
+
+class TimeSeriesMixin:
+    def __init__(self):
+        super(TimeSeriesMixin, self).__init__(
+        )
+
+    def get_item(self, i:int, convert_to_xr=True):
+        import uchronia.uchronia_time_series as uts
+        return uts.get_item(self, i, convert_to_xr)
+
+class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
     def __init__(
         self,
         handle: CffiData,
@@ -29,8 +39,7 @@ class EnsembleForecastTimeSeries(DeletableCffiNativeHandle):
             handle, release_native, type_id, prior_ref_count
         )
 
-
-class EnsembleTimeSeries(DeletableCffiNativeHandle):
+class EnsembleTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
     def __init__(
         self,
         handle: CffiData,
@@ -56,7 +65,7 @@ class TimeSeriesLibrary(DeletableCffiNativeHandle):
         )
 
 
-class TimeSeries(DeletableCffiNativeHandle):
+class TimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
     def __init__(
         self,
         handle: CffiData,
@@ -67,8 +76,6 @@ class TimeSeries(DeletableCffiNativeHandle):
         super(TimeSeries, self).__init__(
             handle, release_native, type_id, prior_ref_count
         )
-
-
 class EnsemblePtrTimeSeries(DeletableCffiNativeHandle):
     def __init__(
         self,
