@@ -13,7 +13,8 @@ from datetime import datetime
 from refcount.interop import CffiData, OwningCffiNativeHandle, DeletableCffiNativeHandle, wrap_as_pointer_handle
 from cinterop.cffi.marshal import as_bytes, TimeSeriesGeometryNative
 from uchronia.wrap.ffi_interop import marshal, uchronia_so, check_exceptions
-from uchronia.classes import wrap_cffi_native_handle
+# phase out importing from uchronia.classes, to prevent cyclic imports
+# from uchronia.classes import wrap_cffi_native_handle
 
 if TYPE_CHECKING:
     from uchronia.classes import (
@@ -25,14 +26,23 @@ if TYPE_CHECKING:
         TimeSeriesProvider,
     )
 
+    from refcount.interop import WrapperCreationFunction
 
-def custom_wrap_cffi_native_handle(obj, type_id="", release_native = None):
+__wrap_cffi_native_handle:'WrapperCreationFunction'=None
+
+def set_wrap_cffi_native_handle(wrapper_function:'WrapperCreationFunction'):
+    global __wrap_cffi_native_handle
+    __wrap_cffi_native_handle = wrapper_function
+
+def custom_wrap_cffi_native_handle(obj, type_id='', release_native = None):
     '''Create a wrapper around a cffi pointer (if this is one), 
     with the suitable native release function call specific to this external pointer. 
     '''
+    if __wrap_cffi_native_handle is None:
+        raise RuntimeError('The function creating custom wrappers around native objects is None: you must use set_wrap_cffi_native_handle to initialise it')
     if release_native is None:
         release_native = DisposeSharedPointer_py
-    return wrap_cffi_native_handle(obj, type_id, release_native)
+    return __wrap_cffi_native_handle(obj, type_id, release_native)
 
 def charp_array_to_py(values:CffiData, size:int, dispose:bool=True) -> List[str]:
     pystrings = marshal.c_charptrptr_as_string_list(values, size)
@@ -82,7 +92,6 @@ def toSceParametersNative(x:dict) -> OwningCffiNativeHandle:
     p.ReflectionRatio = float(x['ReflectionRatio'])
     p.ContractionRatio = float(x['ContractionRatio'])
     return res
-
 
 @check_exceptions
 def GetLastStdExceptionMessage_py() -> str:

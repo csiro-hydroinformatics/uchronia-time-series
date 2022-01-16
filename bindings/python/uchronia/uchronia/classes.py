@@ -1,9 +1,9 @@
 from typing import Any, Callable, Dict, List, OrderedDict, Sequence
-from refcount.interop import DeletableCffiNativeHandle, CffiData, CffiWrapperFactory
-import uchronia.wrap.uchronia_wrap_generated as uwg
-
 from cffi import FFI
+from refcount.interop import DeletableCffiNativeHandle, CffiData, CffiWrapperFactory
 from cinterop.cffi.marshal import ConvertibleToTimestamp
+
+import uchronia.wrap.uchronia_wrap_generated as uwg
 
 class TimeSeriesProvider(DeletableCffiNativeHandle):
     def __init__(
@@ -106,3 +106,5 @@ def wrap_cffi_native_handle(obj: Any, type_id: str, release_native: Callable):
     if not isinstance(obj, FFI.CData):
         return obj
     return _create_wrapper(obj, type_id, release_native)
+
+uwg.set_wrap_cffi_native_handle(wrapper_function=wrap_cffi_native_handle)
