@@ -2,7 +2,6 @@
     Wrapper around the uchronia C API functions using CFFI.
 """
 from functools import wraps
-import sys
 from cffi import FFI
 import os
 
@@ -11,25 +10,6 @@ from refcount.putils import *
 
 from cinterop.cffi.marshal import *
 
-# TODO: consider refactoring to refcount?
-def build_new_path_env (from_env='LIBRARY_PATH', to_env='PATH'):
-    startup_msg = ''
-    if(sys.platform == 'win32'):
-        path_sep = ';'
-        shared_lib_paths = os.environ.get(from_env)
-        if(shared_lib_paths is not None):
-            # startup_msg = appendstartup_msg(paste0('Found env var ', from_env, '=', shared_lib_paths), startup_msg)
-            arch = os.environ["PROCESSOR_ARCHITECTURE"]
-            if arch == 'AMD64':
-                subfolder = '64'
-            else:
-                subfolder = '32'
-            shared_lib_paths_vec = shared_lib_paths.split(path_sep)
-            return prepend_path_env(shared_lib_paths_vec, subfolder, to_env=to_env)
-
-def update_path_windows (from_env='LIBRARY_PATH', to_env='PATH'):
-    if(sys.platform == 'win32'):
-        os.environ[to_env] = build_new_path_env(from_env, to_env)
 
 uchronia_ffi = FFI()
 here = os.path.abspath(os.path.dirname(__file__))
@@ -43,8 +23,8 @@ with open(os.path.join(cdefs_dir, 'structs_cdef.h')) as f_headers:
 with open(os.path.join(cdefs_dir, 'funcs_cdef.h')) as f_headers:
     uchronia_ffi.cdef(f_headers.read())
 
-update_path_windows()
 short_fname = library_short_filename('datatypes')
+update_path_windows(from_env='LIBRARY_PATH', to_env='PATH', lib_short_fname=short_fname)
 # TODO is there a concrete use case to search custom paths and not let dlopen do its default??
 # long_fname = find_first_full_path(short_fname, "uchronia")
 long_fname = short_fname
