@@ -44,8 +44,8 @@ def get_multiple_time_series_from_provider(ts_provider, var_ids, api_get_ts_func
 #'  (ensFcast = uchronia::get_dataset(dataSet, "pet_fcast_ens"))
 #'  plot(as_xarray(univTs))
 #'  zoo::plot.zoo(as_xarray(multivTs))
-#'  ## precip_ids = paste( 'subarea', getSubareaIds(simulation), 'P', sep='.')
-#'  ## evapIds = paste( 'subarea', getSubareaIds(simulation), 'E', sep='.')
+#'  ## precip_ids = paste( 'subarea', get_subarea_ids(simulation), 'P', sep='.')
+#'  ## evapIds = paste( 'subarea', get_subarea_ids(simulation), 'E', sep='.')
 #'  ## swift::playInputs(simulation, dataSet, precip_ids, rep('rain_obs', length(precip_ids)))
 #'  ## swift::playInputs(simulation, dataSet, evapIds, rep('pet_obs', length(evapIds)), 'daily_to_hourly')
 #' }
