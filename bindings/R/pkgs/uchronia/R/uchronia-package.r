@@ -33,7 +33,8 @@
 #' }
 #'
 #' @import msvs
-#' @import cinterop
+#' @import cinteropRcpp
+#' @import 
 #'
 #' @name uchronia-package
 #' @aliases uchronia
