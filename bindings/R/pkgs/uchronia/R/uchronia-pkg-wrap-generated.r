@@ -3,6 +3,10 @@
 # *** THIS FILE IS GENERATED ****
 # DO NOT MODIFY IT MANUALLY, AS YOU ARE VERY LIKELY TO LOSE WORK
 # 
+# Generated at 2022-04-22 08:26 UTC with Created by F# script gen_r_uchronia.fsx in cruise-control
+#
+# Generated from the custom Rcpp API C:\src\datatypes\bindings\R\pkgs\uchronia\src\rcpp_custom.cpp
+#
 ##################
 
 #' RegisterExceptionCallback_Pkg_R
