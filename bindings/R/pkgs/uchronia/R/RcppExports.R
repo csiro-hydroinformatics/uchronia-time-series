@@ -41,14 +41,6 @@ RegisterExceptionCallback_Rcpp <- function(callback) {
     invisible(.Call('_uchronia_RegisterExceptionCallback_Rcpp', PACKAGE = 'uchronia_r', callback))
 }
 
-DisposeSharedPointer_Rcpp <- function(ptr) {
-    invisible(.Call('_uchronia_DisposeSharedPointer_Rcpp', PACKAGE = 'uchronia_r', ptr))
-}
-
-DeleteDoubleArray_Rcpp <- function(value) {
-    invisible(.Call('_uchronia_DeleteDoubleArray_Rcpp', PACKAGE = 'uchronia_r', value))
-}
-
 SetTimeSeriesMissingValueValue_Rcpp <- function(missingValueValue) {
     invisible(.Call('_uchronia_SetTimeSeriesMissingValueValue_Rcpp', PACKAGE = 'uchronia_r', missingValueValue))
 }

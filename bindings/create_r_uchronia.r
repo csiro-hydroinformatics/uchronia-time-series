@@ -1,6 +1,6 @@
 
 library(capigen)
-load_wrapper_gen_lib('c:/src/github_jm/rcpp-wrapper-generation')
+load_wrapper_gen_lib('c:/src/github_jm/c-api-wrapper-generation')
 uchroniaSrcPath <- 'c:/src/csiro/stash/datatypes'
 
 # For R:

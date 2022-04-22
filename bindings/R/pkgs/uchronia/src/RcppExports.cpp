@@ -12,6 +12,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // RegisterExceptionCallback_Pkg
 void RegisterExceptionCallback_Pkg();
 RcppExport SEXP _uchronia_RegisterExceptionCallback_Pkg() {
@@ -118,26 +123,6 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type callback(callbackSEXP);
     RegisterExceptionCallback_Rcpp(callback);
-    return R_NilValue;
-END_RCPP
-}
-// DisposeSharedPointer_Rcpp
-void DisposeSharedPointer_Rcpp(XPtr<opaque_pointer_handle> ptr);
-RcppExport SEXP _uchronia_DisposeSharedPointer_Rcpp(SEXP ptrSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< XPtr<opaque_pointer_handle> >::type ptr(ptrSEXP);
-    DisposeSharedPointer_Rcpp(ptr);
-    return R_NilValue;
-END_RCPP
-}
-// DeleteDoubleArray_Rcpp
-void DeleteDoubleArray_Rcpp(NumericVector value);
-RcppExport SEXP _uchronia_DeleteDoubleArray_Rcpp(SEXP valueSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type value(valueSEXP);
-    DeleteDoubleArray_Rcpp(value);
     return R_NilValue;
 END_RCPP
 }
@@ -565,8 +550,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_uchronia_GetDatasetFromLibrary_Pkg", (DL_FUNC) &_uchronia_GetDatasetFromLibrary_Pkg, 2},
     {"_uchronia_GetLastStdExceptionMessage_Rcpp", (DL_FUNC) &_uchronia_GetLastStdExceptionMessage_Rcpp, 0},
     {"_uchronia_RegisterExceptionCallback_Rcpp", (DL_FUNC) &_uchronia_RegisterExceptionCallback_Rcpp, 1},
-    {"_uchronia_DisposeSharedPointer_Rcpp", (DL_FUNC) &_uchronia_DisposeSharedPointer_Rcpp, 1},
-    {"_uchronia_DeleteDoubleArray_Rcpp", (DL_FUNC) &_uchronia_DeleteDoubleArray_Rcpp, 1},
     {"_uchronia_SetTimeSeriesMissingValueValue_Rcpp", (DL_FUNC) &_uchronia_SetTimeSeriesMissingValueValue_Rcpp, 1},
     {"_uchronia_LoadEnsembleDataset_Rcpp", (DL_FUNC) &_uchronia_LoadEnsembleDataset_Rcpp, 2},
     {"_uchronia_CreateEnsembleDataset_Rcpp", (DL_FUNC) &_uchronia_CreateEnsembleDataset_Rcpp, 1},

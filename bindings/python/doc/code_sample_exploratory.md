@@ -2,7 +2,7 @@
 ```R
 library(capigen) # or load_all
 sessionInfo()
-load_wrapper_gen_lib('c:/src/github_jm/rcpp-wrapper-generation')
+load_wrapper_gen_lib('c:/src/github_jm/c-api-wrapper-generation')
 uchroniaSrcPath <- 'c:/src/csiro/stash/datatypes'
 
 conv <- create_py_cffi_wrap_generator()

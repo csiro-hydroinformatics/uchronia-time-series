@@ -5,7 +5,7 @@ root_os_src <- 'c:/src/github_jm'
 
 load_all(file.path(root_src, 'c-api-bindings/codegen/capimatlabgen'))
 load_all(file.path(root_src, 'c-api-bindings/codegen/capigen'))
-wgenDir = 'c:/src/github_jm/rcpp-wrapper-generation'
+wgenDir = 'c:/src/github_jm/c-api-wrapper-generation'
 list.files(wgenDir)
 load_wrapper_gen_lib(wgenDir = wgenDir)
 
