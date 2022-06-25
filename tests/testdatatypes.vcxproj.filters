@@ -15,28 +15,31 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="common_datatypes.h" >
+    <ClInclude Include="common_datatypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="basic_timeseries.cpp" >
+    <ClCompile Include="basic_timeseries.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="common_datatypes.cpp" >
+    <ClCompile Include="common_datatypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="datatypes_netcdf_tests.cpp" >
+    <ClCompile Include="datatypes_netcdf_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ensemble_timeseries.cpp" >
+    <ClCompile Include="ensemble_timeseries.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp" >
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="time_series_libraries.cpp" >
+    <ClCompile Include="time_series_libraries.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="create_swift_netcdf_ens_data.R" />
   </ItemGroup>
 </Project>
