@@ -14,7 +14,7 @@
 # ---
 
 # %%
-import uchronia.uchronia_data_set as uds
+import uchronia.data_set as uds
 
 # %%
 import os
@@ -51,7 +51,7 @@ multi_obs
 
 
 # %%
-import uchronia.uchronia_time_series as uts
+import uchronia.time_series as uts
 station_ids = uts.sub_identifiers(data_library, "var1_obs_collection")
 print(station_ids)
 

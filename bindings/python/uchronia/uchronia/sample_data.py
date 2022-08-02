@@ -1,6 +1,6 @@
 import os
 
-from uchronia.uchronia_data_set import get_ensemble_dataset
+from uchronia.data_set import get_ensemble_dataset
 
 def sample_data_dir(do_warn=True):
     """

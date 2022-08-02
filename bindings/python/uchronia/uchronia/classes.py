@@ -24,7 +24,7 @@ class TimeSeriesMixin:
         )
 
     def get_item(self, i:int, convert_to_xr=True):
-        import uchronia.uchronia_time_series as uts
+        import uchronia.time_series as uts
         return uts.get_item(self, i, convert_to_xr)
 
 class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):

@@ -1,7 +1,7 @@
 import pandas as pd
 from refcount.interop import DeletableCffiNativeHandle
-from uchronia.uchronia_data_set import as_xarray
-from uchronia.uchronia_internals import is_ensemble_time_series, is_singular_time_series, is_time_series_of_ensemble_time_series
+from uchronia.data_set import as_xarray
+from uchronia.internals import is_ensemble_time_series, is_singular_time_series, is_time_series_of_ensemble_time_series
 import uchronia.wrap.uchronia_wrap_generated as uwg
 import uchronia.wrap.uchronia_wrap_custom as uwc
 

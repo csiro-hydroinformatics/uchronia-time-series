@@ -1,10 +1,10 @@
 from typing import Any, Callable, Sequence
 from refcount.interop import is_cffi_native_handle
-from uchronia.uchronia_internals import internal_get_time_series_from_provider
+from uchronia.internals import internal_get_time_series_from_provider
 import uchronia.wrap.uchronia_wrap_generated as uwg
 import uchronia.wrap.uchronia_wrap_custom as uwc
 import os
-from uchronia.uchronia_internals import is_singular_time_series, is_ensemble_time_series
+from uchronia.internals import is_singular_time_series, is_ensemble_time_series
 import xarray as xr
 
 def get_multiple_time_series_from_provider(ts_provider:Any, var_ids:Sequence[str], api_get_ts_func:Callable) -> xr.DataArray:
@@ -29,7 +29,7 @@ def get_multiple_time_series_from_provider(ts_provider:Any, var_ids:Sequence[str
         }
 
     """
-    from uchronia.uchronia_internals import internal_get_multiple_time_series
+    from uchronia.internals import internal_get_multiple_time_series
     return internal_get_multiple_time_series(ts_provider, var_ids, api_get_ts_func)
 
 def get_ensemble_dataset(dataset_id='someId', data_path=''):
