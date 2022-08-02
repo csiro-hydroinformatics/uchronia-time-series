@@ -2,14 +2,19 @@ import os
 
 from uchronia.uchronia_data_set import get_ensemble_dataset
 
-#' Probe for the location of sample data directory (too big for package inclusion) 
-#' 
-#' Probe for the location of sample data directory (too big for package inclusion), defined by the SWIFT_SAMPLE_DATA_DIR environment variable.
-#' 
-#' @param do_warn issue a warning if SWIFT_SAMPLE_DATA_DIR env var is not set 
-#' @return a string
-#' @export
 def sample_data_dir(do_warn=True):
+    """
+    Probe for the location of sample data directory (too big for package inclusion)
+
+    Probe for the location of sample data directory (too big for package inclusion), defined by the SWIFT_SAMPLE_DATA_DIR environment variable.
+
+    Args:
+        doWarn (bool): issue a warning if SWIFT_SAMPLE_DATA_DIR env var is not set
+
+    Returns:
+        path to the sample data directory
+
+    """
     d = os.environ['SWIFT_SAMPLE_DATA_DIR']
     if do_warn:
         if not os.path.exists(d):
@@ -22,14 +27,19 @@ def has_sample_data():
     d = sample_data_dir(do_warn=False)
     return os.path.exists(d)
 
-#' Get one of the sample time series libraries included in this package 
-#' 
-#' Get one of the sample time series libraries included in this package 
-#' 
-#' @param ident an identifier for the library. Choice (case insensitive): 'Upper Murray', 'Stanley'
-#' @return a string
-#' @export
 def sample_time_series_library(ident:str):
+    """
+    Get one of the sample time series libraries included in this package
+
+    Get one of the sample time series libraries included in this package
+
+    Args:
+        ident (Any): an identifier for the library. Choice (case insensitive): 'Upper Murray', 'Stanley'
+
+    Returns:
+        a time series library
+
+    """
     ident = ident.lower()
     assert ident in ['upper murray', 'stanley']
     doc_data_path = sample_data_dir()

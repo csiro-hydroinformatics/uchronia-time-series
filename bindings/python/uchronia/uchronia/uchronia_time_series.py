@@ -1,25 +1,29 @@
-from datetime import datetime
 import pandas as pd
-from refcount.interop import CffiData, DeletableCffiNativeHandle
+from refcount.interop import DeletableCffiNativeHandle
 from uchronia.uchronia_data_set import as_xarray
-from uchronia.uchronia_internals import *
+from uchronia.uchronia_internals import is_ensemble_time_series, is_singular_time_series, is_time_series_of_ensemble_time_series
 import uchronia.wrap.uchronia_wrap_generated as uwg
 import uchronia.wrap.uchronia_wrap_custom as uwc
 
-#' Creates a POSIXct date/time object
-#'
-#' Creates a POSIXct date/time object, with a default UTC time zone and zeroes as default time arguments (i.e. midnight)
-#'
-#' @param year   integer
-#' @param month  integer
-#' @param day	   integer
-#' @param hour   integer
-#' @param min    integer
-#' @param sec	   numeric
-#' @param tz     character, A time zone specification to be used for the conversion. Defaults to UTC.
-#' @return a POSIXct date/time object
-#' @export
 def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
+    """
+    Creates a pandas Timestamp date/time object
+
+    Creates a pandas Timestamp date/time object, with a default UTC time zone and zeroes as default time arguments (i.e. midnight)
+
+    Args:
+        year (int): integer
+        month (int): integer
+        day (int): integer
+        hour (int): integer
+        min (int): integer
+        sec (int): numeric
+        tz (str): character, A time zone specification to be used for the conversion. Defaults to UTC.
+
+    Returns:
+        a pandas Timestamp date/time object
+
+    """
     return pd.Timestamp(year=year, month=month, day=day, hour=hour, minute=min, second=sec, tz=tz) 
 
 # #' Gets information about the dimension(s) of data
@@ -249,6 +253,32 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 #' @export
 
 def get_item(ens_fc_ts:DeletableCffiNativeHandle, i, convert_to_xr=True):
+    """
+    Gets an item in an indexable uchronia object
+
+    Gets an item in an indexable uchronia object of one of the the C++ uchronia types identifed by TIME_SERIES_PTR, 
+    ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
+
+    Args:
+        ens_fc_ts (DeletableCffiNativeHandle): R type equivalent for C++ type TIME_SERIES_PTR, ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
+        i (int): One-based index in the indexable object.
+        convert_to_xr (bool): if True, convert to an xarray object
+
+    Example:
+        \dontrun{
+        ensFcTs <- createEnsembleForecastTimeSeries(lubridate::origin, 3, 'daily')
+        fcastsOffset <- lubridate::hours(1)
+        nLead <- 5
+        nEns <- 4
+        set.seed(465)
+        x <- matrix(rnorm(n=nEns*nLead), ncol=nEns)
+        multiTimeSeriesIn <- mkHourlySeries(lubridate::origin + fcastsOffset, x, is.na)
+        uchronia::setItem(ensFcTs, 1, multiTimeSeriesIn)
+        print(x)
+        print(uchronia::getItem(ensFcTs, 1))
+        }
+
+    """
     if not isinstance(i, int): raise ValueError("Only numeric indices are supported for now")
     zero_index = i-1
     if is_singular_time_series(ens_fc_ts):
@@ -278,20 +308,22 @@ def get_item(ens_fc_ts:DeletableCffiNativeHandle, i, convert_to_xr=True):
 #   return(identifier %in% data_ids)
 # }
 
-# #' Gets the next level data identifier of a top level ID
-# #' 
-# #' Gets the next level data identifier of a top level ID.
-# #'  A collection of time series such as one identified by "streamflows" may have 
-# #'  sub-identifiers such as gauge numbers. A single time series in a data library 
-# #'  may thus be retrieved by a hierarchical string ID  "streamflows.401221" 401221 is a gauge ID.
-# #' 
-# #' @param data_library an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
-# #' @param identifier character, the top level identifier to test again for next level ids
-# #' @seealso \code{\link{get_ensemble_dataset}} for sample code
-# #' @export
-# subIdentifiers(data_library, identifier):
-#   return(GetEnsembleDatasetDataSubIdentifiers_py(data_library, identifier))
-# }
+def sub_identifiers(data_library, identifier):
+    """
+    Gets the next level data identifier of a top level ID
+
+    Gets the next level data identifier of a top level ID.
+    A collection of time series such as one identified by "streamflows" may have 
+    sub-identifiers such as gauge numbers. A single time series in a data library 
+    may thus be retrieved by a hierarchical string ID  "streamflows.401221" 401221 is a gauge ID.
+
+    Args:
+        data_library (Any): an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
+        identifier (Any): character, the top level identifier to test again for next level ids
+
+    """
+    return(uwg.GetEnsembleDatasetDataSubIdentifiers_py(data_library, identifier))
+
 
 # #' Make an hourly time series
 # #'

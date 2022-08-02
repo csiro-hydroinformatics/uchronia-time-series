@@ -1,72 +1,89 @@
-from multiprocessing.sharedctypes import Value
+from typing import Any, Callable, Sequence
 from refcount.interop import is_cffi_native_handle
 from uchronia.uchronia_internals import internal_get_time_series_from_provider
 import uchronia.wrap.uchronia_wrap_generated as uwg
 import uchronia.wrap.uchronia_wrap_custom as uwc
 import os
+from uchronia.uchronia_internals import is_singular_time_series, is_ensemble_time_series
+import xarray as xr
 
-#' Gets one or more time series from a time series provider
-#'
-#' Gets one or more time series from a time series provider. This function is exported for use by R packages rather than for end users. 
-#'
-#' @param ts_provider R wrapper around an object coercible to a TIME_SERIES_PROVIDER_PTR
-#' @param var_ids character vector, IDs of the time series to retrieve from the provider
-#' @param api_get_ts_func an R function that takes as arguments 'ts_provider' and a character.
-#' @return an xts time series
-#' @examples
-#' \dontrun{
-#' internalGetRecordedTts(simulation, var_ids):
-#'   uchronia::get_multiple_time_series_from_provider(simulation, var_ids, get_recorded_pkg_R)
-#' }
-#' }
-#' @export
-def get_multiple_time_series_from_provider(ts_provider, var_ids, api_get_ts_func):
+def get_multiple_time_series_from_provider(ts_provider:Any, var_ids:Sequence[str], api_get_ts_func:Callable) -> xr.DataArray:
+    """
+    Gets one or more time series from a time series provider
+
+    Gets one or more time series from a time series provider. This function is exported for use by other python packages rather than for end users.
+
+    Args:
+        ts_provider (Any): wrapper around an object coercible to a TIME_SERIES_PROVIDER_PTR
+        var_ids (Sequence[str]): character vector, IDs of the time series to retrieve from the provider
+        api_get_ts_func (Callable): a function that takes as arguments 'ts_provider' and a character.
+
+    Returns:
+        an xarray time series
+
+    Example:
+        \dontrun{
+            internalGetRecordedTts <- function(simulation, varIds) {
+            uchronia::getMultipleTimeSeriesFromProvider(simulation, varIds, GetRecorded_Pkg_R)
+            }
+        }
+
+    """
     from uchronia.uchronia_internals import internal_get_multiple_time_series
     return internal_get_multiple_time_series(ts_provider, var_ids, api_get_ts_func)
 
-#' Gets an object, a library to access a set of time series
-#'
-#' Gets an object, a library to access a set of time series
-#'
-#' @param dataset_id currently only a path to a file in YAML is supported.
-#' @return an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
-#' @examples
-#' \dontrun{
-#'  d = uchronia::sample_data_dir()
-#'  yamlFn = file.path(d, 'time_series_library.yaml')
-#'  if(!file.exists(yamlFn)):stop(paste0('sample YAML file ', yamlFn, ' not found')) }
-#'  file.show(yamlFn)
-#'  dataSet = uchronia::get_ensemble_dataset(yamlFn)
-#'  (data_ids = uchronia::get_dataset_ids(dataSet))
-#'  subIdentifiers(dataSet, "var1_obs_collection")
-#'  (univTs = uchronia::get_dataset(dataSet, "var1_obs"))
-#'  (multivTs = uchronia::get_dataset(dataSet, "var1_obs_collection"))
-#'  (ensFcast = uchronia::get_dataset(dataSet, "pet_fcast_ens"))
-#'  plot(as_xarray(univTs))
-#'  zoo::plot.zoo(as_xarray(multivTs))
-#'  ## precip_ids = paste( 'subarea', get_subarea_ids(simulation), 'P', sep='.')
-#'  ## evapIds = paste( 'subarea', get_subarea_ids(simulation), 'E', sep='.')
-#'  ## swift::playInputs(simulation, dataSet, precip_ids, rep('rain_obs', length(precip_ids)))
-#'  ## swift::playInputs(simulation, dataSet, evapIds, rep('pet_obs', length(evapIds)), 'daily_to_hourly')
-#' }
-#' @export
 def get_ensemble_dataset(dataset_id='someId', data_path=''):
+    """
+    Gets an object, a library to access a set of time series
+
+    Gets an object, a library to access a set of time series
+
+    Args:
+        dataset_id (Any): currently only a path to a file in YAML is supported.
+        data_path (str): unused?
+
+    Returns:
+        an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
+
+    Example:
+        \dontrun{
+        d <- uchronia::sampleDataDir()
+        yamlFn <- file.path(d, 'time_series_library.yaml')
+        if(!file.exists(yamlFn)) {stop(paste0('sample YAML file ', yamlFn, ' not found')) }
+        file.show(yamlFn)
+        dataSet <- uchronia::getEnsembleDataSet(yamlFn)
+        (dataIds <- uchronia::getDataSetIds(dataSet))
+        subIdentifiers(dataSet, "var1_obs_collection")
+        (univTs <- uchronia::getDataSet(dataSet, "var1_obs"))
+        (multivTs <- uchronia::getDataSet(dataSet, "var1_obs_collection"))
+        (ensFcast <- uchronia::getDataSet(dataSet, "pet_fcast_ens"))
+        plot(asXts(univTs))
+        zoo::plot.zoo(asXts(multivTs))
+        ## precipIds <- paste( 'subarea', getSubareaIds(simulation), 'P', sep='.')
+        ## evapIds <- paste( 'subarea', getSubareaIds(simulation), 'E', sep='.')
+        ## swift::playInputs(simulation, dataSet, precipIds, rep('rain_obs', length(precipIds)))
+        ## swift::playInputs(simulation, dataSet, evapIds, rep('pet_obs', length(evapIds)), 'daily_to_hourly')
+        }
+
+    """
     # tools::file_ext(dataset_id)
     if os.path.exists(dataset_id):
         # if this is an RData file, load into this environment?
         # if this is a YAML data set, or something like that
         return uwg.LoadEnsembleDataset_py(dataset_id, data_path)
     else:
-        raise FileNotFoundError('get_ensemble_dataset is in a prototype stage and supports only YAML data set descriptors')
+        raise FileNotFoundError('file not found. get_ensemble_dataset is in a prototype stage and supports only YAML data set descriptors')
 
-#' Gets the top level data identifiers in a data library (data set)
-#'
-#' Gets the top level data identifiers in a data library (data set)
-#'
-#' @param data_library R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR, a.k.a a "time series library"
-#'
-#' @export
 def get_dataset_ids(data_library):
+    """
+    Gets the top level data identifiers in a data library (data set)
+
+    Gets the top level data identifiers in a data library (data set)
+
+    Args:
+        data_library (Any): R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR, a.k.a a "time series library"
+
+    """
     return uwg.GetEnsembleDatasetDataIdentifiers_py(data_library)
 
 def datasets_summaries(data_library):
@@ -83,61 +100,79 @@ def datasets_summaries(data_library):
 # {
 # }
 
-#' Retrieve data from a data sets library
-#' 
-#' Gets the data from a library for a given identifier.
-#' 
-#' @param data_library R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR, a.k.a a "time series library"
-#' @param data_id character, one data identifier for the data retrieved.
-#' @return R type equivalent for one of the C++ types TIME_SERIES_PTR, 
-#'  ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
-#'  A data identifier may thus point to an univariate time series, 
-#'  a multivariate time series, or a time series of ensemble of (uni- or multi- variate) time series.
-#' @seealso the vignettes illustrate how to use time serie libraries
-#' 
-#' @export
-def get_dataset(data_library, data_id):
-  result = uwc.GetDatasetFromLibrary_Pkg(data_library, data_id)
-  return result
+def get_dataset(data_library, data_id:str):
+    """
+    Retrieve data from a data sets library
+
+    Gets the data from a library for a given identifier.
+
+    Args:
+        dataLibrary (Any): R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR, a.k.a a "time series library"
+        dataId (str): character, one data identifier for the data retrieved.
+
+    Returns:
+        R type equivalent for one of the C++ types TIME_SERIES_PTR, 
+        ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
+        A data identifier may thus point to an univariate time series, 
+        a multivariate time series, or a time series of ensemble of (uni- or multi- variate) time series.
+    """
+    result = uwc.GetDatasetFromLibrary_Pkg(data_library, data_id)
+    return result
 
 
-#' Retrieve data from a data sets library
-#' 
-#' Gets the data from a library for a given identifier.
-#' 
-#' @param data_library R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
-#' @param data_id character, one data identifier for the time series.
-#' @export
 def get_dataset_single_time_series(data_library, data_id):
+    """
+    Retrieve data from a data sets library
+
+    Gets the data from a library for a given identifier.
+
+    Args:
+        dataLibrary (Any): R type equivalent for C++ type ENSEMBLE_DATA_SET_PTR
+        dataId (str): character, one data identifier for the time series.
+
+    Returns:
+        univariate time series of dimension 1
+
+    """
     result = uwg.GetDatasetSingleTimeSeries_py(data_library, data_id)
     return result
 
-#' Gets a time series from a time provider, given a data ID
-#'
-#' Gets a time series from a time provider, given a data ID.
-#'  This means that the argument is a wrapper around an external pointer to a object whose type is 
-#'  inheriting from the C++ type datatypes::timeseries::TimeSeriesProvider<double>
-#'
-#' @param provider an external pointer to a uchronia Time Series Provider.
-#' @param data_id character, one or more data identifier for the time series. If missing, all known identifiers will be used be careful about the resulting size.
-#' @return an xts time series.
-#' @export
-def get_time_series_from_provider(provider, data_id = None):
+def get_time_series_from_provider(provider, data_id:str = None):
+    """
+    Gets a time series from a time provider, given a data ID
+
+    Gets a time series from a time provider, given a data ID.
+    This means that the argument is a wrapper around an external pointer to a object whose type is 
+    inheriting from the C++ type datatypes::timeseries::TimeSeriesProvider<double>
+
+    Args:
+        provider (Any): an external pointer to a uchronia Time Series Provider.
+        dataId (str): character, one or more data identifier for the time series. If missing, all known identifiers will be used; be careful about the resulting size.
+
+    Returns:
+        an xarray time series.
+
+    """
     if data_id is None:
         data_id = get_data_identifiers(provider)
     return internal_get_time_series_from_provider(provider, data_id)
 
-#' Gets the known time series identifiers (e.g. Gauge names) of a time series provider
-#'
-#' Gets the known time series identifiers (e.g. Gauge names) of a time series provider.
-#'  This means that the argument is a wrapper around an external pointer to a object whose type is 
-#'  inheriting from the C++ type datatypes::timeseries::TimeSeriesProvider<double>
-#'
-#' @param provider an external pointer to a uchronia Time Series Provider.
-#' @return a character vector
-#' @export
 def get_data_identifiers(provider):
-      return uwg.GetProviderTimeSeriesIdentifiers_py(provider)
+    """
+    Gets the known time series identifiers (e.g. Gauge names) of a time series provider
+
+    Gets the known time series identifiers (e.g. Gauge names) of a time series provider.
+    This means that the argument is a wrapper around an external pointer to a object whose type is 
+    inheriting from the C++ type datatypes::timeseries::TimeSeriesProvider<double>
+
+    Args:
+        provider (Any): an external pointer to a uchronia Time Series Provider.
+
+    Returns:
+        a character vector
+
+    """
+    return uwg.GetProviderTimeSeriesIdentifiers_py(provider)
 
 # # mkTimeSeries(dataSet, index, fun):
 # #   tSeriesInfo = getTimeSeriesInfo(as.integer(index-1), dataSet)
@@ -147,20 +182,31 @@ def get_data_identifiers(provider):
 # # }
 
 
-#' Coerce an object to an xts time series
+#' Coerce an object to an xarray time series
 #'
-#' Converts if possible an object to an xts time series. Suitable objects are an equivalent 'uchronia' C++ entity 
+#' Converts if possible an object to an xarray time series. Suitable objects are an equivalent 'uchronia' C++ entity 
 #'  via an external pointer. Typically deals with time series and ensemble thereof, but may be expanded later on to support more types.
 #'
 #' @param time_series_info A representation of a time series. Supported types are external pointers as data from uchronia C API, or an R list returned by some of the *_R functions.
-#' @return an xts object
+#' @return an xarray object
 #' @seealso \code{\link{asUchroniaData}} for a round-trip sample code
 #' @export
 
-from uchronia.uchronia_internals import is_singular_time_series, is_ensemble_time_series
-import xarray as xr
 
 def as_xarray(time_series_info) -> xr.DataArray:
+    """
+    Coerce an object to an xarray time series
+
+    Converts if possible an object to an xarray time series. Suitable objects are an equivalent 'uchronia' C++ entity 
+    via an external pointer. Typically deals with time series and ensemble thereof, but may be expanded later on to support more types.
+
+    Args:
+        time_series_info (Any): A representation of a time series. Supported types are external pointers as data from uchronia C API, or an R list returned by some of the *_R functions.
+
+    Returns:
+        an xarray object
+
+    """
     # if isinstance(time_series_info, dict):
     #     return marshaledTimeSeriesToXts(time_series_info)
     # if cinterop::isInteropRegularTimeSeries(time_series_info)):
@@ -186,10 +232,10 @@ def as_xarray(time_series_info) -> xr.DataArray:
 
 # #' Coerce an object to a c++ object handled via an external pointer
 # #'
-# #' Converts an object such as an xts time series to an equivalent 'uchronia' C++ entity that it then refered to 
+# #' Converts an object such as an xarray time series to an equivalent 'uchronia' C++ entity that it then refered to 
 # #' via an external pointer. Typically deals with time series and ensemble thereof, but may be expanded later on to support more types.
 # #'
-# #' @param rData An R object such as an xts object.
+# #' @param rData An R object such as an xarray object.
 # #' @return an S4 object 'ExternalObjRef' [package "cinterop"]
 # #' @examples
 # #' \dontrun{
