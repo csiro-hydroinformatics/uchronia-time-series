@@ -14,8 +14,8 @@ Build-Depends: cmake,
                libnetcdf-dev
 Standards-Version: 4.5.0
 Section: libs
-Homepage: https://github.com/csiro-hydroinformatics/uchronia
-#Vcs-Browser: https://salsa.debian.org/debian/uchronia
+Homepage: https://github.com/csiro-hydroinformatics/uchronia-time-series
+Vcs-Browser: https://github.com/csiro-hydroinformatics/uchronia-time-series
 #Vcs-Git: https://salsa.debian.org/debian/uchronia.git
 Rules-Requires-Root: no
 

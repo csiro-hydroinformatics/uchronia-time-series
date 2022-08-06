@@ -22,11 +22,9 @@ def get_multiple_time_series_from_provider(ts_provider:Any, var_ids:Sequence[str
         an xarray time series
 
     Example:
-        \dontrun{
-            internalGetRecordedTts <- function(simulation, varIds) {
-            uchronia::getMultipleTimeSeriesFromProvider(simulation, varIds, GetRecorded_Pkg_R)
-            }
-        }
+        >>> # internalGetRecordedTts <- function(simulation, varIds) {
+        >>> # uchronia::getMultipleTimeSeriesFromProvider(simulation, varIds, GetRecorded_Pkg_R)
+        >>> # }
 
     """
     from uchronia.internals import internal_get_multiple_time_series
