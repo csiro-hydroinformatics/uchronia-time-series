@@ -88,7 +88,7 @@ def internal_get_single_model_time_series (ts_provider, var_id:str, api_get_ts_f
     Args:
         ts_provider (Any): an external pointer to a uchronia Time Series Provider or model simulation
         var_id (str): character, a data identifier for the time series
-        api_get_ts_func (Any): a function, that takes as arguments ts_provider and varId, and returns a list as suitable for \code{\link{marshaledTimeSeriesToXts}}
+        api_get_ts_func (Any): a function, that takes as arguments ts_provider and varId, and returns a list as suitable for marshaledTimeSeriesToXts
 
     Returns:
         an xts time series.
