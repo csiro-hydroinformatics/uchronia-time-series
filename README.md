@@ -8,7 +8,7 @@ Some key capabilities are:
 
 * Off the shelf support for point time series and time series of ensemble forecast
 * Extensibility to various data types (numeric or not) through C++ templates, e.g. to a "time series of spatial grids"
-* High level language bindings for R, Python, Matlab, and others via a consistent "C" API. 
+* High level language bindings for R, Python, Matlab, and others via a consistent "C" API.
 
 ## Design goals
 

@@ -1,7 +1,7 @@
-
 from typing import Sequence
 import xarray as xr
 import pandas as pd
+
 
 def xr_concat(
     series: Sequence[xr.DataArray],
@@ -44,6 +44,7 @@ def xr_concat(
     set_xr_units(res, units)
     return res
 
+
 def set_xr_units(x: xr.DataArray, units: str):
     """Sets the units attribute of an xr.DataArray. No effect if x is not a dataarray
 
@@ -51,12 +52,6 @@ def set_xr_units(x: xr.DataArray, units: str):
         x (xr.DataArray): data array
         units (str): units descriptor
     """
-    if units is None:
-        return
-    if isinstance(x, xr.DataArray):
-        x.attrs[XR_UNITS_ATTRIB_ID] = units
+    import cinterop
 
-XR_UNITS_ATTRIB_ID: str = "units"
-"""key for the units attribute on xarray DataArray objects"""
-
-
+    cinterop.timeseries.set_xr_units(x, units)

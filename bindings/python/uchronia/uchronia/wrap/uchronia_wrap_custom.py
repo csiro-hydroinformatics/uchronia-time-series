@@ -1,27 +1,5 @@
+from typing import Any
 import uchronia.wrap.uchronia_wrap_generated as uwg
-
-# #include <string>
-# #include "rcpp_custom.h"
-
-# using namespace Rcpp
-# using namespace cinterop::utils
-
-# void NativeExceptionHandler(const char * str)
-# {
-#     std::string msg(str)
-#     // Because Rcpp has its own exception handling meachanism, we just rethrow
-#     throw std::runtime_error(msg)
-#     // Calling Rcpp::stop(msg) is no good,  it seems, as it leads to buffer overrun in Release mode.
-#     //Rcpp::stop(msg)
-# }
-
-# # [[Rcpp::export]]
-# void RegisterExceptionCallback_Pkg()
-# {
-#     void* exceptionHandlerFun = (void*)(&NativeExceptionHandler)
-#     RegisterExceptionCallback(exceptionHandlerFun)
-
-# }
 
 # void toMarshalledTsinfo(const Rcpp::S4& rTsInfo, regular_time_series_geometry& mts)
 # {
@@ -128,9 +106,19 @@ def GetDatasetFromLibrary_Pkg(data_library, data_identifier):
         raise Exception("Number of dimensions for a data set is not supported: " + str(dimensions))
 
 
-# # ??
-# # [[Rcpp::export]]
+
+import numpy as np
+
+def _array_for_geom(mtsg) -> np.ndarray:
+    return np.empty((mtsg.length,))
+
 # def GetTimeSeriesFromProvider_Pkg(provider, variable_identifier):
-#     auto values = get_time_series_data_from_provider(provider, variable_identifier, mtsg);
-#     return CreateTsInfo(values, mtsg);
-# }
+def get_time_series_data_from_provider(provider: Any, variable_identifier, mtsg):
+    uwg.GetProviderTsGeometry_py(provider, variable_identifier, mtsg)
+    values = _array_for_geom(mtsg)
+    uwg.GetProviderTimeSeriesValues_py(
+        provider, variable_identifier, values, mtsg.length
+    )
+    return values
+
+

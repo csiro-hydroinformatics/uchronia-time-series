@@ -1,11 +1,26 @@
+"""Pythonic classes accessing underlying C++ objects functionalities
+"""
+
 from typing import Any, Callable, Dict, List, OrderedDict, Sequence
 from cffi import FFI
 from refcount.interop import DeletableCffiNativeHandle, CffiData, CffiWrapperFactory
 from cinterop.cffi.marshal import ConvertibleToTimestamp
+from .const import NdTimeSeries
+from .wrap.ffi_interop import uchronia_dispose_multi_time_series_data
 
 import uchronia.wrap.uchronia_wrap_generated as uwg
 
+import uchronia.time_series as uts
+import uchronia.data_set as uds
+
+
 class TimeSeriesProvider(DeletableCffiNativeHandle):
+    """TimeSeriesProvider is an interface for objects that can provide time series.
+
+    Under construction...
+
+    """
+
     def __init__(
         self,
         handle: CffiData,
@@ -19,13 +34,17 @@ class TimeSeriesProvider(DeletableCffiNativeHandle):
 
 
 class TimeSeriesMixin:
-    def __init__(self):
-        super(TimeSeriesMixin, self).__init__(
-        )
+    """Mixin interface for time series objects of various dimensionality"""
 
-    def get_item(self, i:int, convert_to_xr=True):
-        import uchronia.time_series as uts
+    def __init__(self):
+        super(TimeSeriesMixin, self).__init__()
+
+    def get_item(self, i: int, convert_to_xr=True):
         return uts.get_item(self, i, convert_to_xr)
+
+    def as_xarray(self):
+        return uts.as_xarray(self)
+
 
 class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
     def __init__(
@@ -39,6 +58,7 @@ class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
             handle, release_native, type_id, prior_ref_count
         )
 
+
 class EnsembleTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
     def __init__(
         self,
@@ -51,20 +71,6 @@ class EnsembleTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
             handle, release_native, type_id, prior_ref_count
         )
 
-
-class TimeSeriesLibrary(DeletableCffiNativeHandle):
-    def __init__(
-        self,
-        handle: CffiData,
-        release_native: Callable[[CffiData], None],
-        type_id: str = None,
-        prior_ref_count: int = 0,
-    ):
-        super(TimeSeriesLibrary, self).__init__(
-            handle, release_native, type_id, prior_ref_count
-        )
-
-
 class TimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
     def __init__(
         self,
@@ -76,6 +82,8 @@ class TimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
         super(TimeSeries, self).__init__(
             handle, release_native, type_id, prior_ref_count
         )
+
+
 class EnsemblePtrTimeSeries(DeletableCffiNativeHandle):
     def __init__(
         self,
@@ -87,6 +95,75 @@ class EnsemblePtrTimeSeries(DeletableCffiNativeHandle):
         super(EnsemblePtrTimeSeries, self).__init__(
             handle, release_native, type_id, prior_ref_count
         )
+
+
+
+
+class TimeSeriesLibrary(TimeSeriesProvider):
+    """Object that acts as a catalogue with various time series available for retrieval
+
+    Under construction...
+
+    """
+
+    def __init__(
+        self,
+        handle: CffiData,
+        release_native: Callable[[CffiData], None],
+        type_id: str = None,
+        prior_ref_count: int = 0,
+    ):
+        super(TimeSeriesLibrary, self).__init__(
+            handle, release_native, type_id, prior_ref_count
+        )
+
+    def get_dataset_ids(self) -> List[str]:
+        """
+        Gets the top level data identifiers in a data library (data set)
+
+        Returns:
+            List[str]: identifiers for the datasets in this library
+        """
+        return uds.get_dataset_ids(self)
+
+    def get_dataset(self, data_id: str) -> "NdTimeSeries":
+        """
+        Gets the data from a library for a given identifier.
+
+        Args:
+            data_id (str): character, one data identifier for the data retrieved.
+
+        Returns:
+            NdTimeSeries: a uni- or multidimensional time series
+        """
+        return uds.get_dataset(self, data_id)
+
+    def sub_identifiers(self, identifier:str) -> List[str]:
+        """
+        Gets the next level data identifier of a top level ID
+
+        Gets the next level data identifier of a top level ID.
+        A collection of time series such as one identified by "streamflows" may have
+        sub-identifiers such as gauge numbers. A single time series in a data library
+        may thus be retrieved by a hierarchical string ID  "streamflows.401221" 401221 is a gauge ID.
+
+        Args:
+            identifier (str): character, the top level identifier to test again for next level ids
+
+        Returns:
+            List[str] sub-identifiers for a root identifier
+        """
+        return uts.sub_identifiers(self, identifier)
+
+    def datasets_summaries(self) -> List[str]:
+        """Get the summaries of datasets in a library 
+
+        Returns:
+            List[str]: short descriptions of all the datasets in this library
+        """    
+        return uds.datasets_summaries(self)
+
+
 
 _api_type_wrapper = {
     # "DATATYPES_TIME_SERIES_DOUBLE_PTR": None,
@@ -106,12 +183,15 @@ _STRICT_WRAPPING = False
 
 _wrapper_factory = CffiWrapperFactory(_api_type_wrapper, _STRICT_WRAPPING)
 
+
 def _create_wrapper(obj: Any, type_id: str, release_native: Callable):
     return _wrapper_factory.create_wrapper(obj, type_id, release_native)
+
 
 def wrap_cffi_native_handle(obj: Any, type_id: str, release_native: Callable):
     if not isinstance(obj, FFI.CData):
         return obj
     return _create_wrapper(obj, type_id, release_native)
+
 
 uwg.set_wrap_cffi_native_handle(wrapper_function=wrap_cffi_native_handle)

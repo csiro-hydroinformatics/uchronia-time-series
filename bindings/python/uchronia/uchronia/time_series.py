@@ -1,11 +1,29 @@
+from typing import Union, List, TYPE_CHECKING
+if TYPE_CHECKING:
+    from uchronia.classes import (
+        EnsembleTimeSeries,
+        TimeSeriesLibrary,
+        EnsembleForecastTimeSeries,
+        TimeSeries,
+        EnsemblePtrTimeSeries,
+        TimeSeriesProvider,
+    )
+    from uchronia.const import TsRetrievalSignature, VecStr, NdTimeSeries, ItemSliceNdTimeSeries
+
 import pandas as pd
 from refcount.interop import DeletableCffiNativeHandle
 from uchronia.data_set import as_xarray
-from uchronia.internals import is_ensemble_time_series, is_singular_time_series, is_time_series_of_ensemble_time_series
+from uchronia.internals import (
+    is_ensemble_time_series,
+    is_singular_time_series,
+    is_time_series_of_ensemble_time_series,
+)
 import uchronia.wrap.uchronia_wrap_generated as uwg
 import uchronia.wrap.uchronia_wrap_custom as uwc
 
-def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
+
+
+def mk_date(year, month, day, hour=0, min=0, sec=0, tz="UTC"):
     """
     Creates a pandas Timestamp date/time object
 
@@ -24,13 +42,16 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
         a pandas Timestamp date/time object
 
     """
-    return pd.Timestamp(year=year, month=month, day=day, hour=hour, minute=min, second=sec, tz=tz) 
+    return pd.Timestamp(
+        year=year, month=month, day=day, hour=hour, minute=min, second=sec, tz=tz
+    )
+
 
 # #' Gets information about the dimension(s) of data
 # #'
 # #' Gets information about the dimension(s) of data
 # #'
-# #' @param x uchronia data such as TIME_SERIES_PTR, 
+# #' @param x uchronia data such as TIME_SERIES_PTR,
 # #'  ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
 # #' @export
 # def geometryOf(x):
@@ -74,7 +95,7 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 #   temporal=geometryFromGeom(x@TsGeom)
 #   if(x@EnsembleSize > 1):
 #     list(
-#         ensemble=ensembleDimension(size=x@EnsembleSize), 
+#         ensemble=ensembleDimension(size=x@EnsembleSize),
 #         temporal=temporal
 #       )
 #   } else {
@@ -101,12 +122,12 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 #   }
 #   ensSize = ncol(x)
 #   temporal<-timeDimension(
-#     start=xts:::start.xts(x), 
-#     time_step=timeStep, 
+#     start=xts:::start.xts(x),
+#     time_step=timeStep,
 #     size=nrow(x))
 #   if(ensSize>1){
 #     list(
-#       ensemble=ensembleDimension(size=ensSize), 
+#       ensemble=ensembleDimension(size=ensSize),
 #       temporal=temporal
 #     )
 #   } else {
@@ -116,8 +137,8 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 
 # geometryFromMultivTs(x):
 #   if(is_ensemble_time_series(x)):
-#     # KLUDGE? 
-#     y = get_item(x,1, convert_to_xr=FALSE) 
+#     # KLUDGE?
+#     y = get_item(x,1, convert_to_xr=FALSE)
 #     temporal = geometryFromTimeIndex(timeIndex(y))
 #     ensSize = EnsembleSizeEnsembleTimeSeries_py(x)
 #   } elif (is(x,"RegularTimeSeriesGeometry")):
@@ -139,7 +160,7 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 # geometryFromTsEnsTs(x):
 #   temporal = geometryFromTimeIndex(timeIndex(x))
 #   # KLUDGE? the above would have checked there is at least one item...
-#   y = get_item(x,1, convert_to_xr=FALSE) 
+#   y = get_item(x,1, convert_to_xr=FALSE)
 #   geom = geometryFromMultivTs(y)
 #   list(
 #     temporal=temporal,
@@ -148,7 +169,7 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 #   )
 # }
 
-# #' Create a time series of ensemble of time series 
+# #' Create a time series of ensemble of time series
 # #'
 # #' Create a time series of ensemble of time series (a.k.a. ensemble forecast time series)
 # #'
@@ -157,7 +178,7 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 # #' @param timeStep  a character vector (numeric integers are 'tolerated' as seconds). Examples are '24:00:00', 'hourly', 'daily'.
 # #' @examples
 # #' \dontrun{
-# #' n_days = 10  
+# #' n_days = 10
 # #' tsStartDate = lubridate::origin
 # #' ens_fc_ts = createEnsembleForecastTimeSeries(tsStartDate, n_days, 'daily')
 # #' fcastsOffset = lubridate::hours(1)
@@ -184,9 +205,9 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 #   CreateEnsembleForecastTimeSeries_py(tsStartEns, n, timeStep)
 # }
 
-# #' Sets an item of an ensemble time series 
+# #' Sets an item of an ensemble time series
 # #'
-# #' Sets an item of an ensemble time series 
+# #' Sets an item of an ensemble time series
 # #'
 # #' @param ens_fc_ts  R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
 # #' @param i	   integer. One-based index in the ensemble forecast.
@@ -231,10 +252,10 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 
 #' Gets an item in an indexable uchronia object
 #'
-#' Gets an item in an indexable uchronia object of one of the the C++ uchronia types identifed by TIME_SERIES_PTR, 
+#' Gets an item in an indexable uchronia object of one of the the C++ uchronia types identifed by TIME_SERIES_PTR,
 #'  ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
 #'
-#' @param ens_fc_ts  R type equivalent for C++ type TIME_SERIES_PTR, 
+#' @param ens_fc_ts  R type equivalent for C++ type TIME_SERIES_PTR,
 #'  ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
 #' @param i	   integer. One-based index in the indexable object.
 #' @examples
@@ -252,54 +273,67 @@ def mk_date(year, month, day, hour = 0, min = 0, sec = 0, tz = "UTC"):
 #' }
 #' @export
 
-def get_item(ens_fc_ts:DeletableCffiNativeHandle, i, convert_to_xr=True):
+import xarray as xr
+
+def get_item(ens_fc_ts: "NdTimeSeries", i, convert_to_xr=True) -> Union["ItemSliceNdTimeSeries", xr.DataArray]:
     """
     Gets an item in an indexable uchronia object
 
-    Gets an item in an indexable uchronia object of one of the the C++ uchronia types identifed by TIME_SERIES_PTR, 
+    Gets an item in an indexable uchronia object of one of the the C++ uchronia types identifed by TIME_SERIES_PTR,
     ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
 
     Args:
-        ens_fc_ts (DeletableCffiNativeHandle): R type equivalent for C++ type TIME_SERIES_PTR, ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
+        ens_fc_ts (NdTimeSeries): a uni- or multidimensional time series
         i (int): One-based index in the indexable object.
-        convert_to_xr (bool): if True, convert to an xarray object
+        convert_to_xr (bool): if True, (try to) convert to an xarray object
+
+    Returns:
+        Union["ItemSliceNdTimeSeries", xr.DataArray]: one item extracted from the series, so it has lost one dimension compared to the input.
 
     Example:
-        \dontrun{
-        ensFcTs <- createEnsembleForecastTimeSeries(lubridate::origin, 3, 'daily')
-        fcastsOffset <- lubridate::hours(1)
-        nLead <- 5
-        nEns <- 4
-        set.seed(465)
-        x <- matrix(rnorm(n=nEns*nLead), ncol=nEns)
-        multiTimeSeriesIn <- mkHourlySeries(lubridate::origin + fcastsOffset, x, is.na)
-        uchronia::setItem(ensFcTs, 1, multiTimeSeriesIn)
-        print(x)
-        print(uchronia::getItem(ensFcTs, 1))
-        }
+        TODO
 
     """
-    if not isinstance(i, int): raise ValueError("Only numeric indices are supported for now")
-    zero_index = i-1
+    #    \dontrun{
+    #    ensFcTs <- createEnsembleForecastTimeSeries(lubridate::origin, 3, 'daily')
+    #    fcastsOffset <- lubridate::hours(1)
+    #    nLead <- 5
+    #    nEns <- 4
+    #    set.seed(465)
+    #    x <- matrix(rnorm(n=nEns*nLead), ncol=nEns)
+    #    multiTimeSeriesIn <- mkHourlySeries(lubridate::origin + fcastsOffset, x, is.na)
+    #    uchronia::setItem(ensFcTs, 1, multiTimeSeriesIn)
+    #    print(x)
+    #    print(uchronia::getItem(ensFcTs, 1))
+    #    }
+    if not isinstance(i, int):
+        raise ValueError("Only numeric indices are supported for now")
+    zero_index = i - 1
     if is_singular_time_series(ens_fc_ts):
         return uwg.GetValueFromUnivariateTimeSeries_py(ens_fc_ts, zero_index)
     elif is_ensemble_time_series(ens_fc_ts):
         univ_ts = uwg.TimeSeriesFromEnsembleOfTimeSeries_py(ens_fc_ts, zero_index)
-        if convert_to_xr: univ_ts = as_xarray(univ_ts)
+        if convert_to_xr:
+            univ_ts = as_xarray(univ_ts)
         return univ_ts
     elif is_time_series_of_ensemble_time_series(ens_fc_ts):
-        mts = uwg.GetItemEnsembleForecastTimeSeries_py(ens_fc_ts,zero_index)
-        if convert_to_xr: mts = as_xarray(mts)
+        mts = uwg.GetItemEnsembleForecastTimeSeries_py(ens_fc_ts, zero_index)
+        if convert_to_xr:
+            mts = as_xarray(mts)
         return mts
     else:
-        raise ValueError('get_item: does not know how to get from an object of external type "' + ens_fc_ts.type_id, '"')
-    
+        raise ValueError(
+            'get_item: does not know how to get from an object of external type "'
+            + ens_fc_ts.type_id,
+            '"',
+        )
+
 
 # #' Checks whether a data library has a given top level data identifier
-# #' 
+# #'
 # #' Checks whether a data library has a given top level data identifier
-# #' 
-# #' @param data_library an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
+# #'
+# #' @param data_library external pointer type ENSEMBLE_DATA_SET_PTR, or a Python class wrapper around it 
 # #' @param identifier character, the identifier to test again
 # #' @seealso \code{\link{get_ensemble_dataset}} for sample code
 # #' @export
@@ -308,21 +342,25 @@ def get_item(ens_fc_ts:DeletableCffiNativeHandle, i, convert_to_xr=True):
 #   return(identifier %in% data_ids)
 # }
 
-def sub_identifiers(data_library, identifier):
+
+def sub_identifiers(data_library: "TimeSeriesLibrary", identifier:str) -> List[str]:
     """
     Gets the next level data identifier of a top level ID
 
     Gets the next level data identifier of a top level ID.
-    A collection of time series such as one identified by "streamflows" may have 
-    sub-identifiers such as gauge numbers. A single time series in a data library 
+    A collection of time series such as one identified by "streamflows" may have
+    sub-identifiers such as gauge numbers. A single time series in a data library
     may thus be retrieved by a hierarchical string ID  "streamflows.401221" 401221 is a gauge ID.
 
     Args:
-        data_library (Any): an S4 object 'ExternalObjRef' [package "cinterop"] with external pointer type ENSEMBLE_DATA_SET_PTR
-        identifier (Any): character, the top level identifier to test again for next level ids
+        data_library (TimeSeriesLibrary): external pointer type ENSEMBLE_DATA_SET_PTR, or a Python class wrapper around it 
+        identifier (str): character, the top level identifier to test again for next level ids
+
+    Returns:
+        List[str] sub-identifiers for a root identifier
 
     """
-    return(uwg.GetEnsembleDatasetDataSubIdentifiers_py(data_library, identifier))
+    return uwg.GetEnsembleDatasetDataSubIdentifiers_py(data_library, identifier)
 
 
 # #' Make an hourly time series
@@ -332,7 +370,7 @@ def sub_identifiers(data_library, identifier):
 # #' @param startDate the start date of the time series. It must be a POSIXct object.
 # #' @param x the numeric vector.
 # #' @param isMissingFunc a function, or NULL. The function should return a logical vector. Used to detect missing values in the raw data that are not already identified as NA
-# #' @return an xts time series. 
+# #' @return an xts time series.
 # #' @export
 # #' @examples
 # #' \dontrun{
@@ -349,7 +387,7 @@ def sub_identifiers(data_library, identifier):
 # #' @param startDate the start date of the time series. It must be a POSIXct object.
 # #' @param x the numeric vector.
 # #' @param isMissingFunc a function, or NULL. The function should return a logical vector. Used to detect missing values in the raw data that are not already identified as NA
-# #' @return an xts time series. 
+# #' @return an xts time series.
 # #' @export
 # #' @examples
 # #' \dontrun{
@@ -367,7 +405,7 @@ def sub_identifiers(data_library, identifier):
 # #' @param x the numeric vector.
 # #' @param isMissingFunc a function, or NULL. The function should return a logical vector. Used to detect missing values in the raw data that are not already identified as NA
 # #' @param delta_t_sec the time step duration in seconds
-# #' @return an xts time series. 
+# #' @return an xts time series.
 # #' @examples
 # #' \dontrun{
 # #' # make a time series with a time step of 10 minutes
@@ -395,7 +433,7 @@ def sub_identifiers(data_library, identifier):
 # #' @param startDate the start date of the time series. It must be a POSIXct object.
 # #' @param x the numeric vector.
 # #' @param isMissingFunc a function, or NULL. The function should return a logical vector. Used to detect missing values in the raw data that are not already identified as NA
-# #' @return an xts time series. 
+# #' @return an xts time series.
 # #' @examples
 # #' \dontrun{
 # #' # make a time series with a time step of 10 minutes
@@ -414,7 +452,7 @@ def sub_identifiers(data_library, identifier):
 #   }
 #   dimFunc = getDataDimensionFunction(x)
 #   n = dimFunc(x)
-#   tsIndex = cinterop::makeMonthlyTimeAxis(startDate, n) 
+#   tsIndex = cinterop::makeMonthlyTimeAxis(startDate, n)
 #   xts::xts(x, tsIndex)
 # }
 
@@ -457,7 +495,7 @@ def sub_identifiers(data_library, identifier):
 #   class(s) = c('POSIXct', 'POSIXt') # important to set both
 #   attr(s, 'tzone') = 'UTC'
 #   x = varData$x
-#   if(!is.numeric(x)): stop(paste0('data is not a numeric mode: ', class(x)))}  
+#   if(!is.numeric(x)): stop(paste0('data is not a numeric mode: ', class(x)))}
 #   dimFunc = getDataDimensionFunction(x)
 #   if(dimFunc(x) != length(s)) stop('data and time indexing information have different length')
 #   res = xts::xts(x, s)
@@ -466,7 +504,7 @@ def sub_identifiers(data_library, identifier):
 #   }
 #   res
 # }
-  
+
 # getDataDimensionFunction(x):
 #   if(is.matrix(x)):
 #     dimFunc = nrow
