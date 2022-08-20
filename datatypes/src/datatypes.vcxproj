@@ -76,7 +76,7 @@
     <ClCompile Include="time_series_store.cpp" />
     <ClCompile Include="time_step.cpp" />
     <ClCompile Include="time_step_implementation.cpp" />
-    <!--<ClCompile Include="C:\src\github_jm\rcpp-interop-commons\src\c_cpp_interop.cpp" />-->
+    <!--<ClCompile Include="C:\src\github_jm\c-interop\src\c_cpp_interop.cpp" />-->
   </ItemGroup>
   <ItemGroup>
     <None Include="datatypes.natvis" />

@@ -341,7 +341,7 @@ def as_xarray(time_series_info: "NdTimeSeries") -> xr.DataArray:
 
 # marshaledTimeSeriesToXts(time_series_info):
 #   # converts series definitions created with make_time_series_info in:
-#   # rcpp-interop-commons\include\cinterop\rcpp_timeseries_interop.hpp
+#   # c-interop\include\cinterop\rcpp_timeseries_interop.hpp
 #   stopifnot(is.list(time_series_info))
 #   if (!setequal( c('Start','tzone','Data','TimeStep','TimeStepCode'), names(time_series_info) )):
 #     stop(paste('The list provided must have names: Start,tzone,Data,TimeStep,TimeStepCode but got:', paste(names(time_series_info), collapse=',')))

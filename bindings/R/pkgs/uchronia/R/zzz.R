@@ -1,7 +1,7 @@
 # An internal variable to buffer startup messages
 startupMsg <- ''
 
-# TODO: obvious opportunity to refactor to something more generic. Consider the repo rcpp-interop-commons
+# TODO: obvious opportunity to refactor to something more generic. Consider the repo c-interop
 
 appendStartupMsg <- function(msg) {
   startupMsg <<- paste0(startupMsg, msg, '\n')

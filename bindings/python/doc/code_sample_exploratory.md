@@ -34,7 +34,7 @@ conda install pytest cffi
 conda install numpy pandas
 pip install refcount
 
-cd ~/src/github_jm/rcpp-interop-commons/bindings/python/cinterop
+cd ~/src/github_jm/c-interop/bindings/python/cinterop
 python setup.py develop
 
 cd /home/per202/src/csiro/stash/datatypes/bindings/python/uchronia

@@ -108,7 +108,7 @@ generate_wrapper_code(gen, infile, outfile_h)
 # Adapting C:\src\csiro\stash\swift\bindings\matlab\create_simple_header_files.r
 #####################################################
 
-cinterop_dir <- file.path(root_os_src, 'rcpp-interop-commons/include/cinterop')
+cinterop_dir <- file.path(root_os_src, 'c-interop/include/cinterop')
 wila_dir <- file.path(root_os_src, 'wila/include/wila')
 
 struct_ptrs_patterns <- c(
