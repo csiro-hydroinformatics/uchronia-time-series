@@ -90,7 +90,14 @@ using namespace boost::gregorian;
  */
 #define TIME_SERIES_SERIES_COLLECTION_TYPE_ID  "ts_ts_collection"
 
+/**
+ * \brief	A string identifier for time series stored in a single netcdf file
+ */
 #define STORAGE_TYPE_SINGLE_NETCDF_FILE        "single_nc_file"
+
+/**
+ * \brief	A string identifier for time series stored in a multiple netcdf files with a date pattern
+ */
 #define STORAGE_TYPE_MULTIPLE_NETCDF_FILES     "multiple_nc_files_filename_date_pattern"
 
 
@@ -101,6 +108,11 @@ namespace datatypes
 
 		void datatypes_delete_ansi_string_array(char** values, int arrayLength);
 
+		/**
+		 * \brief Helper functions with features found in other languages but not found in the C++ standard template library. 
+		 * Many of these features are not used in this library (uchronia) as such, but are here as a place of 
+		 * convenience for dependent modelling libraries.
+		 */
 		class STLHelper
 		{
 		private:
@@ -125,12 +137,17 @@ namespace datatypes
 
 
 		public:
+			/**
+			 * \brief is a key present in a dictionary (map)
+			 */
 			template<typename K = string, typename V = string>
 			static bool HasKey(const map<K, V>& dict, const string& key)
 			{
 				return(dict.find(key) != dict.end());
 			}
-
+			/**
+			 * \brief Gets the keys present in a dictionary (map)
+			 */
 			template<typename K = string, typename V = string>
 			static vector<K> GetKeys(const map<K, V>& dict)
 			{
@@ -141,6 +158,15 @@ namespace datatypes
 				return res;
 			}
 
+			/**
+			 * \brief Change the keys of a dictionary with new keys, remaping
+			 * 
+			 * \tparam K key type
+			 * \tparam V value type
+			 * \param dict 
+			 * \param newKeys 
+			 * \return map<K, V> 
+			 */
 			template<typename K = string, typename V = string>
 			static map<K, V> Remap(const map<K, V>& dict, const map<K, K>& newKeys)
 			{
@@ -163,6 +189,9 @@ namespace datatypes
 				return res;
 			}
 
+			/**
+			 * \brief Gets the values of a dictionary (map)
+			 */
 			template<typename K = string, typename V = string>
 			static vector<V> GetValues(const map<K, V>& dict)
 			{
@@ -173,6 +202,9 @@ namespace datatypes
 				return res;
 			}
 
+			/**
+			 * \brief Gets the values of a dictionary (map), for a set of keys
+			 */
 			template<typename K = string, typename V = string>
 			static vector<V> GetValues(const map<K, V>& dict, const vector<K>& keys)
 			{
@@ -195,6 +227,9 @@ namespace datatypes
 				return first > second;
 			}
 
+			/**
+			 * \brief Gets the values of a dictionary (map), in the order specified by a set of keys.
+			 */
 			template <typename K, typename V>
 			static vector<V> SortValues(
 				const std::map<K,V>& in,
@@ -210,6 +245,9 @@ namespace datatypes
 				return result;
 			}
 
+			/**
+			 * \brief Flatten jagged vectors to a one dimension vector.
+			 */
 			template <typename T>
 			static vector<T> Serialize(const vector<vector<T>>& series)
 			{
@@ -225,6 +263,10 @@ namespace datatypes
 				return result;
 			}
 
+			/**
+			 * \brief Reorder the values in one vector, based on the sorting of a second vector, using a specified comparer.
+			 * Acknowledgements: derived from http://stackoverflow.com/a/236199/2752565, Konrad Rudolph
+			 */
 			template <typename T, typename U>
 			static vector<T> SortFromRef(
 				const vector<T>& in,
@@ -265,22 +307,38 @@ namespace datatypes
 			return data;
 		}
 
-		// Could not find an easy if_then_else in the STL or Boost. IfThenElse will probably be replaced.
-		// primary template: yield second or third argument depending on first argument
+		///////////////////
+		// Template metaprogramming
+		///////////////////
+		
+
+		/**
+		 * \brief Yield second or third argument depending on first argument.
+		 * Could not find an easy to use if_then_else in the STL or Boost. IfThenElse will probably be replaced.
+		 * Primary template: yield second or third argument depending on first argument
+		 * 
+		 * Credits:
+		 * C++ templates : the complete guide / David Vandevoorde, Nicolai M. Josuttis. ISBN 0-201-73484-2 (alk.paper)
+		 * 
+		 * \tparam C first parameter, boolean
+		 * \tparam Ta second parameter
+		 * \tparam Tb third parameter
+		 */
 		template<bool C, typename Ta, typename Tb>
 		class IfThenElse;
-		// Credits:
-		// C++ templates : the complete guide / David Vandevoorde, Nicolai M. Josuttis.
-		//				ISBN 0 - 201 - 73484 - 2 (alk.paper)
 
-		// partial specialization: true yields second argument
+		/**
+		 * \brief  partial specialization: true yields second argument
+		 */ 
 		template<typename Ta, typename Tb>
 		class IfThenElse < true, Ta, Tb > {
 		public:
 			typedef Ta ResultT;
 		};
 
-		// partial specialization: false yields third argument
+		/**
+		 * \brief  partial specialization: true yields third argument
+		 */ 
 		template<typename Ta, typename Tb>
 		class IfThenElse < false, Ta, Tb > {
 		public:
@@ -310,6 +368,14 @@ namespace datatypes
 			}
 		};
 
+		/**
+		 * \brief Template program; Type type is a class suitable to dispose of object T, 
+		 * whether it is a vector of value types, or a 
+		 * vector where items are pointers requiring the delete operator.
+		 * Used to dispose of items in a templated time series, with items of either value or pointer types.
+		 * 
+		 * \tparam T type of items in the vector to clear/dispose of.
+		 */
 		template <typename T>
 		struct DisposeVectorTypeFactory {
 			typedef typename IfThenElse<
@@ -354,6 +420,10 @@ namespace datatypes
 			}
 		}
 
+		/**
+		 * \brief	Wraps boost::lexical_cast with a try/catch; 
+		 *          rethrows an exception that inherits from std::exception and a more useful error message.
+		 */
 		template <typename Source>
 		static string ToString(const Source& value)
 		{
@@ -366,6 +436,10 @@ namespace datatypes
 			}
 		}
 
+		/**
+		 * \brief	Converts string items to an array, casting strings. Wraps calls to boost::lexical_cast with a try/catch; 
+		 *          rethrows an exception that inherits from std::exception and a more useful error message.
+		 */
 		template<class TTo>
 		static TTo* ConvertToArray(const vector<string>& src)
 		{
@@ -386,6 +460,10 @@ namespace datatypes
 			}
 		}
 
+		/**
+		 * \brief	Converts string items to an array, casting strings (C casts for each item). 
+		 *          rethrows an exception that inherits from std::exception and a more useful error message for the end user (better C API support).
+		 */
 		template<class TFrom, class TTo>
 		static TTo* ConvertToArray(const vector<TFrom>& src)
 		{
@@ -407,6 +485,10 @@ namespace datatypes
 			}
 		}
 
+		/**
+		 * \brief Converts each vector items from one type to another. 
+		 *          rethrows an exception that inherits from std::exception and a more useful error message for the end user (better C API support).
+		 */
 		template<class TFrom, class TTo>
 		static vector<TTo> Convert(const vector<TFrom>& src)
 		{
@@ -427,6 +509,10 @@ namespace datatypes
 			}
 		}
 
+		/**
+		 * \brief	Converts string items to an array, casting strings. Wraps calls to boost::lexical_cast with a try/catch; 
+		 *          rethrows an exception that inherits from std::exception and a more useful error message.
+		 */
 		template<class TTo>
 		vector<TTo> Convert(const vector<string> & src)
 		{
@@ -446,6 +532,10 @@ namespace datatypes
 			}
 		}
 
+		/**
+		 * \brief Helper class with string processing related functions. These emulate methods found in other languages such as C#, R, etc. 
+		 * 
+		 */
 		class DATATYPES_DLL_LIB StringProcessing
 		{
 		public:
@@ -493,11 +583,13 @@ namespace datatypes
 
 	namespace interop
 	{
+		/**
+		 * \brief Ways for wrappers to specify to this API what special numeric value to use 
+		 * as 'missing value' code in time series interop.
+		 */
 		class DATATYPES_DLL_LIB MissingValueHandling
 		{
 			// https://jira.csiro.au/browse/WIRADA-416
-			// Ways for wrappers to specify to this API what special numeric value to use 
-			// as 'missing value' code in time series interop.
 		public:
 			/** \brief	The time series missing value. */
 			static std::atomic<double> TimeSeriesMissingValueValue;

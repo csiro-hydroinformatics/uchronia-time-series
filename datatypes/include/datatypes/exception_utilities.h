@@ -11,6 +11,10 @@ using std::pair;
 
 namespace datatypes
 {
+	/**
+	 * \brief Helper function to build consistent informative error messages in exceptions with commonalities.
+	 * 
+	 */
 	namespace exceptions
 	{
 		template <typename T>

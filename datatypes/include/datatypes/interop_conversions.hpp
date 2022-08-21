@@ -40,6 +40,12 @@ namespace cinterop
 {
 	namespace timeseries
 	{
+		/**
+		 * \brief Template specialisation for cinterop::timeseries::to_multi_regular_time_series_data_ptr
+		 * 
+		 * \param ts time series
+		 * \return multi_regular_time_series_data* 
+		 */
 		template<>
 		inline multi_regular_time_series_data* to_multi_regular_time_series_data_ptr<TimeSeries>(const TimeSeries& ts)
 		{
@@ -48,6 +54,9 @@ namespace cinterop
 	}
 	namespace statistics
 	{
+		/**
+		 * \brief Template specialisation for cinterop::statistics::to_statistic_definition_ptr
+		 */
 		template<>
 		inline statistic_definition* to_statistic_definition_ptr<TimeSeries>(const std::string& model_variable_id, const std::string& statistic_identifier, const std::string& objective_identifier, const std::string& objective_name,
 			const date_time_to_second& start, const date_time_to_second& end, const TimeSeries& time_series_data)

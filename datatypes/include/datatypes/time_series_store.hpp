@@ -78,6 +78,10 @@ namespace datatypes
 #define COLLECTION_DIM_TYPE_DATA_DIMENSION "collection"
 #define ENSEMBLE_DIM_TYPE_DATA_DIMENSION "ensemble"
 
+		/**
+		 * \brief Basic descriptor for a named dimension of a data structure (time series).
+		 * 
+		 */
 		class DATATYPES_DLL_LIB DataDimensionDescriptor
 		{
 		public:
@@ -92,6 +96,10 @@ namespace datatypes
 		};
 
 
+		/**
+		 * \brief Minimalist descriptor for a multidimensional time series.
+		 * 
+		 */
 		class DATATYPES_DLL_LIB DataDescriptor
 		{
 		public:
@@ -149,7 +157,6 @@ namespace datatypes
 		*
 		* \tparam	T	The element type of the time series dealt with, typically double or float.
 		*/
-
 		template <typename T>
 		class DATATYPES_DLL_LIB TimeSeriesEnsembleTimeSeriesStore :
 			public IdentifiersProvider,
@@ -195,6 +202,11 @@ namespace datatypes
 			virtual vector<string> GetIdentifiers() const { datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();  vector<string> x; return x; }
 		};
 
+		/**
+		* \brief	Interface definition for writeable storages of time series of ensembles of time series
+		*
+		* \tparam	T	The element type of the time series dealt with, typically double or float.
+		*/
 		template <typename T>
 		class DATATYPES_DLL_LIB WritableTimeSeriesEnsembleTimeSeriesStore :
 			public TimeSeriesEnsembleTimeSeriesStore<T>

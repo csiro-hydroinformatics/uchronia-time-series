@@ -13,15 +13,13 @@ namespace datatypes
 	namespace timeseries
 	{
 		/**
-		 * \class	StoragePolicy
-		 *
 		 * \brief	An interface for classes that can handle the storage of data for time series.
 		 *
 		 *          The storage of time series data is using a software pattern usually named Strategy,
 		 *          or Policy. The word "policy" is more of a legacy (time series storage used to be 
 		 *          template-arguments for time series). The purpose is to delegate the details of the 
 		 *          data handling (memory, file, and data caching between different types of storages.) 
-		 *          out of TTimeSeries objects.
+		 *          out of the \ref TTimeSeries objects.
 		 *
 		 * \tparam	T	The type of each data item this can handle, e.g. a double, float, or even pointers.
 		 */
@@ -105,7 +103,7 @@ namespace datatypes
 
 
 		template <typename T = double>
-		class NegativeIsMissingFloadingPointPolicy
+		class NegativeIsMissingFloatingPointPolicy
 			: public MissingValuePolicy<T>
 		{
 		private:
@@ -113,10 +111,15 @@ namespace datatypes
 		public:
 			inline bool IsMissingValue(const T& a) const { return (a < T()); };
 			inline T GetMissingValue() const { return missingValue; };
-			MissingValuePolicy<T>* Clone() const { return new NegativeIsMissingFloadingPointPolicy<T>(); };
+			MissingValuePolicy<T>* Clone() const { return new NegativeIsMissingFloatingPointPolicy<T>(); };
 		};
 
 
+		/**
+		 * \brief Storage policy; data items are stored in standard template library std::vector
+		 * 
+		 * \tparam T item type
+		 */
 		template <typename T = double>
 		class StlVectorStorage
 			: public StoragePolicy<T>
@@ -477,14 +480,33 @@ namespace datatypes
 
 		};
 
-
+		/**
+		 * \brief	An interface for classes that can handle the storage of data for ensemble time series.
+		 *
+		 *          The storage of ensemble time series data is using a software pattern usually named Strategy,
+		 *          or Policy. The word "policy" is more of a legacy (time series storage used to be 
+		 *          template-arguments for time series). The purpose is to delegate the details of the 
+		 *          data handling (memory, file, and data caching between different types of storages.) 
+		 *          out of the \ref TTimeSeries objects.
+		 *
+		 * \tparam	T	The type of each data item this can handle, e.g. a \ref TimeSeries value or pointer.
+		 */
 		template <typename TsType>
 		class EnsembleStoragePolicy
 		{
 		public:
 
+			/**
+			 * \brief The value type of the items stored, e.g. TimeSeries
+			 */
 			typedef typename std::remove_pointer<TsType>::type Type;
+			/**
+			 * \brief The pointer type of the items stored, e.g. TimeSeries*
+			 */
 			typedef typename std::add_pointer<Type>::type PtrType;
+			/**
+			 * \brief The type of each element in the time series items stored by this storage; e.g. if this stores a series of TimeSeries, ElementType is 'double'
+			 */
 			typedef typename Type::ElementType ElementType;
 
 			EnsembleStoragePolicy() {}
@@ -519,6 +541,11 @@ namespace datatypes
 			virtual void OperatorEqualImpl(const EnsembleStoragePolicy<TsType>& src) = 0;
 		};
 
+		/**
+		 * \brief std::vector based storage policy
+		 * 
+		 * \tparam TsType item type for this ensemble storage, e.g. \ref TimeSeries
+		 */
 		template <typename TsType>
 		class StdVectorEnsembleStoragePolicy : public EnsembleStoragePolicy<TsType>
 		{
