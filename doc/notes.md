@@ -58,6 +58,3 @@ $DX2 --input ./doxyoutput/xml --output ./docs/cpp --config config.json
 conda activate poetry
 mkdocs build --clean --site-dir _build/html --config-file mkdocs.yml
 ```
-
-
-http://127.0.0.1:8000/cppClasses/classdatatypes_1_1timeseries_1_1MultiTimeSeries/
