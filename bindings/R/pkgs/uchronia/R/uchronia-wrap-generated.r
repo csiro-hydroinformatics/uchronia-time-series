@@ -3,9 +3,9 @@
 # *** THIS FILE IS GENERATED ****
 # DO NOT MODIFY IT MANUALLY, AS YOU ARE VERY LIKELY TO LOSE WORK
 # 
-# Generated at 2022-04-22 08:26 UTC with Created by F# script gen_r_uchronia.fsx in cruise-control
+# Generated at 2022-09-08 02:21 UTC with Created by F# script gen_r_uchronia.fsx in cruise-control
 #
-# Generated from the C API C:\src\datatypes\datatypes\include\datatypes\extern_c_api.h
+# Generated from the C API /home/per202/src/datatypes/datatypes/include/datatypes/extern_c_api.h
 #
 ##################
 
@@ -72,10 +72,12 @@ CreateEnsembleDataset_R <- function(type) {
 #'
 #' GetEnsembleDatasetDataIdentifiers_R Wrapper function for GetEnsembleDatasetDataIdentifiers
 #'
-#' @export
+#' @export
+
 GetEnsembleDatasetDataIdentifiers_R <- function(dataLibrary)
 {
-      dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+      dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+
     result <- GetEnsembleDatasetDataIdentifiers_Rcpp(dataLibrary);
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
@@ -85,11 +87,13 @@ GetEnsembleDatasetDataIdentifiers_R <- function(dataLibrary)
 #'
 #' GetEnsembleDatasetDataSubIdentifiers_R Wrapper function for GetEnsembleDatasetDataSubIdentifiers
 #'
-#' @export
+#' @export
+
 GetEnsembleDatasetDataSubIdentifiers_R <- function(dataLibrary, dataCollectionId)
 {
       dataLibrary <- cinterop::getExternalXptr(dataLibrary)
-  dataCollectionId <- cinterop::getExternalXptr(dataCollectionId)
+  dataCollectionId <- cinterop::getExternalXptr(dataCollectionId)
+
     result <- GetEnsembleDatasetDataSubIdentifiers_Rcpp(dataLibrary, dataCollectionId);
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
@@ -99,10 +103,12 @@ GetEnsembleDatasetDataSubIdentifiers_R <- function(dataLibrary, dataCollectionId
 #'
 #' GetEnsembleDatasetDataSummaries_R Wrapper function for GetEnsembleDatasetDataSummaries
 #'
-#' @export
+#' @export
+
 GetEnsembleDatasetDataSummaries_R <- function(dataLibrary)
 {
-      dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+      dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+
     result <- GetEnsembleDatasetDataSummaries_Rcpp(dataLibrary);
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }
@@ -497,10 +503,12 @@ GetProviderTimeSeriesValues_R <- function(dataLibrary, variableIdentifier, value
 #'
 #' GetProviderTimeSeriesIdentifiers_R Wrapper function for GetProviderTimeSeriesIdentifiers
 #'
-#' @export
+#' @export
+
 GetProviderTimeSeriesIdentifiers_R <- function(dataLibrary)
 {
-      dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+      dataLibrary <- cinterop::getExternalXptr(dataLibrary)
+
     result <- GetProviderTimeSeriesIdentifiers_Rcpp(dataLibrary);
     return(cinterop::mkExternalObjRef(result,'dummytype'))
 }

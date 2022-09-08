@@ -23,7 +23,7 @@ import uchronia.wrap.uchronia_wrap_custom as uwc
 
 
 
-def mk_date(year, month, day, hour=0, min=0, sec=0, tz="UTC"):
+def mk_date(year, month, day, hour=0, min=0, sec=0, tz=None):
     """
     Creates a pandas Timestamp date/time object
 

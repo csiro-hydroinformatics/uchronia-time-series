@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from uchronia.const import TsRetrievalSignature, VecStr, NdTimeSeries
 
 def get_multiple_time_series_from_provider(
-    ts_provider: "TimeSeriesProvider", var_ids: VecStr, api_get_ts_func: "TsRetrievalSignature"
+    ts_provider: "TimeSeriesProvider", var_ids: "VecStr", api_get_ts_func: "TsRetrievalSignature"
 ) -> xr.DataArray:
     """
     Gets one or more time series from a time series provider

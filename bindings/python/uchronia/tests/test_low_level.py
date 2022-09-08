@@ -16,148 +16,108 @@ pkg_dir = os.path.join(os.path.dirname(__file__),'..')
 sys.path.append(pkg_dir)
 
 from uchronia.wrap.ffi_interop import *
-from uchronia.wrap.uchronia_wrap_generated import *
+import uchronia.wrap.uchronia_wrap_generated as uwg
 
 from cffi import FFI
 
-def test_struct_datetime():
-    mdt = MarshaledDateTime(2001,1,2,3,4,5)
-    assert mdt.year == 2001
-    assert mdt.month == 1
-    assert mdt.day == 2
-    assert mdt.hour == 3
-    assert mdt.minute == 4
-    assert mdt.second == 5
-    del mdt
+import cinterop
 
-def test_struct_tsgeom():
-    mdt = MarshaledDateTime(2001,1,2,3,4,5)
-    geom = MarshaledTsGeometry(mdt, b'D', 365)
-    s = geom.start
-    del s
-    del mdt
-
-def test_struct_ensemble_series():
-    mdt = MarshaledDateTime(2001,1,2,3,4,5)
-    geom = MarshaledTsGeometry(mdt, b'D', 365)
-
-    values = np.zeros((365, 1))
-    np_values = np.ascontiguousarray(values.T, dtype=np.float64)
-    values_c = uchronia_ffi.new("double* [{dim}]".format(dim=values.shape[1]))
-    for idx in range(values.shape[1]):
-        values_c[idx] = uchronia_ffi.cast("double *", np_values[idx].ctypes.data)
-
-    mtsd = MultiTimeSeriesData(geom, values.shape[1], values_c)
-    print(mtsd.ensemble_size)
-    str(mtsd.numeric_data)
-
-    del geom
-    del mtsd
-
-def create_struct_ensemble_series(n=365, n_ens=2, t_step=b'D'):
-    mdt = MarshaledDateTime(2001,1,2,3,4,5)
-    geom = MarshaledTsGeometry(mdt, t_step, n)
-
-    values = np.zeros((n, 1))
-    np_values = np.ascontiguousarray(values.T, dtype=np.float64)
-    values_c = uchronia_ffi.new("double* [{dim}]".format(dim=values.shape[1]))
-    for idx in range(values.shape[1]):
-        values_c[idx] = uchronia_ffi.cast("double *", np_values[idx].ctypes.data)
-
-    mtsd = MultiTimeSeriesData(geom, values.shape[1], values_c)
-    return mtsd
-
-def create_ensemble_series(n=365, n_ens=2, t_step=b'D'):
-    data = np.random.rand(n, n_ens)
-    locs = [str(i) for i in range(n_ens)]
-    times = pd.date_range('2001-01-02', periods=n, freq='D')
-    foo = xr.DataArray(data, coords=[times, locs], dims=['time', 'ens'])
-    return foo
-
-def to_multi_regular_time_series_data(x):
-    if not isinstance(x, xr.DataArray):
-        raise Exception("not supported")
-    # x = xr.DataArray(data, coords=[times, locs], dims=['time', 'ens'])
-    n = x.shape[0]
-    n_ens = x.shape[1]
-    start = x.coords.get('time').to_index()[0]
-    t_step = b'D'
-    mdt = MarshaledDateTime(start.year, start.month, start.day, start.hour, start.minute,start.second)
-    geom = MarshaledTsGeometry(mdt, t_step, n)
-    values = x.values
-    np_values = np.ascontiguousarray(values.T, dtype=np.float64)
-    values_c = uchronia_ffi.new("double* [{dim}]".format(dim=values.shape[1]))
-    for idx in range(values.shape[1]):
-        values_c[idx] = uchronia_ffi.cast("double *", np_values[idx].ctypes.data)
-
-    mtsd = MultiTimeSeriesData(geom, values.shape[1], values_c)
-    return mtsd
+# 2022-09 some of unit tests that used to be here were outdated. 
+# Removing them. Now should all be covered by UT in the c-interop repo:
+# /c-interop/bindings/python/cinterop/tests/test_native_handle.py
 
 
-def test_create_series():
-    tss = create_struct_ensemble_series()
-    timeSeries = CreateSingleTimeSeriesDataFromStruct_py(tss)
-    del timeSeries
-    assert True
+# def set_wrap_cffi_native_handle(wrapper_function:'WrapperCreationFunction'):
+# def custom_wrap_cffi_native_handle(obj, type_id='', release_native = None):
+# def charp_array_to_py(values:CffiData, size:int, dispose:bool=True) -> List[str]:
+# def char_array_to_py(values:CffiData, dispose:bool=True) -> str:
+# def named_values_to_py(values:CffiData, dispose:bool=True) -> Dict[str,float]:
+# def opaque_ts_as_xarray_time_series(ptr:CffiData, dispose:bool=True) -> xr.DataArray:
+# def py_time_series_dimensions_description(ptr:CffiData, dispose:bool=True) -> List[Tuple[str,int]]:
+# def toSceParametersNative(x:dict) -> OwningCffiNativeHandle:
 
-x = create_ensemble_series()
-mtsd = to_multi_regular_time_series_data(x)
+
+# def GetLastStdExceptionMessage_py() -> str:
+def test_GetLastStdExceptionMessage_py():
+    assert uwg.GetLastStdExceptionMessage_py() == ""
+# def RegisterExceptionCallback_py(callback:Any) -> None:
+# def DisposeSharedPointer_py(ptr:Any) -> None:
+# def SetTimeSeriesMissingValueValue_py(missingValueValue:float) -> None:
+def test_SetTimeSeriesMissingValueValue_py():
+    from cinterop.timeseries import mk_daily_xarray_series, as_pydatetime
+    ts = mk_daily_xarray_series(np.array([1.0, 2, 3, 4, 5]), "2000-01-01")
+    native_ts = uwg.CreateSingleTimeSeriesDataFromStruct_py(ts)
+    uwg.SetTimeSeriesMissingValueValue_py(3.0)
+    # TODO: below too convoluted and not working. Simplify
+    # efts = uwg.CreateEnsembleForecastTimeSeries_py(as_pydatetime("2000-01-01"), 2, "daily")
+    # ensts = uwg.GetItemEnsembleForecastTimeSeries_py(efts, 0)
+    # uwg.SetItemEnsembleTimeSeriesAsStructure_py(ensts, 0, ts)
+    # py_ts = uwg.GetItemEnsembleTimeSeriesAsStructure_py(ensts, 0)
+    # assert np.isna(py_ts.values[2])
+
+import uchronia.data_set as uds
+import uchronia.sample_data as usd
+
+# def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> 'TimeSeriesLibrary':
+def test_LoadEnsembleDataset_py():
+    s = usd.sample_data_dir()
+    data_library_file = os.path.join(s, 'time_series_library.yaml')
+    d = uwg.LoadEnsembleDataset_py(data_library_file, "")
+    assert d is not None
+
+from pathlib import Path
+
+# def CreateEnsembleDataset_py(type:str) -> 'TimeSeriesLibrary':
+def test_CreateEnsembleDataset_py():
+    # 2022-09 very little supported for now, only "test_recording_library"
+    # import tempfile
+    # with tempfile.TemporaryDirectory() as tmpdirname:
+    #     tmp = Path(tmpdirname)
+    #     valid_subfolder = tmp / "path"
+    #     valid_subfolder.mkdir(parents=True, exist_ok=True)
+    d = uwg.CreateEnsembleDataset_py("test_recording_library")
+    assert len(d.get_dataset_ids()) == 0
+
+# def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:'TimeSeriesLibrary'):
+# def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:'TimeSeriesLibrary', dataCollectionId:str):
+# def GetEnsembleDatasetDataSummaries_py(dataLibrary:'TimeSeriesLibrary'):
+# def GetDataDimensionsDescription_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -> List:
+# def EnsembleSizeEnsembleTimeSeries_py(ensSeries:'EnsemblePtrTimeSeries') -> int:
+# def DisposeDataDimensionsDescriptions_py(data:List) -> None:
+# def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName:str) -> 'EnsembleForecastTimeSeries':
+# def GetDatasetSingleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -> 'TimeSeries':
+# def GetDatasetEnsembleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataEnsembleId:str) -> 'EnsemblePtrTimeSeries':
+# def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -> 'EnsembleForecastTimeSeries':
+# def SaveSingleTimeSeriesToNetcdf_py(timeSeries:'TimeSeries', filename:str, overwrite:bool) -> None:
+# def SaveEnsembleTimeSeriesToNetcdf_py(collection:'EnsemblePtrTimeSeries', filename:str, overwrite:bool) -> None:
+# def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs:'EnsembleForecastTimeSeries', filename:str, overwrite:bool) -> None:
+# def IsMissingValueItemEnsembleForecastTimeSeries_py(series:'EnsembleForecastTimeSeries', i:int) -> bool:
+# def GetItemEnsembleForecastTimeSeries_py(efts:'EnsembleForecastTimeSeries', i:int) -> 'EnsemblePtrTimeSeries':
+# def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs:'EnsemblePtrTimeSeries', index:int) -> 'TimeSeries':
+# def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts:'EnsembleForecastTimeSeries', indexInIssueTime:int, indexInForecastTime:int) -> 'TimeSeries':
+# def GetValueFromUnivariateTimeSeries_py(ts:'TimeSeries', index:int) -> float:
+# def TransformEachItem_py(tsEnsTs:'EnsembleForecastTimeSeries', method:str, methodArgument:str) -> None:
+# def SetValueToUnivariateTimeSeries_py(ts:'TimeSeries', index:int, value:float) -> None:
+# def GetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTimeSeries', i:int) -> xr.DataArray:
+# def GetItemEnsembleTimeSeriesAsStructure_py(series:'EnsemblePtrTimeSeries', i:int) -> xr.DataArray:
+# def SetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTimeSeries', i:int, values:xr.DataArray) -> None:
+# def SetItemEnsembleTimeSeriesAsStructure_py(collection:'EnsemblePtrTimeSeries', i:int, values:xr.DataArray) -> None:
+# def CreatePerfectForecastTimeSeries_py(observations:'TimeSeries', start:datetime, length:int, timeStepName:str, offsetForecasts:int, leadTime:int) -> 'EnsembleForecastTimeSeries':
+# def ToStructEnsembleTimeSeriesData_py(ensSeries:'EnsemblePtrTimeSeries') -> xr.DataArray:
+# def ToStructSingleTimeSeriesData_py(timeSeries:'TimeSeries') -> xr.DataArray:
+# def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> 'EnsemblePtrTimeSeries':
+# def CreateSingleTimeSeriesDataFromStruct_py(timeSeries:xr.DataArray) -> 'TimeSeries':
+# def DisposeMultiTimeSeriesData_py(data:xr.DataArray) -> None:
+# def GetTimeSeriesGeometry_py(timeSeries:'TimeSeries', geom:TimeSeriesGeometryNative) -> None:
+# def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:'EnsembleForecastTimeSeries', geom:TimeSeriesGeometryNative) -> None:
+# def GetTimeSeriesValues_py(timeSeries:'TimeSeries', values:np.ndarray, arrayLength:int) -> None:
+# def GetNumTimeSeries_py() -> int:
+# def GetProviderTsGeometry_py(dataLibrary:'TimeSeriesProvider', variableIdentifier:str, geom:TimeSeriesGeometryNative) -> None:
+# def GetProviderTimeSeriesValues_py(dataLibrary:'TimeSeriesProvider', variableIdentifier:str, values:np.ndarray, arrayLength:int) -> None:
+# def GetProviderTimeSeriesIdentifiers_py(dataLibrary:'TimeSeriesProvider'):
+# def TimeSeriesFromProviderTs_py(dataLibrary:'TimeSeriesProvider', variableIdentifier:str) -> 'TimeSeries':
 
 
 if __name__ == "__main__":
-    # test_wrapper_helper_functions()
-    pass
+    test_CreateEnsembleDataset_py()
 
-
-# test_create_series()
-
-
-# CreateEnsembleForecastTimeSeries_py(start, length, timeStepName):
-# CreatePerfectForecastTimeSeries_py(observations, start, length, timeStepName, offsetForecasts, leadTime):
-# CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries):
-# CreateEnsembleDataset_py(type):
-
-# SetTimeSeriesMissingValueValue_py(missingValueValue):
-
-# GetLastStdExceptionMessage_py():
-# RegisterExceptionCallback_py(callback):
-
-# DisposeSharedPointer_py(ptr):
-# DeleteAnsiStringArray_py(values, arrayLength):
-# DeleteAnsiString_py(value):
-# DeleteDoubleArray_py(value):
-# LoadEnsembleDataset_py(libraryIdentifier, data_path):
-# GetEnsembleDatasetDataIdentifiers_py(data_library):
-# GetEnsembleDatasetDataSubIdentifiers_py(data_library, dataCollectionId):
-# GetEnsembleDatasetDataSummaries_py(data_library):
-# GetDataDimensionsDescription_py(data_library, data_id):
-# EnsembleSizeEnsembleTimeSeries_py(ensSeries):
-# DisposeDataDimensionsDescriptions_py(data):
-# GetDatasetSingleTimeSeries_py(data_library, data_id):
-# GetDatasetEnsembleTimeSeries_py(data_library, dataEnsembleId):
-# GetDatasetEnsembleForecastTimeSeries_py(data_library, data_id):
-# SaveSingleTimeSeriesToNetcdf_py(timeSeries, filename, overwrite):
-# SaveEnsembleTimeSeriesToNetcdf_py(collection, filename, overwrite):
-# SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs, filename, overwrite):
-# IsMissingValueItemEnsembleForecastTimeSeries_py(series, i):
-# GetItemEnsembleForecastTimeSeries_py(efts, i):
-# TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs, index):
-# TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts, indexInIssueTime, indexInForecastTime):
-# GetValueFromUnivariateTimeSeries_py(ts, index):
-# TransformEachItem_py(tsEnsTs, method, methodArgument):
-# SetValueToUnivariateTimeSeries_py(ts, index, value):
-# GetItemEnsembleForecastTimeSeriesAsStructure_py(series, i):
-# GetItemEnsembleTimeSeriesAsStructure_py(series, i):
-# SetItemEnsembleForecastTimeSeriesAsStructure_py(series, i, values):
-# SetItemEnsembleTimeSeriesAsStructure_py(collection, i, values):
-# ToStructEnsembleTimeSeriesData_py(ensSeries):
-# ToStructSingleTimeSeriesData_py(timeSeries):
-# DisposeMultiTimeSeriesData_py(data):
-# GetTimeSeriesGeometry_py(timeSeries, geom):
-# GetEnsembleForecastTimeSeriesGeometry_py(timeSeries, geom):
-# GetTimeSeriesValues_py(timeSeries, values, arrayLength):
-# GetNumTimeSeries_py():
-# GetProviderTsGeometry_py(data_library, variable_identifier, geom):
-# GetProviderTimeSeriesValues_py(data_library, variable_identifier, values, arrayLength):
-# GetProviderTimeSeriesIdentifiers_py(data_library):
-# TimeSeriesFromProviderTs_py(data_library, variable_identifier):

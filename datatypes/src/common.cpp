@@ -2,10 +2,11 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string.hpp>    
+#include <boost/algorithm/string.hpp>
+
+#include <cinterop/object_lifetimes.hpp>
 
 #include "datatypes/common.h"
-
 namespace datatypes
 {
 	namespace utils
@@ -205,11 +206,7 @@ namespace datatypes
 
 		void datatypes_delete_ansi_string_array(char** values, int arrayLength)
 		{
-			if (values == nullptr)
-				throw std::logic_error("delete_ansi_string_array: values cannot be a nullptr");
-			for (int i = 0; i < arrayLength; i++)
-				delete[] values[i];
-			delete[] values;
+			cinterop::disposal::free_c_ptr_array<char>(values, arrayLength);
 		}
 	}
 }

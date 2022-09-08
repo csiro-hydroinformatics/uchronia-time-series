@@ -31,13 +31,11 @@ from uchronia.sample_data import sample_data_dir
 import os
 
 # %%
-## -----------------------------------------------------------------------------
 s = sample_data_dir()
 data_library_file = os.path.join(s, 'time_series_library.yaml')
 assert Path(data_library_file).exists()
 
 # %%
-## -----------------------------------------------------------------------------
 data_library = uds.get_ensemble_dataset(data_library_file, '')
 data_ids = data_library.get_dataset_ids()
 data_ids

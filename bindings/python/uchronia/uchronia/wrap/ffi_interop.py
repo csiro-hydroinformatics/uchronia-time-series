@@ -5,10 +5,12 @@ from functools import wraps
 from cffi import FFI
 import os
 
-from refcount.interop import *
-from refcount.putils import *
+from typing import List, Dict, Any
+from refcount.putils import library_short_filename, update_path_windows
+import pandas as pd
 
-from cinterop.cffi.marshal import *
+from refcount.interop import OwningCffiNativeHandle, CffiNativeHandle
+from cinterop.cffi.marshal import CffiMarshal
 
 
 uchronia_ffi = FFI()
@@ -24,7 +26,7 @@ with open(os.path.join(cdefs_dir, 'funcs_cdef.h')) as f_headers:
     uchronia_ffi.cdef(f_headers.read())
 
 short_fname = library_short_filename('datatypes')
-update_path_windows(from_env='LIBRARY_PATH', to_env='PATH', lib_short_fname=short_fname)
+update_path_windows(from_env='LIBRARY_PATH', to_env='PATH')
 # TODO is there a concrete use case to search custom paths and not let dlopen do its default??
 # long_fname = find_first_full_path(short_fname, "uchronia")
 long_fname = short_fname

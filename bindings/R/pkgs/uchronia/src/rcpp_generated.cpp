@@ -3,7 +3,7 @@
 // *** THIS FILE IS GENERATED ****
 // DO NOT MODIFY IT MANUALLY, AS YOU ARE VERY LIKELY TO LOSE WORK
 // 
-// Generated at 2022-04-22 08:26 UTC with Generated from the C API C:\src\datatypes\datatypes\include\datatypes\extern_c_api.h
+// Generated at 2022-09-08 02:21 UTC with Generated from the C API /home/per202/src/datatypes/datatypes/include/datatypes/extern_c_api.h
 // 
 // Created by F# script gen_r_uchronia.fsx in cruise-control
 //
@@ -61,8 +61,8 @@ XPtr<opaque_pointer_handle> CreateEnsembleDataset_Rcpp(CharacterVector type)
 // [[Rcpp::export]]
 CharacterVector GetEnsembleDatasetDataIdentifiers_Rcpp(XPtr<opaque_pointer_handle> dataLibrary)
 {
-    int size;    
-    char** values = GetEnsembleDatasetDataIdentifiers(dataLibrary->get(), &size);    
+    int size;
+    char** values = GetEnsembleDatasetDataIdentifiers(dataLibrary->get(), &size);
     return to_custom_character_vector<CharacterVector>(values, size, true);
 }
 
@@ -70,10 +70,8 @@ CharacterVector GetEnsembleDatasetDataIdentifiers_Rcpp(XPtr<opaque_pointer_handl
 // [[Rcpp::export]]
 CharacterVector GetEnsembleDatasetDataSubIdentifiers_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, CharacterVector dataCollectionId)
 {
-    int size;    
-    
-    char** values = GetEnsembleDatasetDataSubIdentifiers(dataLibrary->get(), dataCollectionId[0], &size);    
-    
+    int size;
+    char** values = GetEnsembleDatasetDataSubIdentifiers(dataLibrary->get(), dataCollectionId[0], &size);
     return to_custom_character_vector<CharacterVector>(values, size, true);
 }
 
@@ -81,8 +79,8 @@ CharacterVector GetEnsembleDatasetDataSubIdentifiers_Rcpp(XPtr<opaque_pointer_ha
 // [[Rcpp::export]]
 CharacterVector GetEnsembleDatasetDataSummaries_Rcpp(XPtr<opaque_pointer_handle> dataLibrary)
 {
-    int size;    
-    char** values = GetEnsembleDatasetDataSummaries(dataLibrary->get(), &size);    
+    int size;
+    char** values = GetEnsembleDatasetDataSummaries(dataLibrary->get(), &size);
     return to_custom_character_vector<CharacterVector>(values, size, true);
 }
 
@@ -300,8 +298,8 @@ void GetProviderTimeSeriesValues_Rcpp(XPtr<opaque_pointer_handle> dataLibrary, C
 // [[Rcpp::export]]
 CharacterVector GetProviderTimeSeriesIdentifiers_Rcpp(XPtr<opaque_pointer_handle> dataLibrary)
 {
-    int size;    
-    char** values = GetProviderTimeSeriesIdentifiers(dataLibrary->get(), &size);    
+    int size;
+    char** values = GetProviderTimeSeriesIdentifiers(dataLibrary->get(), &size);
     return to_custom_character_vector<CharacterVector>(values, size, true);
 }
 

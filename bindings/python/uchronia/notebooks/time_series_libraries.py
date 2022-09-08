@@ -21,25 +21,21 @@ import uchronia.data_set as uds
 from uchronia.sample_data import sample_data_dir
 import os
 
-## -----------------------------------------------------------------------------
 s = sample_data_dir()
 data_library_file = os.path.join(s, 'time_series_library.yaml')
 assert Path(data_library_file).exists()
 
 # %%
-## -----------------------------------------------------------------------------
 data_library = uds.get_ensemble_dataset(data_library_file, '')
 data_ids = data_library.get_dataset_ids()
 data_ids
 
-## -----------------------------------------------------------------------------
 single_obs = data_library.get_dataset("var1_obs")
 single_obs
 asXts = uds.as_xarray
 asXts(single_obs).plot()
 
 import uchronia.time_series as uts
-## -----------------------------------------------------------------------------
 stationIds =  data_library.sub_identifiers("var1_obs_collection")
 print(stationIds)
 multiObs = data_library.get_dataset("var1_obs_collection")
@@ -50,10 +46,8 @@ multiObs = asXts(multiObs)
 multiObs.head()
 multiObs.plot()
 
-## -----------------------------------------------------------------------------
 uds.datasets_summaries(data_library)
 
-## -----------------------------------------------------------------------------
 fcasts = data_library.get_dataset("var2_fcast_ens")
 fcasts
 # TODO: currently conversion ot xts is the default. Review:
@@ -78,7 +72,6 @@ import numpy as np
 import xarray as xr
 
 # %%
-## -----------------------------------------------------------------------------
 import matplotlib.pyplot as plt
 
 # %%
@@ -130,7 +123,7 @@ def _is_positive(x): return x > 0
 b.where(lambda arr: _is_positive(arr), np.nan).plot()
 
 # %%
-from cinterop.cffi.marshal import as_timestamp
+from cinterop.timeseries import as_timestamp
 
 # %% [markdown]
 # First, before demonstrating ensemble forecasting simulations, let's demonstrate how we can get a snapshot of the model states at a point in time and restore it later on, hot-starting further simulation.
