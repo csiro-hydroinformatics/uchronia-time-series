@@ -1,3 +1,9 @@
+r-uchronia (2.3-8) UNRELEASED; urgency=medium
+
+  * Fix edge case: C interop for returned empty arrays (e.g. char**) led to spurious exception 
+
+ -- Jean-Michel Perraud <per202@csiro.au>  Fri, 09 Sep 2022 15:39:12 +1000
+
 r-uchronia (2.3-1) unstable; urgency=medium
 
   * Initial release, testing debian packaging

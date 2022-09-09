@@ -1,4 +1,10 @@
-uchronia (2.3-7) UNRELEASED; urgency=medium
+uchronia (2.3-8) unstable; urgency=medium
+
+  * Fix edge case: C interop for returned empty arrays (e.g. char**) led to spurious exception
+
+ -- Jean-Michel Perraud <per202@csiro.au>  Fri, 09 Sep 2022 15:35:28 +1000
+
+uchronia (2.3-7) unstable; urgency=medium
 
   * Match the library soversion number
 
