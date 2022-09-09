@@ -205,7 +205,7 @@ def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:'TimeSeriesLibrary'):
 
     size = marshal.new_int_scalar_ptr()
     values = uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary_xptr.ptr, size)
-    
+
 
     result = charp_array_to_py(values, size[0], True)
     return result
@@ -224,7 +224,6 @@ def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:'TimeSeriesLibrary', dat
 
     size = marshal.new_int_scalar_ptr()
     values = uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary_xptr.ptr, dataCollectionId_c_charp.ptr, size)
-    
     # no cleanup for const char*
 
     result = charp_array_to_py(values, size[0], True)
@@ -243,7 +242,7 @@ def GetEnsembleDatasetDataSummaries_py(dataLibrary:'TimeSeriesLibrary'):
 
     size = marshal.new_int_scalar_ptr()
     values = uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary_xptr.ptr, size)
-    
+
 
     result = charp_array_to_py(values, size[0], True)
     return result
@@ -879,7 +878,7 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary:'TimeSeriesProvider'):
 
     size = marshal.new_int_scalar_ptr()
     values = uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary_xptr.ptr, size)
-    
+
 
     result = charp_array_to_py(values, size[0], True)
     return result
