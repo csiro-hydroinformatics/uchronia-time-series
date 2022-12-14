@@ -17,6 +17,10 @@ Some key capabilities are:
 * Scalable from interactive exploratory data analysis to high-performance cluster computing
 * Promote high level data identification for provenance and data integrity
 
+## Documentation
+
+The combined [C++ and Python API documentation](https://csiro-hydroinformatics.github.io/uchronia-ts-doc/) is available as of August 2022.
+
 ## License
 
 MIT-derived CSIRO license (see [License.txt](./LICENSE.txt))
@@ -32,7 +36,7 @@ Please contact David Robertson (david.robertson@csiro.au) if you want to reuse t
 
 ### Using off-the-shelf
 
-_uchronia_ is largely header-only but can be installed as a shared library, for off the shelf use.
+**uchronia** is largely a header-only library but can be installed as a shared library, for off the shelf use. There are ongoing efforts to package it for Windows and Linux, but for now one needs to install from source.
 
 On Linux:
 
