@@ -9,6 +9,10 @@ on:
   #pull_request:
   #  branches: [ "testing" ]
 
+env:
+  UT_DATA_DIRNAME: _ut_data
+  CM: "cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local -DCMAKE_MODULE_PATH=/usr/local/share/cmake/Modules/ -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON .."
+
 jobs:
   build:
     strategy:
@@ -25,6 +29,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
+    # We need the headers from c-interop
     - name: Check out c-interop repo
       uses: actions/checkout@v3
       with:
@@ -38,3 +43,71 @@ jobs:
         mkdir -p build && cd build
         cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
         sudo make install
+
+    - name: Build and install uchronia libs and headers
+      run: |
+        cd datatypes
+        mkdir -p build && cd build
+        cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local -DCMAKE_MODULE_PATH=/usr/local/share/cmake/Modules/ -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
+        sudo make install
+
+    - name: Fetch test data
+      run: |
+        UT_DATA_DIR=${GITHUB_WORKSPACE}/${UT_DATA_DIRNAME}
+        mkdir -p $UT_DATA_DIR
+        cd $UT_DATA_DIR
+        curl -o swift_test_data.7z https://cloudstor.aarnet.edu.au/plus/s/RU6kLfzuncINu4f/download
+        # sudo apt-get install p7zip-full
+        7zr x swift_test_data.7z
+
+    - name: Build/run unit tests
+      run: |
+        cd datatypes/tests
+        mkdir -p build ; cd build
+        $CM
+        sudo make
+        export SWIFT_TEST_DIR=${GITHUB_WORKSPACE}/${UT_DATA_DIRNAME}/documentation
+        ./datatypes_tests
+
+    - name: Build/run API unit tests
+      run: |
+        cd datatypes/tests/api
+        mkdir -p build ; cd build
+        $CM
+        sudo make
+        export SWIFT_TEST_DIR=${GITHUB_WORKSPACE}/${UT_DATA_DIRNAME}/documentation
+        ./datatypes_tests_api
+
+    # - name: Set up Python ${{ matrix.python-version }}
+    #   uses: actions/setup-python@v3
+    #   with:
+    #     python-version: ${{ matrix.python-version }}
+    # - name: Install Python dependencies for uchronia
+    #   run: |
+    #     python -m pip install --upgrade pip
+    #     python -m pip install flake8 pytest
+    #     cd bindings/python/uchronia
+    #     if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    #     if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
+    # #- name: Lint with flake8
+    # #  run: |
+    # #    # stop the build if there are Python syntax errors or undefined names
+    # #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    # #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    # #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    # - name: Compile native code for the unit tests
+    #   run: |
+    #     cd bindings/python/cinterop/tests/test_native_library
+    #     cmake -Bbuild .
+    #     cmake --build build
+    # - name: Test with pytest
+    #   run: |
+    #     cd bindings/python/cinterop
+    #     pytest tests/ --cov=cinterop --cov-report=xml
+    # # - name: Mypy type check
+    # #   run: poetry run mypy .
+    # - name: Use Codecov to track coverage
+    #   if: matrix.os == 'linux' && matrix.python-version == '3.9'
+    #   uses: codecov/codecov-action@v3
+    #   with:
+    #     files: coverage.xml   # coverage report
