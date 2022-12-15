@@ -11,6 +11,7 @@ on:
 
 env:
   UT_DATA_DIRNAME: _ut_data
+  INSTALL_PREFIX: /usr/local
   CM: "cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local -DCMAKE_MODULE_PATH=/usr/local/share/cmake/Modules/ -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON .."
 
 jobs:
@@ -29,15 +30,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
-    # We need the headers from c-interop
-    - name: Check out c-interop repo
-      uses: actions/checkout@v3
-      with:
-        repository: csiro-hydroinformatics/c-interop
-        ref: testing
-        path: c-interop
-        # token: ${{ secrets.my_pat }}
-
     - name: Install third party libs
       run: |
         sudo apt-get update
@@ -56,11 +48,53 @@ jobs:
           libnetcdf-dev \
           libudunits2-dev
 
+    # First(?) party dependencies: ours...
+    - name: Check out moirai repo
+      uses: actions/checkout@v3
+      with:
+        repository: csiro-hydroinformatics/moirai
+        ref: testing
+        path: moirai
+        # token: ${{ secrets.my_pat }}
+
+    - name: Check out c-interop repo
+      uses: actions/checkout@v3
+      with:
+        repository: csiro-hydroinformatics/c-interop
+        ref: testing
+        path: c-interop
+        # token: ${{ secrets.my_pat }}
+
+    - name: Check out config-utils repo
+      uses: actions/checkout@v3
+      with:
+        repository: csiro-hydroinformatics/config-utils
+        ref: testing
+        path: config-utils
+        # token: ${{ secrets.my_pat }}
+
+    - name: Install moirai C++ headers
+      run: |
+        cd moirai
+        mkdir -p build && cd build
+        $CM
+        sudo make install
+
+    - name: Install config-utils material
+      run: |
+        cd config-utils
+        sudo mkdir -p ${INSTALL_PREFIX}/share/cmake/Modules
+        sudo cp ./cmake/Modules/* ${INSTALL_PREFIX}/share/cmake/Modules/
+        cd ./catch
+        mkdir -p build ; cd build
+        $CM
+        sudo make install
+
     - name: Install c-interop C++ headers
       run: |
         cd c-interop
         mkdir -p build && cd build
-        cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
+        $CM
         sudo make install
 
     - name: Build and install uchronia libs and headers
