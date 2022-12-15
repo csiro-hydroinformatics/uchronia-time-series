@@ -107,7 +107,7 @@ jobs:
 
     - name: Build and install uchronia libs and headers
       run: |
-        cd datatypes
+        cd uchronia-time-series/datatypes
         mkdir -p build && cd build
         $CM
         sudo make install
