@@ -29,7 +29,6 @@ jobs:
       fail-fast: true
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
     - name: Install third party libs
       run: |
         sudo apt-get update
@@ -74,6 +73,14 @@ jobs:
         path: config-utils
         # token: ${{ secrets.my_pat }}
 
+    - name: Check out uchronia repo
+      uses: actions/checkout@v3
+      with:
+        repository: csiro-hydroinformatics/uchronia-time-series
+        ref: testing
+        path: uchronia-time-series
+        # token: ${{ secrets.my_pat }}
+
     - name: Install moirai C++ headers
       run: |
         cd moirai
@@ -102,7 +109,7 @@ jobs:
       run: |
         cd datatypes
         mkdir -p build && cd build
-        cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local -DCMAKE_MODULE_PATH=/usr/local/share/cmake/Modules/ -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
+        $CM
         sudo make install
 
     - name: Fetch test data
@@ -116,19 +123,19 @@ jobs:
 
     - name: Build/run unit tests
       run: |
-        cd datatypes/tests
+        cd uchronia-time-series/tests
         mkdir -p build ; cd build
         $CM
-        sudo make
+        make
         export SWIFT_TEST_DIR=${GITHUB_WORKSPACE}/${UT_DATA_DIRNAME}/documentation
         ./datatypes_tests
 
     - name: Build/run API unit tests
       run: |
-        cd datatypes/tests/api
+        cd uchronia-time-series/tests/api
         mkdir -p build ; cd build
         $CM
-        sudo make
+        make
         export SWIFT_TEST_DIR=${GITHUB_WORKSPACE}/${UT_DATA_DIRNAME}/documentation
         ./datatypes_tests_api
 
