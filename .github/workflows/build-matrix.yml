@@ -112,6 +112,11 @@ jobs:
         $CM
         sudo make install
 
+    - name: ldconfig song and dance
+      run: |
+        sudo chmod +x ${INSTALL_PREFIX}/lib/*.so
+        sudo ldconfig
+
     - name: Fetch test data
       run: |
         UT_DATA_DIR=${GITHUB_WORKSPACE}/${UT_DATA_DIRNAME}
