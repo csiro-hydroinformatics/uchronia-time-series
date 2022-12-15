@@ -37,6 +37,25 @@ jobs:
         ref: testing
         path: c-interop
         # token: ${{ secrets.my_pat }}
+
+    - name: Install third party libs
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          g++ \
+          p7zip-full \
+          curl \
+          libboost-system-dev \
+          libboost-date-time-dev \
+          libboost-regex-dev \
+          libboost-filesystem-dev \
+          libboost-graph-dev \
+          libboost-thread-dev \
+          libtbb-dev \
+          libnetcdf-dev \
+          libudunits2-dev
+
     - name: Install c-interop C++ headers
       run: |
         cd c-interop
