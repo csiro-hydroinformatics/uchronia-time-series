@@ -45,6 +45,7 @@ jobs:
           libboost-graph-dev \
           libboost-thread-dev \
           libtbb-dev \
+          libyaml-cpp-dev \
           libnetcdf-dev \
           libudunits2-dev
 
