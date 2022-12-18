@@ -122,18 +122,18 @@ namespace datatypes
 		public:
 			virtual ~MonthlyQppTimeStepImplementation() {}
 
-			TimeStepImplementation* Clone();
-			bool Equals(TimeStepImplementation* tsImpl) const;
+			TimeStepImplementation* Clone() override;
+			bool Equals(TimeStepImplementation* tsImpl) const override;
 
-			const ptime AddIntSteps(const ptime& startTimeStep, int n) const;
-			const ptime AddSteps(const ptime& startTimeStep, double mult) const;
+			const ptime AddIntSteps(const ptime& startTimeStep, int n) const override;
+			const ptime AddSteps(const ptime& startTimeStep, double mult) const override;
 			const time_duration GetTimeStepDuration(const ptime& startTimeStep) const override;
-			const void Increment(ptime* t) const;
+			const void Increment(ptime* t) const override;
 
-			std::string GetName() const;
+			std::string GetName() const override;
 
 		protected:
-			const double GetLinearIndexing(const ptime& start, const ptime& end) const;
+			const double GetLinearIndexing(const ptime& start, const ptime& end) const override;
 		};
 	}
 }

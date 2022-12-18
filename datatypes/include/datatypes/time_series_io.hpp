@@ -188,10 +188,12 @@ namespace datatypes
 				tsOrigin = fcastTimeStep.AddSteps(fcastUtcStart, -fcastOffset);
 
 			if (mainTimeStep.IsUnknown())
+			{
 				if (values.size() > 1 && values[1] != nullptr)
 					mainTimeStep = TimeStep(values[1]->GetStartDate() - values[0]->GetStartDate());
 				else
 					mainTimeStep = fcastTimeStep;
+			}
 
 			const size_t leadTimeSize = s->GetLength();
 			const size_t ensembleSize = ens->Size();
@@ -1028,11 +1030,11 @@ namespace datatypes
 					int code = NcGetVara<T>(ncid, varId, &(startp[0]), &(countp[0]), values);
 					if (code != NC_NOERR)
 					{
-						delete values;
+						delete[] values;
 						ExceptionUtilities::ThrowInvalidOperation("SetVariableDimOne failed for variable ID " + std::to_string(varId));
 					}
 					vector<T> result = ToVector(values, n);
-					delete values;
+					delete[] values;
 					return result;
 				}
 
@@ -1963,30 +1965,30 @@ namespace datatypes
 
 			bool ReadOnly() override { return !store->IsActive(); }
 
-			size_t Size() const
+			size_t Size() const override
 			{
 				return store->GetLength();
 			}
 
-			void Allocate(size_t length, PtrEnsemblePtrType value)
+			void Allocate(size_t length, PtrEnsemblePtrType value) override
 			{
 				store->Allocate(length, value);
 				resetProxies();
 			}
 
-			void AllocateValues(size_t length, const PtrEnsemblePtrType* values)
+			void AllocateValues(size_t length, const PtrEnsemblePtrType* values) override
 			{
 				store->AllocateValues(length, values);
 				resetProxies();
 			}
 
-			void AllocateValues(const vector<PtrEnsemblePtrType>& values)
+			void AllocateValues(const vector<PtrEnsemblePtrType>& values) override
 			{
 				store->AllocateValues(values);
 				resetProxies();
 			}
 
-			void CopyTo(vector<PtrEnsemblePtrType>& dest, size_t from = 0, size_t to = -1) const
+			void CopyTo(vector<PtrEnsemblePtrType>& dest, size_t from = 0, size_t to = -1) const override
 			{
 				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
 				//CheckIntervalBounds(from, to);
@@ -2022,25 +2024,25 @@ namespace datatypes
 				return ensemblesProxies[i];
 			}
 
-			PtrEnsemblePtrType& operator[](const size_t i) {
+			PtrEnsemblePtrType& operator[](const size_t i) override {
 				return GetProxy(i);
 			}
 
 private:
 			PtrEnsemblePtrType dummy; // to compile...
 public:
-			const PtrEnsemblePtrType& operator[](const size_t i) const {
+			const PtrEnsemblePtrType& operator[](const size_t i) const override {
 				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented("Not sure how to implement this, if at all possible, sorry");
 				return dummy; // to compile...
 			}
 
-			StoragePolicy<PtrEnsemblePtrType>* Clone() const
+			StoragePolicy<PtrEnsemblePtrType>* Clone() const override
 			{
 				datatypes::exceptions::ExceptionUtilities::ThrowNotSupported("EagerWriter", "Clone");
 				return nullptr;
 			}
 
-			size_t GetLength() const
+			size_t GetLength() const override
 			{
 				return store->GetLength();
 			}
@@ -2125,7 +2127,7 @@ public:
 			}
 
 		public:
-			virtual EnsembleForecastTimeSeries< TTimeSeries<T> >* GetSeries(const string& dataId)
+			EnsembleForecastTimeSeries< TTimeSeries<T> >* GetSeries(const string& dataId) override
 			{
 				EnsembleForecastTimeSeries<TTimeSeries<T>>* result;
 
@@ -2136,7 +2138,7 @@ public:
 				return result;
 			}
 
-			vector<string> GetIdentifiers() const
+			vector<string> GetIdentifiers() const override
 			{
 				return SingleNetCdfFileStore<T>::GetIdentifiers();
 				vector<string> x = { SingleNetCdfFileStore<T>::GetIdentifier() };
@@ -2258,12 +2260,12 @@ public:
 			//	return SwiftNetCDFAccess::Convert<ptime, string>(times, f);
 			//}
 
-			size_t GetLength() const
+			size_t GetLength() const override
 			{
 				return this->GetNcAccess()->GetTimeLength();
 			}
 
-			TimeStep GetTimeStep() const
+			TimeStep GetTimeStep() const override
 			{
 				// TODO: returning this->GetNcAccess()->GetTimeStep() is adequeate for 
 				// SWIFT netCDF specs v1, not the most recent 
@@ -2275,7 +2277,7 @@ public:
 				return this->GetNcAccess()->GetLeadTimeStep();
 			}
 
-			ptime GetStart() const
+			ptime GetStart() const override
 			{
 				vector<ptime> times = this->GetNcAccess()->GetTimeDim();
 				return times[0];
@@ -2287,12 +2289,12 @@ public:
 				return times[times.size()-1];
 			}
 
-			string GetDataSummary() const
+			string GetDataSummary() const override
 			{
 				return SingleNetCdfFileStore<T>::GetDefaultDataSummary();
 			}
 
-			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const override
 			{
 				return{
 					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION),
@@ -2305,14 +2307,14 @@ public:
 			using WritableTimeSeriesEnsembleTimeSeriesStore < T >::GetEnsembleSize;
 			using SingleNetCdfFileStore<T>::GetEnsembleSize;
 
-			void Allocate(size_t length, PtrEnsemblePtrType value)
+			void Allocate(size_t length, PtrEnsemblePtrType value) override
 			{
 				vector<PtrEnsemblePtrType> v(length);
 				v.assign(length, value);
 				AllocateValues(v);
 			}
 
-			void AllocateValues(const vector<PtrEnsemblePtrType>& values)
+			void AllocateValues(const vector<PtrEnsemblePtrType>& values) override
 			{
 				if (IsActive())
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("This netCDF store is already initialised and active");
@@ -2338,7 +2340,7 @@ public:
 				}
 			}
 
-			void SetSeries(const string& dataId, PtrTSeriesEnsemblePtrType value)
+			void SetSeries(const string& dataId, PtrTSeriesEnsemblePtrType value) override
 			{
 				for (size_t i = 0; i < value->GetLength(); i++)
 				{
@@ -2346,35 +2348,35 @@ public:
 				}
 			}
 
-			void SetItem(const string& dataId, size_t index, PtrEnsemblePtrType value)
+			void SetItem(const string& dataId, size_t index, PtrEnsemblePtrType value) override
 			{
 				SetForecasts(index, value);
 			}
 
-			void SetItem(const string& dataId, size_t index, const EnsemblePtrType& value)
+			void SetItem(const string& dataId, size_t index, const EnsemblePtrType& value) override
 			{
 				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
 			}
 
 			//SetItem(const string& dataId, PtrEnsemblePtrType) = 0;
 			//EnsemblePtrType Read(const string& ensembleIdentifier) = 0;
-			void SetLength(size_t length)
+			void SetLength(size_t length) override
 			{
 				datatypes::exceptions::ExceptionUtilities::ThrowNotImplemented();
 			}
 
-			void SetStart(ptime start)
+			void SetStart(ptime start) override
 			{
 				// TODO? can it be done after initial allocation?
 			}
 
 			//vector<string> GetItemIdentifiers() const = 0;
-			void SetTimeStep(const TimeStep&)
+			void SetTimeStep(const TimeStep&) override
 			{
 				// TODO? can it be done after initial allocation?
 			}
 
-			bool IsActive()
+			bool IsActive() override
 			{
 				return (this->HasNcAccess());
 			}
@@ -2431,7 +2433,7 @@ public:
 
 			bool ReadOnly() override { return readOnly; }
 
-			size_t Size() const 
+			size_t Size() const override
 			{ 
 				return data.size();
 			}
@@ -2455,7 +2457,7 @@ public:
 				}
 			}
 
-			void Allocate(size_t length, T value)
+			void Allocate(size_t length, T value) override
 			{
 				if(ReadOnly())
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("MultiFileTsStorage::Allocate cannot be called if the storage is read-only");
@@ -2465,7 +2467,7 @@ public:
 					data.assign(length, value);
 				}
 			}
-			void AllocateValues(size_t length, const T* values)
+			void AllocateValues(size_t length, const T* values) override
 			{
 				if (ReadOnly())
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("MultiFileTsStorage::AllocateValues cannot be called if the storage is read-only");
@@ -2475,7 +2477,7 @@ public:
 					data.assign(values, values + length);
 				}
 			}
-			void AllocateValues(const vector<T>& values)
+			void AllocateValues(const vector<T>& values) override
 			{
 				if (ReadOnly())
 					datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("MultiFileTsStorage::AllocateValues cannot be called if the storage is read-only");
@@ -2486,7 +2488,7 @@ public:
 				}
 			}
 
-			void CopyTo(vector<T>& dest, size_t from = 0, size_t to = -1) const
+			void CopyTo(vector<T>& dest, size_t from = 0, size_t to = -1) const override
 			{
 				CheckIntervalBounds(from, to);
 				size_t len = (to - from) + 1;
@@ -2509,23 +2511,23 @@ public:
 				datatypes::exceptions::ExceptionUtilities::CheckInRange<size_t>(i, 0, data.size(), "index");
 			}
 		public:
-			T& operator[](const size_t i) {
+			T& operator[](const size_t i) override {
 				CheckDataItemRange(i);
 				if (data[i] == nullptr)
 					data[i] = store.ReadAt(i);
 				return data[i];
 			}
-			const T& operator[](const size_t i) const {
+			const T& operator[](const size_t i) const override {
 				CheckDataItemRange(i);
 				return data[i];
 			}
 
-			StoragePolicy<T>* Clone() const 
+			StoragePolicy<T>* Clone() const override
 			{ 
 				return new MultiFileTsStorage<T>(*this); 
 			}
 
-			size_t GetLength() const
+			size_t GetLength() const override
 			{
 				return store.GetLength();
 			}
@@ -2596,7 +2598,7 @@ public:
 
 			using SeriesType = typename CommonTypes<T>::SeriesType;
 
-			EnsembleForecastTimeSeries< SeriesType >* GetSeries(const string& dataId)
+			EnsembleForecastTimeSeries< SeriesType >* GetSeries(const string& dataId) override
 			{
 				// Buckle up...
 				// T is of double
@@ -2658,18 +2660,18 @@ public:
 				return ReadByFileId(id);
 			}
 
-			size_t GetLength() const
+			size_t GetLength() const override
 			{
 				return this->length;
 				//return GetMatchingFiles().size();
 			}
 
-			TimeStep GetTimeStep() const
+			TimeStep GetTimeStep() const override
 			{
 				return timeStep;
 			}
 
-			ptime GetStart() const
+			ptime GetStart() const override
 			{
 				return start;
 			}
@@ -2691,7 +2693,7 @@ public:
 				return fileNamePattern;
 			}
 
-			string GetDataSummary() const
+			string GetDataSummary() const override
 			{
 				auto start = GetStart();
 				auto end = GetEnd();
@@ -2706,7 +2708,7 @@ public:
 				return result;
 			}
 
-			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const override
 			{
 				return{
 					DataDimensionDescriptor(TIME_DIM_TYPE_DATA_DIMENSION),

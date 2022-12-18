@@ -129,30 +129,30 @@ namespace datatypes {
 			~TestTimeSeriesEnsembleTimeSeriesStore();
 			TestTimeSeriesEnsembleTimeSeriesStore(const string& id = "");
 			TestTimeSeriesEnsembleTimeSeriesStore(const TSeriesEnsemblePtrType& ensFts, const string& id = "");
-			PtrTSeriesEnsemblePtrType GetSeries(const string& dataId);
+			PtrTSeriesEnsemblePtrType GetSeries(const string& dataId) override;
 			PtrTSeriesEnsemblePtrType GetSeriesTestBackend(const string& dataId);
 
-			PtrEnsemblePtrType Read(const std::string& ensembleIdentifier);
-			size_t GetLength() const;
-			ptime GetStart() const;
+			PtrEnsemblePtrType Read(const std::string& ensembleIdentifier) override;
+			size_t GetLength() const override;
+			ptime GetStart() const override;
 			//vector<string> GetItemIdentifiers() const;
-			string GetDataSummary() const;
-			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const;
-			TimeStep GetTimeStep() const;
+			string GetDataSummary() const override;
+			vector<DataDimensionDescriptor> GetDataDimensionsDescription() const override;
+			TimeStep GetTimeStep() const override;
 
-			bool IsActive();
-			void Allocate(size_t length, PtrEnsemblePtrType value);
-			void AllocateValues(const vector<PtrEnsemblePtrType>& values);
-			void SetSeries(const string& dataId, PtrTSeriesEnsemblePtrType value);
-			void SetItem(const string& dataId, size_t index, PtrEnsemblePtrType value);
-			void SetItem(const string& dataId, size_t index, const EnsemblePtrType& value);
+			bool IsActive() override;
+			void Allocate(size_t length, PtrEnsemblePtrType value) override;
+			void AllocateValues(const vector<PtrEnsemblePtrType>& values) override;
+			void SetSeries(const string& dataId, PtrTSeriesEnsemblePtrType value) override;
+			void SetItem(const string& dataId, size_t index, PtrEnsemblePtrType value) override;
+			void SetItem(const string& dataId, size_t index, const EnsemblePtrType& value) override;
 			//EnsemblePtrType Read(const string& ensembleIdentifier) = 0;
-			void SetLength(size_t);
+			void SetLength(size_t) override;
 
-			void SetStart(ptime);
+			void SetStart(ptime) override;
 
 			//vector<string> GetItemIdentifiers() const = 0;
-			void SetTimeStep(const TimeStep&);
+			void SetTimeStep(const TimeStep&) override;
 
 			PtrEnsemblePtrType GetItem(const string& dataId, size_t fcastIndex) override;
 			PtrSeriesType GetItem(const string& dataId, size_t fcastIndex, size_t ensIndex) override;

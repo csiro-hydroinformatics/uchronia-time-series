@@ -989,7 +989,7 @@ namespace datatypes
 					int code = nc_get_vara(ncid, varId, starts, counts, bfr);
 					strVec->push_back(string(bfr));
 				}
-				delete bfr;
+				delete[] bfr;
 				return strVec;
 			}
 

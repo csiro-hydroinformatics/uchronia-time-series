@@ -385,6 +385,7 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 		TestTimeSeriesEnsembleTimeSeriesStore::PtrTSeriesEnsemblePtrType TestTimeSeriesEnsembleTimeSeriesStore::GetSeriesTestBackend(const string& dataId)
 		{
 			if (!STLHelper::HasKey(ensFcastsSeries, dataId))
+			{
 				if (allowDynamicCreation)
 					ensFcastsSeries[dataId] = CreateNewSeries();
 				else
@@ -392,6 +393,7 @@ station_ID 7 in source file changed to station_ID 3 to compensate for catchment 
 					datatypes::exceptions::ExceptionUtilities::ThrowNotSupported("TestTimeSeriesEnsembleTimeSeriesStore is not set to allow creation of new time series");
 					return nullptr;
 				}
+			}
 			return ensFcastsSeries[dataId];
 		}
 

@@ -152,33 +152,33 @@ namespace datatypes
 			{
 			}
 
-			size_t Size() const { return data.size(); }
+			size_t Size() const  override { return data.size(); }
 
-			size_t GetLength() const
+			size_t GetLength() const override
 			{
 				return Size();
 			}
 
-			void Allocate(size_t length, T value)
+			void Allocate(size_t length, T value) override
 			{
 				data.clear();
 				data.reserve(length);
 				data.assign(length, value);
 			}
-			void AllocateValues(size_t length, const T* values)
+			void AllocateValues(size_t length, const T* values) override
 			{
 				data.clear();
 				data.reserve(length);
 				data.assign(values, values + length);
 			}
-			void AllocateValues(const vector<T>& values)
+			void AllocateValues(const vector<T>& values) override
 			{
 				data.clear();
 				data.reserve(values.size());
 				data.assign(values.begin(), values.end());
 			}
 
-			void CopyTo(vector<T>& dest, size_t from = 0, size_t to = -1) const
+			void CopyTo(vector<T>& dest, size_t from = 0, size_t to = -1) const override
 			{
 				CheckIntervalBounds(from, to);
 				size_t len = (to - from) + 1;
@@ -190,7 +190,7 @@ namespace datatypes
 				std::copy(data.begin() + from, data.begin() + to + 1, dest.begin());
 			}
 
-			T& operator[](const size_t i) {
+			T& operator[](const size_t i)  override{
 				// Add a check on index bounds.
 				// If performance requires it, we might restrict this check based on whether T is a class or a numeric type
 				// in a manner similar to DefaultMissingValuePolicyTypeFactory. But prefer safety.
@@ -198,11 +198,11 @@ namespace datatypes
 				T& vRef = data[i];
 				return vRef;
 			}
-			const T& operator[](const size_t i) const {
+			const T& operator[](const size_t i) const override {
 				datatypes::exceptions::RangeCheck<size_t>::CheckTimeSeriesIndex(i, data.size(), "i");
 				return data[i];
 			}
-			StoragePolicy<T>* Clone() const { return new StlVectorStorage<T>(*this); }
+			StoragePolicy<T>* Clone() const override { return new StlVectorStorage<T>(*this); }
 
 			TimeStep GetTimeStep() const override
 			{
@@ -266,27 +266,27 @@ namespace datatypes
 				d = std::shared_ptr<SD>(new SD());
 			}
 
-			size_t Size() const { return d->data.size(); }
-			void Allocate(size_t length, T value)
+			size_t Size() const override { return d->data.size(); }
+			void Allocate(size_t length, T value) override
 			{
 				d->data.clear();
 				d->data.reserve(length);
 				d->data.assign(length, value);
 			}
-			void AllocateValues(size_t length, const T* values)
+			void AllocateValues(size_t length, const T* values) override
 			{
 				d->data.clear();
 				d->data.reserve(length);
 				d->data.assign(values, values + length);
 			}
-			void AllocateValues(const vector<T>& values)
+			void AllocateValues(const vector<T>& values) override
 			{
 				d->data.clear();
 				d->data.reserve(values.size());
 				d->data.assign(values.begin(), values.end());
 			}
 
-			void CopyTo(vector<T>& dest, size_t from = 0, size_t to = -1) const
+			void CopyTo(vector<T>& dest, size_t from = 0, size_t to = -1) const override
 			{
 				size_t tsLen = this->Size();
 				if (tsLen == 0)
@@ -301,18 +301,18 @@ namespace datatypes
 				std::copy(d->data.begin() + from, d->data.begin() + to + 1, dest.begin());
 			}
 
-			T& operator[](const size_t i) {
+			T& operator[](const size_t i) override {
 				datatypes::exceptions::RangeCheck<size_t>::CheckTimeSeriesIndex(i, (d->data).size(), "i");
 				T& vRef = (d->data)[i];
 				return vRef;
 			}
-			const T& operator[](const size_t i) const {
+			const T& operator[](const size_t i) const override {
 				datatypes::exceptions::RangeCheck<size_t>::CheckTimeSeriesIndex(i, (d->data).size(), "i");
 				return (d->data)[i];
 			}
-			StoragePolicy<T>* Clone() const { return new SharedVectorStorage<T>(*this); }
+			StoragePolicy<T>* Clone() const override { return new SharedVectorStorage<T>(*this); }
 
-			size_t GetLength() const
+			size_t GetLength() const override
 			{
 				return Size();
 			}

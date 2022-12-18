@@ -443,7 +443,8 @@ namespace datatypes
 		template<class TTo>
 		static TTo* ConvertToArray(const vector<string>& src)
 		{
-			string& strId;
+			auto tmp = std::string("");
+			string& strId = tmp; // clang
 			TTo* result = new TTo[src.size()];
 			try {
 				for (int i = 0; i < src.size(); i++)
@@ -455,7 +456,7 @@ namespace datatypes
 			}
 			catch (boost::bad_lexical_cast & c)
 			{
-				delete result;
+				delete[] result;
 				throw datatypes::utils::bad_lexical_cast(string("Failed to parse '") + strId + string("' in an vector as a ") + string(typeid(TTo).name()));
 			}
 		}
@@ -477,7 +478,7 @@ namespace datatypes
 			}
 			catch (std::exception& c)
 			{
-				delete result;
+				delete[] result;
 				throw datatypes::utils::bad_lexical_cast(string("Failed to convert vector of ") +
 					string(typeid(TFrom).name()) +
 					string(" to an array of ") +
