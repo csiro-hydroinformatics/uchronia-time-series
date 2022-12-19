@@ -3,7 +3,7 @@
 #include <stdexcept> 
 #include <netcdf.h>
 #include <map>
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 // https ://jira.csiro.au/browse/WIRADA-350  GNU gcc regex bug; use boost instead
 #if (__GNUC__ <= 4 && __GNUC_MINOR__ < 9)
 #include <boost/regex.hpp>
@@ -2748,8 +2748,8 @@ public:
 
 				string fileNamePattern(filesPath.filename().string());
 				boost::algorithm::replace_first(fileNamePattern, FileNamePattern, ".*");
-#ifdef __GNUC__
-				// https ://jira.csiro.au/browse/WIRADA-350  GNU gcc regex bug; use boost instead
+#if defined(__GNUC__) && !defined(__clang__)
+// https ://jira.csiro.au/browse/WIRADA-350  GNU gcc regex bug; use boost instead
 #if (__GNUC__ <= 4 && __GNUC_MINOR__ < 9)
 				using boost::regex;
 				using boost::regex_constants::icase;

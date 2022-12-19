@@ -2300,7 +2300,7 @@ namespace datatypes
 		}
 
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #if (__GNUC__ <= 4 && __GNUC_MINOR__ < 9)
 		// after commit 9d46c261751de559bbdeb578242ac29eb2575092 does not compile with visual studio; possibly not more recent GCC either
 		template
