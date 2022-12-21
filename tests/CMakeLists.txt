@@ -21,7 +21,7 @@ find_package(Boost 1.48.0 COMPONENTS filesystem system date_time REQUIRED)
 
 find_path (datatypes_INCLUDE_DIRS NAMES datatypes/time_series.hpp)
 # Find catch.hpp
-find_path (catch_INCLUDE_DIRS NAMES catch/catch.hpp PATHS )
+find_path (CATCH_INCLUDE_DIRS NAMES catch/catch.hpp PATHS )
 find_path (MOIRAI_INCLUDE_DIRS moirai/reference_handle.hpp)
 FIND_LIBRARY(MOIRAI_LIBRARIES NAMES moirai)
 message ("The path to the moirai library is ${MOIRAI_LIBRARIES}")
@@ -46,7 +46,7 @@ LIST(APPEND ${this_target}_SOURCE_FILES ${${this_target}_HEADER_FILES})
 include_directories(
     ${Boost_INCLUDE_DIRS}
    ${datatypes_INCLUDE_DIRS}
-   ${catch_INCLUDE_DIRS}
+   ${CATCH_INCLUDE_DIRS}
    ${MOIRAI_INCLUDE_DIRS}
    ${NETCDF_INCLUDE_DIRS}
    ${YAMLCPP_INCLUDE_DIRS}
