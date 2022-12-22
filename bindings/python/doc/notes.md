@@ -43,14 +43,15 @@ As of 2017-07-10 the following high level calls are possible to generate/update 
 The R package `capigen` has some facilities to help extract C functions and struct definitions for Pytnon interop via CFFI. For now this is not fully streamlined but a lot of tedium is already hidden in functions. For now:
 
 ```r
-library(capigen)
 
+library(devtools)
+devtools::load_all("/home/per202/src/c-api-wrapper-generation/pkgs/codegen/capihelp")
 
 if(Sys.info()['sysname'] == 'Windows') {
-    uchronia_root <- "c:/src/csiro/stash/datatypes"
+    uchronia_root <- "c:/src/datatypes"
     preprocessed_cpp_file <- "c:/tmp/uchronia_c_api.cpp"
 } else {
-    uchronia_root <- "/home/per202/src/csiro/stash/per202/datatypes"
+    uchronia_root <- "/home/per202/src/datatypes"
     preprocessed_cpp_file <- "~/tmp/uchronia_c_api.cpp"
 }
 
@@ -69,8 +70,52 @@ uchronia_py_pkgs_dir <- file.path(uchronia_root, "bindings/python/uchronia")
 uchronia_cdefs_dir <- file.path(uchronia_py_pkgs_dir, "uchronia/data")
 
 preprocess_result <- apply_c_preprocessor(include_dirs, api_importer_file, preprocessed_cpp_file)
-create_cffi_cdefs(preprocessed_cpp_file, outdir=uchronia_cdefs_dir, pattern_start_structs="typedef struct _date_time_to_second", extern_c_start_match='char.+GetLastStdExceptionMessage.*' , extern_c_end_match='^\\}')
+
+# extern_c_start_match='char.+GetLastStdExceptionMessage.*' , extern_c_end_match='^\\}')
+# We need to be quite discriminating with detecting the start of structs, to avoid complicated imports. 
+pattern_start_structs <- "typedef struct _date_time_to_second"
+# extern_c_start_match='.*char\\* GetLastStdExceptionMessage.*'; 
+extern_c_start_match='extern "C" \\{'; 
+extern_c_end_match = '^\\}'
+
+
+# TODO: deal with ::time_step_code one way or another. 
+create_cffi_cdefs(preprocessed_cpp_file, 
+        outdir=uchronia_cdefs_dir,
+        pattern_start_structs=pattern_start_structs,
+        extern_c_start_match=extern_c_start_match,
+        extern_c_end_match=extern_c_end_match)
+
 ```
+
+```sh
+cd /home/per202/src/datatypes/bindings/python/uchronia/uchronia/data/
+# replace newlines with spaces
+awk '$1=$1' ORS=' ' funcs_cdef.h > funcs_cdef_tmp.h
+
+# remove spaces after ;
+# then append a newline after ';'
+# then prepend "extern" to each line, but only if it is not a blank line (NF?)
+cat funcs_cdef_tmp.h | \
+    awk '{gsub(/; +/,";");print}' | \
+    awk '{gsub(/;/,";\n");print}' | \
+    awk '{$0=(NF? "extern " $0 :"") } 1' > funcs_cdef.h 
+
+rm funcs_cdef_tmp.h
+
+# cffi has trouble with the "::" syntax otherwise required by compilers (?) for disambiguation bewteen type and struct member name
+
+cat structs_cdef.h | awk '{gsub(/::time_step_code/,"time_step_code");print}' > structs_cdef_tmp.h
+mv structs_cdef_tmp.h structs_cdef.h
+
+awk '{gsub(/; /,";");print}' funcs_cdef_tmp.h > funcs_cdef_tmp2.h
+awk '{gsub(/;/,";\n");print}' funcs_cdef_tmp2.h > funcs_cdef_tmp3.h
+awk '{$0=(NF? "extern " $0 :"") } 1'  funcs_cdef_tmp3.h > funcs_cdef.h
+```
+
+## Obsolete:
+
+use cruise-control fsharp scripts instead, or port to open source.
 
 Then we can generate bindings including the python wrappers.
 
@@ -111,7 +156,7 @@ import sys
 from cffi import FFI
 uchronia_ffi = FFI()
 import os
-uchronia_src_dir = '/home/per202/src/csiro/stash/per202/datatypes'
+uchronia_src_dir = '/home/per202/src/datatypes'
 cdefs_dir = os.path.join(uchronia_src_dir, 'bindings/python/uchronia/data')
 with open(os.path.join(cdefs_dir, 'structs_cdef.h')) as f_headers:
     uchronia_ffi.cdef(f_headers.read()) 

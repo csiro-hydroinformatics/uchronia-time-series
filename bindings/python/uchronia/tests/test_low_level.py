@@ -10,10 +10,10 @@ import sys
 from datetime import datetime
 import xarray as xr
 
-pkg_dir = os.path.join(os.path.dirname(__file__),'..')
+# pkg_dir = os.path.join(os.path.dirname(__file__),'..')
 # pkg_dir = "C:/src/csiro/stash/datatypes/bindings/python/uchronia"
 
-sys.path.append(pkg_dir)
+# sys.path.append(pkg_dir)
 
 from uchronia.wrap.ffi_interop import *
 import uchronia.wrap.uchronia_wrap_generated as uwg

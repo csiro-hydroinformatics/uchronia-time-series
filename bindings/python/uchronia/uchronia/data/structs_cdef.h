@@ -1,5 +1,4 @@
 typedef unsigned long int size_t;
-
 typedef struct _date_time_to_second
 {
 int year;
@@ -75,6 +74,3 @@ int size;
 statistic_definition** statistics;
 char* mix_statistics_id;
 } multi_statistic_definition;
-typedef date_time_to_second MarshaledDateTime ;
-typedef regular_time_series_geometry MarshaledTsGeometry;
-typedef multi_regular_time_series_data MultiTimeSeriesData;
