@@ -13,5 +13,5 @@
 
 #define DATATYPES_USE_OPAQUE_POINTERS
 
-#include "../../include/datatypes/extern_c_api.h"
+#include "../../datatypes/include/datatypes/extern_c_api.h"
 

@@ -43,7 +43,7 @@ def custom_wrap_cffi_native_handle(obj, type_id='', release_native = None):
     if __wrap_cffi_native_handle is None:
         raise RuntimeError('The function creating custom wrappers around native objects is None: you must use set_wrap_cffi_native_handle to initialise it')
     if release_native is None:
-        release_native = DisposeSharedPointer_py
+        release_native = dispose_shared_pointer_py
     return __wrap_cffi_native_handle(obj, type_id, release_native)
 
 def charp_array_to_py(values:CffiData, size:int, dispose:bool=True) -> List[str]:
@@ -94,6 +94,21 @@ def toSceParametersNative(x:dict) -> OwningCffiNativeHandle:
     p.ReflectionRatio = float(x['ReflectionRatio'])
     p.ContractionRatio = float(x['ContractionRatio'])
     return res
+
+def dispose_shared_pointer_py(ptr:Any) -> None:
+    # Upon a process terminating, somehow wrap_as_pointer_handle can end up being None,
+    # leading to a TypeError: 'NoneType' object is not callable.
+    # This is a nuisance, and hard to fully diagnose.
+    # So, we will use the following workaround to guard against it. See WIRADA-659.
+    if wrap_as_pointer_handle is None:
+        return
+    ptr_xptr = wrap_as_pointer_handle(ptr)
+    # Upon a process terminating, somehow 'uchronia_so' can end up being None,
+    # leading to a TypeError: 'NoneType' object is not callable.
+    # This is a nuisance, and hard to fully diagnose.
+    # So, we will use the following workaround to guard against it. See WIRADA-659.
+    if uchronia_so is not None and uchronia_so.DisposeSharedPointer is not None:
+        uchronia_so.DisposeSharedPointer(ptr_xptr.ptr)
 
 @check_exceptions
 def GetLastStdExceptionMessage_py() -> str:
