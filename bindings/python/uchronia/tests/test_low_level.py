@@ -20,12 +20,9 @@ import uchronia.wrap.uchronia_wrap_generated as uwg
 
 from cffi import FFI
 
-import cinterop
-
 # 2022-09 some of unit tests that used to be here were outdated. 
 # Removing them. Now should all be covered by UT in the c-interop repo:
 # /c-interop/bindings/python/cinterop/tests/test_native_handle.py
-
 
 # def set_wrap_cffi_native_handle(wrapper_function:'WrapperCreationFunction'):
 # def custom_wrap_cffi_native_handle(obj, type_id='', release_native = None):
@@ -37,10 +34,50 @@ import cinterop
 # def toSceParametersNative(x:dict) -> OwningCffiNativeHandle:
 
 
-# def GetLastStdExceptionMessage_py() -> str:
-def test_GetLastStdExceptionMessage_py():
-    assert uwg.GetLastStdExceptionMessage_py() == ""
+import uchronia.data_set as uds
+import uchronia.sample_data as usd
+import pytest
+
+from cinterop.timeseries import create_ensemble_forecasts_series, create_daily_time_index, create_ensemble_series
+
+_N_ENS=2
+_N_LTIME=3
+_N_TIME=4
+_DT_ORIGIN = datetime(2000,1,1)
+
+def mk_simple_efts():
+    x = np.arange(_N_ENS*_N_LTIME*_N_TIME).reshape((_N_ENS, _N_LTIME, _N_TIME))
+    ens_index = [str(i) for i in range(_N_ENS)]
+    lead_time_index = list(range(1, _N_LTIME+1))
+    time_index = create_daily_time_index(_DT_ORIGIN, _N_TIME)
+    return create_ensemble_forecasts_series(x, ens_index, lead_time_index, time_index)
+
+from cinterop.timeseries import ENSEMBLE_DIMNAME, TIME_DIMNAME
+
+def mk_simple_ets(ens_dim_first:bool=True):
+    x = np.arange(_N_ENS*_N_TIME).reshape((_N_ENS, _N_TIME))
+    ens_index = [str(i) for i in range(_N_ENS)]
+    time_index = create_daily_time_index(_DT_ORIGIN, _N_TIME)
+    if ens_dim_first:
+        return xr.DataArray(
+            x, coords=[ens_index, time_index], dims=[ENSEMBLE_DIMNAME, TIME_DIMNAME]
+        )
+    else:
+        return xr.DataArray(
+            x.T, coords=[time_index, ens_index], dims=[TIME_DIMNAME, ENSEMBLE_DIMNAME]
+        )
+
+
 # def RegisterExceptionCallback_py(callback:Any) -> None:
+def test_exception_handling():
+    s = usd.sample_data_dir()
+    data_library_file = os.path.join(s, 'time_series_library.yaml')
+    d = uwg.LoadEnsembleDataset_py(data_library_file, "")
+    pytest.raises(UchroniaError, d.get_dataset, "some_invalid_dataset_identifier")
+
+# def GetLastStdExceptionMessage_py() -> str:
+# def test_GetLastStdExceptionMessage_py():
+#     assert uwg.GetLastStdExceptionMessage_py() == ""
 # def DisposeSharedPointer_py(ptr:Any) -> None:
 # def SetTimeSeriesMissingValueValue_py(missingValueValue:float) -> None:
 def test_SetTimeSeriesMissingValueValue_py():
@@ -55,8 +92,6 @@ def test_SetTimeSeriesMissingValueValue_py():
     # py_ts = uwg.GetItemEnsembleTimeSeriesAsStructure_py(ensts, 0)
     # assert np.isna(py_ts.values[2])
 
-import uchronia.data_set as uds
-import uchronia.sample_data as usd
 
 # def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> 'TimeSeriesLibrary':
 def test_LoadEnsembleDataset_py():
@@ -106,6 +141,31 @@ def test_CreateEnsembleDataset_py():
 # def ToStructEnsembleTimeSeriesData_py(ensSeries:'EnsemblePtrTimeSeries') -> xr.DataArray:
 # def ToStructSingleTimeSeriesData_py(timeSeries:'TimeSeries') -> xr.DataArray:
 # def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> 'EnsemblePtrTimeSeries':
+def test_CreateEnsembleTimeSeriesDataFromStruct_py():
+    x = mk_simple_ets()
+    eptr = uwg.CreateEnsembleTimeSeriesDataFromStruct_py(x)
+    for e in range(_N_ENS):
+        tseries = eptr[e]
+        v = tseries.to_xarray().values
+        assert np.all(x.values[e,:] == v.squeeze())
+
+def test_as_uchronia_data():
+    x = mk_simple_ets()
+    eptr = uds.as_uchronia_data(x)
+    for e in range(_N_ENS):
+        tseries = eptr[e]
+        v = tseries.to_xarray().values
+        assert np.all(x.values[e,:] == v.squeeze())
+
+def test_as_uchronia_data_timefirst():
+    x = mk_simple_ets(ens_dim_first=False)
+    eptr = uds.as_uchronia_data(x)
+    for e in range(_N_ENS):
+        tseries = eptr[e]
+        v = tseries.to_xarray().values
+        # data x is time-first, so to get the first ensemble:
+        assert np.all(x.values[:,e] == v.squeeze())
+
 # def CreateSingleTimeSeriesDataFromStruct_py(timeSeries:xr.DataArray) -> 'TimeSeries':
 # def DisposeMultiTimeSeriesData_py(data:xr.DataArray) -> None:
 # def GetTimeSeriesGeometry_py(timeSeries:'TimeSeries', geom:TimeSeriesGeometryNative) -> None:

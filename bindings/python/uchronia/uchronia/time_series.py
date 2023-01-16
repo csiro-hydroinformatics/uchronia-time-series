@@ -1,4 +1,4 @@
-from typing import Union, List, TYPE_CHECKING
+from typing import Any, Union, List, TYPE_CHECKING
 if TYPE_CHECKING:
     from uchronia.classes import (
         EnsembleTimeSeries,
@@ -205,46 +205,6 @@ def mk_date(year, month, day, hour=0, min=0, sec=0, tz=None):
 #   CreateEnsembleForecastTimeSeries_py(tsStartEns, n, timeStep)
 # }
 
-# #' Sets an item of an ensemble time series
-# #'
-# #' Sets an item of an ensemble time series
-# #'
-# #' @param ens_fc_ts  R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
-# #' @param i	   integer. One-based index in the ensemble forecast.
-# #' @param value an xts object to put the the specified index
-# #' @examples
-# #' \dontrun{
-# #' ens_fc_ts = createEnsembleForecastTimeSeries(lubridate::origin, 3, 'daily')
-# #' fcastsOffset = lubridate::hours(1)
-# #' nLead = 5
-# #' nEns = 4
-# #' set.seed(465)
-# #' x = matrix(rnorm(n=nEns*nLead), ncol=nEns)
-# #' multiTimeSeriesIn = mkHourlySeries(lubridate::origin + fcastsOffset, x, is.na)
-# #' uchronia::setItem(ens_fc_ts, 1, multiTimeSeriesIn)
-# #' print(x)
-# #' print(uchronia::get_item(ens_fc_ts, 1))
-# #' }
-# #' @export
-# setItem(ens_fc_ts, i, value):
-#   if(!is.numeric(i)) stop("Only numeric indices are supported for now")
-#   zero_index = as.integer(i-1)
-#   if(is_singular_time_series(ens_fc_ts)):
-#     if(!is.numeric(value)) stop("For an univariate time series item set must be a scalar")
-#     SetValueToUnivariateTimeSeries_py(ens_fc_ts, zero_index, value)
-#   } elif(is_ensemble_time_series(ens_fc_ts)):
-#     if(!xts::is.xts(value)) stop("For an ensemble of time series the item set must be an xts")
-#     SetItemEnsembleTimeSeriesAsStructure_py(ens_fc_ts, zero_index, cinterop::asInteropRegularTimeSeries(value))
-#   } elif(is_time_series_of_ensemble_time_series(ens_fc_ts)):
-#     stopifnot(xts::is.xts(value))
-#     mts = cinterop::asInteropRegularTimeSeries(value)
-#     SetItemEnsembleForecastTimeSeries_Pkg_py(ens_fc_ts, as.integer(i-1), mts)
-#   } else {
-#     stop(paste0('get_item: does not know how to set indexed item into an object of external type "', ens_fc_ts@type, '"'))
-#   }
-
-# }
-
 # ensTsToXts(ensTs):  # RegularTimeSeries in cinterop
 #   x = ensTs@NumericData
 #   return(mkSeriesRegularTstep(ensTs@TsGeom@Start, x, isMissingFunc=is.na, ensTs@TsGeom@TimeStepSeconds))
@@ -290,7 +250,7 @@ def get_item(ens_fc_ts: "NdTimeSeries", i, convert_to_xr=True) -> Union["ItemSli
     Returns:
         Union["ItemSliceNdTimeSeries", xr.DataArray]: one item extracted from the series, so it has lost one dimension compared to the input.
 
-    Example:
+    Examples:
         TODO
 
     """
@@ -317,9 +277,10 @@ def get_item(ens_fc_ts: "NdTimeSeries", i, convert_to_xr=True) -> Union["ItemSli
             univ_ts = as_xarray(univ_ts)
         return univ_ts
     elif is_time_series_of_ensemble_time_series(ens_fc_ts):
-        mts = uwg.GetItemEnsembleForecastTimeSeries_py(ens_fc_ts, zero_index)
         if convert_to_xr:
-            mts = as_xarray(mts)
+            mts = uwg.GetItemEnsembleForecastTimeSeriesAsStructure_py(ens_fc_ts, zero_index)
+        else:
+            mts = uwg.GetItemEnsembleForecastTimeSeries_py(ens_fc_ts, zero_index)
         return mts
     else:
         raise ValueError(
@@ -328,6 +289,46 @@ def get_item(ens_fc_ts: "NdTimeSeries", i, convert_to_xr=True) -> Union["ItemSli
             '"',
         )
 
+
+#' Sets an item of an ensemble time series
+#'
+#' Sets an item of an ensemble time series
+#'
+#' @param ens_fc_ts  R type equivalent for C++ type ENSEMBLE_FORECAST_TIME_SERIES_PTR
+#' @param i	   integer. One-based index in the ensemble forecast.
+#' @param value an xts object to put the the specified index
+#' @examples
+#' \dontrun{
+#' ens_fc_ts = createEnsembleForecastTimeSeries(lubridate::origin, 3, 'daily')
+#' fcastsOffset = lubridate::hours(1)
+#' nLead = 5
+#' nEns = 4
+#' set.seed(465)
+#' x = matrix(rnorm(n=nEns*nLead), ncol=nEns)
+#' multiTimeSeriesIn = mkHourlySeries(lubridate::origin + fcastsOffset, x, is.na)
+#' uchronia::setItem(ens_fc_ts, 1, multiTimeSeriesIn)
+#' print(x)
+#' print(uchronia::get_item(ens_fc_ts, 1))
+#' }
+#' @export
+def set_item(ens_fc_ts: "NdTimeSeries", i:int, value:Any):
+    if not isinstance(i, int): raise ValueError("Only numeric indices are supported for now")
+    zero_index = i-1
+    if is_singular_time_series(ens_fc_ts):
+        #   if(!is.numeric(value)) stop("For an univariate time series item set must be a scalar")
+        uwg.SetValueToUnivariateTimeSeries_py(ens_fc_ts, zero_index, value)
+    elif is_ensemble_time_series(ens_fc_ts):
+        # if(!xts::is.xts(value)) stop("For an ensemble of time series the item set must be an xts")
+        uwg.SetItemEnsembleTimeSeriesAsStructure_py(ens_fc_ts, zero_index, value)
+    elif is_time_series_of_ensemble_time_series(ens_fc_ts):
+        #   stopifnot(xts::is.xts(value))
+        uwg.SetItemEnsembleForecastTimeSeriesAsStructure_py(ens_fc_ts, zero_index, value)
+    else:
+        raise ValueError(
+            'set_item: does not know how to get from an object of external type "'
+            + ens_fc_ts.type_id,
+            '"',
+        )
 
 # #' Checks whether a data library has a given top level data identifier
 # #'

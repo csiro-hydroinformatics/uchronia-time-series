@@ -1,7 +1,7 @@
 """Pythonic classes accessing underlying C++ objects functionalities
 """
 
-from typing import Any, Callable, Dict, List, OrderedDict, Sequence, TYPE_CHECKING
+from typing import Any, Callable, Dict, List, OrderedDict, Sequence, TYPE_CHECKING, Union
 from cffi import FFI
 from refcount.interop import DeletableCffiNativeHandle, CffiData, CffiWrapperFactory
 from cinterop.timeseries import ConvertibleToTimestamp
@@ -41,13 +41,15 @@ class TimeSeriesMixin:
     def __init__(self):
         super(TimeSeriesMixin, self).__init__()
 
-    def get_item(self, i: int, convert_to_xr=True):
-        return uts.get_item(self, i, convert_to_xr)
+    # def get_item(self, i: int, convert_to_xr=True):
+    #     return uts.get_item(self, i, convert_to_xr)
 
     def as_xarray(self):
         return uts.as_xarray(self)
 
-
+from datetime import datetime, timedelta
+import pandas as pd
+import uchronia.time_series as ut
 class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
     def __init__(
         self,
@@ -59,6 +61,21 @@ class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
         super(EnsembleForecastTimeSeries, self).__init__(
             handle, release_native, type_id, prior_ref_count
         )
+
+    @staticmethod
+    def new(start:datetime, length:int, time_step:Union[str,timedelta]) -> "EnsembleForecastTimeSeries":
+        if isinstance(time_step, timedelta):
+            time_step = str(pd.Timedelta(time_step)).split(" ")[-1]
+        return uwg.CreateEnsembleForecastTimeSeries_py(start, length, timeStepName=time_step)
+
+    def __getitem__(self, key):
+        return uwg.GetItemEnsembleForecastTimeSeriesAsStructure_py(self, key)
+
+    def __setitem__(self, key, newvalue):
+        uwg.SetItemEnsembleForecastTimeSeriesAsStructure_py(self, key, newvalue)
+
+    def to_xarray(self):
+        return None
 
 
 class EnsembleTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
@@ -85,6 +102,14 @@ class TimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
             handle, release_native, type_id, prior_ref_count
         )
 
+    def __getitem__(self, key):
+        return uwg.GetValueFromUnivariateTimeSeries_py(self, key)
+  
+    def __setitem__(self, key, newvalue):
+        uwg.SetValueToUnivariateTimeSeries_py(self, key, newvalue)
+
+    def to_xarray(self):
+        return uwg.ToStructSingleTimeSeriesData_py(self)
 
 class EnsemblePtrTimeSeries(DeletableCffiNativeHandle):
     def __init__(
@@ -98,7 +123,21 @@ class EnsemblePtrTimeSeries(DeletableCffiNativeHandle):
             handle, release_native, type_id, prior_ref_count
         )
 
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return uwg.TimeSeriesFromEnsembleOfTimeSeries_py(self, key)
+        elif isinstance(key, tuple):
+            i, j = key
+            # TODO: inefficient
+            return uwg.TimeSeriesFromEnsembleOfTimeSeries_py(self, i)[j]
+        else:
+            raise KeyError("Invalid type of key")
 
+    def __setitem__(self, key, newvalue):
+        uwg.SetItemEnsembleTimeSeriesAsStructure_py(self, key, newvalue)
+
+    def to_xarray(self):
+        return uwg.ToStructEnsembleTimeSeriesData_py(self)
 
 
 class TimeSeriesLibrary(TimeSeriesProvider):

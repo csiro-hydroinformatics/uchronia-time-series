@@ -8,7 +8,7 @@
 import xarray as xr
 import pandas as pd
 import numpy as np
-from typing import TYPE_CHECKING, Dict, List, Tuple, Any
+from typing import TYPE_CHECKING, Dict, List, Tuple, Any, Optional
 from datetime import datetime
 from refcount.interop import CffiData, OwningCffiNativeHandle, DeletableCffiNativeHandle, wrap_as_pointer_handle
 from cinterop.cffi.marshal import as_bytes, TimeSeriesGeometryNative
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
     from refcount.interop import WrapperCreationFunction
 
-__wrap_cffi_native_handle:'WrapperCreationFunction'=None
+__wrap_cffi_native_handle:Optional['WrapperCreationFunction']=None
 
 def set_wrap_cffi_native_handle(wrapper_function:'WrapperCreationFunction'):
     global __wrap_cffi_native_handle
@@ -111,6 +111,10 @@ def dispose_shared_pointer_py(ptr:Any) -> None:
         uchronia_so.DisposeSharedPointer(ptr_xptr.ptr)
 
 @check_exceptions
+def _GetLastStdExceptionMessage_native():
+    result = uchronia_so.GetLastStdExceptionMessage()
+    return result
+
 def GetLastStdExceptionMessage_py() -> str:
     """GetLastStdExceptionMessage_py
     
@@ -122,11 +126,14 @@ def GetLastStdExceptionMessage_py() -> str:
         (str): returned result
     
     """
-    result = uchronia_so.GetLastStdExceptionMessage()
+    result = _GetLastStdExceptionMessage_native()
     return char_array_to_py(result, dispose=True)
 
 
 @check_exceptions
+def _RegisterExceptionCallback_native(callback):
+    uchronia_so.RegisterExceptionCallback(callback)
+
 def RegisterExceptionCallback_py(callback:Any) -> None:
     """RegisterExceptionCallback_py
     
@@ -136,10 +143,13 @@ def RegisterExceptionCallback_py(callback:Any) -> None:
         callback (Any): callback
     
     """
-    uchronia_so.RegisterExceptionCallback(callback)
+    _RegisterExceptionCallback_native(callback)
 
 
 @check_exceptions
+def _DisposeSharedPointer_native(ptr):
+    uchronia_so.DisposeSharedPointer(ptr)
+
 def DisposeSharedPointer_py(ptr:Any) -> None:
     """DisposeSharedPointer_py
     
@@ -150,10 +160,13 @@ def DisposeSharedPointer_py(ptr:Any) -> None:
     
     """
     ptr_xptr = wrap_as_pointer_handle(ptr)
-    uchronia_so.DisposeSharedPointer(ptr_xptr.ptr)
+    _DisposeSharedPointer_native(ptr_xptr.ptr)
 
 
 @check_exceptions
+def _SetTimeSeriesMissingValueValue_native(missingValueValue):
+    uchronia_so.SetTimeSeriesMissingValueValue(missingValueValue)
+
 def SetTimeSeriesMissingValueValue_py(missingValueValue:float) -> None:
     """SetTimeSeriesMissingValueValue_py
     
@@ -163,10 +176,14 @@ def SetTimeSeriesMissingValueValue_py(missingValueValue:float) -> None:
         missingValueValue (float): missingValueValue
     
     """
-    uchronia_so.SetTimeSeriesMissingValueValue(missingValueValue)
+    _SetTimeSeriesMissingValueValue_native(missingValueValue)
 
 
 @check_exceptions
+def _LoadEnsembleDataset_native(libraryIdentifier, dataPath):
+    result = uchronia_so.LoadEnsembleDataset(libraryIdentifier, dataPath)
+    return result
+
 def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> 'TimeSeriesLibrary':
     """LoadEnsembleDataset_py
     
@@ -182,13 +199,17 @@ def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> 'TimeSeriesLi
     """
     libraryIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(libraryIdentifier))
     dataPath_c_charp = wrap_as_pointer_handle(as_bytes(dataPath))
-    result = uchronia_so.LoadEnsembleDataset(libraryIdentifier_c_charp.ptr, dataPath_c_charp.ptr)
+    result = _LoadEnsembleDataset_native(libraryIdentifier_c_charp.ptr, dataPath_c_charp.ptr)
     # no cleanup for const char*
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_DATA_SET_PTR')
 
 
 @check_exceptions
+def _CreateEnsembleDataset_native(type):
+    result = uchronia_so.CreateEnsembleDataset(type)
+    return result
+
 def CreateEnsembleDataset_py(type:str) -> 'TimeSeriesLibrary':
     """CreateEnsembleDataset_py
     
@@ -202,11 +223,14 @@ def CreateEnsembleDataset_py(type:str) -> 'TimeSeriesLibrary':
     
     """
     type_c_charp = wrap_as_pointer_handle(as_bytes(type))
-    result = uchronia_so.CreateEnsembleDataset(type_c_charp.ptr)
+    result = _CreateEnsembleDataset_native(type_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_DATA_SET_PTR')
 
 
+
+def _GetEnsembleDatasetDataIdentifiers_native(dataLibrary, size):
+    return uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary, size)
 
 def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:'TimeSeriesLibrary'):
     """GetEnsembleDatasetDataIdentifiers_py
@@ -219,12 +243,15 @@ def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:'TimeSeriesLibrary'):
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
 
     size = marshal.new_int_scalar_ptr()
-    values = uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary_xptr.ptr, size)
+    values = _GetEnsembleDatasetDataIdentifiers_native(dataLibrary_xptr.ptr, size)
 
 
     result = charp_array_to_py(values, size[0], True)
     return result
 
+
+def _GetEnsembleDatasetDataSubIdentifiers_native(dataLibrary, dataCollectionId, size):
+    return uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary, dataCollectionId, size)
 
 def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:'TimeSeriesLibrary', dataCollectionId:str):
     """GetEnsembleDatasetDataSubIdentifiers_py
@@ -238,12 +265,15 @@ def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:'TimeSeriesLibrary', dat
     dataCollectionId_c_charp = wrap_as_pointer_handle(as_bytes(dataCollectionId))
 
     size = marshal.new_int_scalar_ptr()
-    values = uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary_xptr.ptr, dataCollectionId_c_charp.ptr, size)
+    values = _GetEnsembleDatasetDataSubIdentifiers_native(dataLibrary_xptr.ptr, dataCollectionId_c_charp.ptr, size)
     # no cleanup for const char*
 
     result = charp_array_to_py(values, size[0], True)
     return result
 
+
+def _GetEnsembleDatasetDataSummaries_native(dataLibrary, size):
+    return uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary, size)
 
 def GetEnsembleDatasetDataSummaries_py(dataLibrary:'TimeSeriesLibrary'):
     """GetEnsembleDatasetDataSummaries_py
@@ -256,13 +286,17 @@ def GetEnsembleDatasetDataSummaries_py(dataLibrary:'TimeSeriesLibrary'):
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
 
     size = marshal.new_int_scalar_ptr()
-    values = uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary_xptr.ptr, size)
+    values = _GetEnsembleDatasetDataSummaries_native(dataLibrary_xptr.ptr, size)
 
 
     result = charp_array_to_py(values, size[0], True)
     return result
 
 @check_exceptions
+def _GetDataDimensionsDescription_native(dataLibrary, dataId):
+    result = uchronia_so.GetDataDimensionsDescription(dataLibrary, dataId)
+    return result
+
 def GetDataDimensionsDescription_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -> List:
     """GetDataDimensionsDescription_py
     
@@ -278,12 +312,16 @@ def GetDataDimensionsDescription_py(dataLibrary:'TimeSeriesLibrary', dataId:str)
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     dataId_c_charp = wrap_as_pointer_handle(as_bytes(dataId))
-    result = uchronia_so.GetDataDimensionsDescription(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
+    result = _GetDataDimensionsDescription_native(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
     # no cleanup for const char*
     return py_time_series_dimensions_description(result, dispose=True)
 
 
 @check_exceptions
+def _EnsembleSizeEnsembleTimeSeries_native(ensSeries):
+    result = uchronia_so.EnsembleSizeEnsembleTimeSeries(ensSeries)
+    return result
+
 def EnsembleSizeEnsembleTimeSeries_py(ensSeries:'EnsemblePtrTimeSeries') -> int:
     """EnsembleSizeEnsembleTimeSeries_py
     
@@ -297,11 +335,14 @@ def EnsembleSizeEnsembleTimeSeries_py(ensSeries:'EnsemblePtrTimeSeries') -> int:
     
     """
     ensSeries_xptr = wrap_as_pointer_handle(ensSeries)
-    result = uchronia_so.EnsembleSizeEnsembleTimeSeries(ensSeries_xptr.ptr)
+    result = _EnsembleSizeEnsembleTimeSeries_native(ensSeries_xptr.ptr)
     return result
 
 
 @check_exceptions
+def _DisposeDataDimensionsDescriptions_native(data):
+    uchronia_so.DisposeDataDimensionsDescriptions(data)
+
 def DisposeDataDimensionsDescriptions_py(data:List) -> None:
     """DisposeDataDimensionsDescriptions_py
     
@@ -311,10 +352,14 @@ def DisposeDataDimensionsDescriptions_py(data:List) -> None:
         data (List): data
     
     """
-    uchronia_so.DisposeDataDimensionsDescriptions(data)
+    _DisposeDataDimensionsDescriptions_native(data)
 
 
 @check_exceptions
+def _CreateEnsembleForecastTimeSeries_native(start, length, timeStepName):
+    result = uchronia_so.CreateEnsembleForecastTimeSeries(start, length, timeStepName)
+    return result
+
 def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName:str) -> 'EnsembleForecastTimeSeries':
     """CreateEnsembleForecastTimeSeries_py
     
@@ -331,13 +376,17 @@ def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName
     """
     start_datetime = marshal.datetime_to_dtts(start)
     timeStepName_c_charp = wrap_as_pointer_handle(as_bytes(timeStepName))
-    result = uchronia_so.CreateEnsembleForecastTimeSeries(start_datetime.obj, length, timeStepName_c_charp.ptr)
+    result = _CreateEnsembleForecastTimeSeries_native(start_datetime.obj, length, timeStepName_c_charp.ptr)
     # start_datetime - no cleanup needed?
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _GetDatasetSingleTimeSeries_native(dataLibrary, dataId):
+    result = uchronia_so.GetDatasetSingleTimeSeries(dataLibrary, dataId)
+    return result
+
 def GetDatasetSingleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -> 'TimeSeries':
     """GetDatasetSingleTimeSeries_py
     
@@ -353,12 +402,16 @@ def GetDatasetSingleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     dataId_c_charp = wrap_as_pointer_handle(as_bytes(dataId))
-    result = uchronia_so.GetDatasetSingleTimeSeries(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
+    result = _GetDatasetSingleTimeSeries_native(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _GetDatasetEnsembleTimeSeries_native(dataLibrary, dataEnsembleId):
+    result = uchronia_so.GetDatasetEnsembleTimeSeries(dataLibrary, dataEnsembleId)
+    return result
+
 def GetDatasetEnsembleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataEnsembleId:str) -> 'EnsemblePtrTimeSeries':
     """GetDatasetEnsembleTimeSeries_py
     
@@ -374,12 +427,16 @@ def GetDatasetEnsembleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataEnsembl
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     dataEnsembleId_c_charp = wrap_as_pointer_handle(as_bytes(dataEnsembleId))
-    result = uchronia_so.GetDatasetEnsembleTimeSeries(dataLibrary_xptr.ptr, dataEnsembleId_c_charp.ptr)
+    result = _GetDatasetEnsembleTimeSeries_native(dataLibrary_xptr.ptr, dataEnsembleId_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _GetDatasetEnsembleForecastTimeSeries_native(dataLibrary, dataId):
+    result = uchronia_so.GetDatasetEnsembleForecastTimeSeries(dataLibrary, dataId)
+    return result
+
 def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -> 'EnsembleForecastTimeSeries':
     """GetDatasetEnsembleForecastTimeSeries_py
     
@@ -395,12 +452,15 @@ def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dat
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     dataId_c_charp = wrap_as_pointer_handle(as_bytes(dataId))
-    result = uchronia_so.GetDatasetEnsembleForecastTimeSeries(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
+    result = _GetDatasetEnsembleForecastTimeSeries_native(dataLibrary_xptr.ptr, dataId_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _SaveSingleTimeSeriesToNetcdf_native(timeSeries, filename, overwrite):
+    uchronia_so.SaveSingleTimeSeriesToNetcdf(timeSeries, filename, overwrite)
+
 def SaveSingleTimeSeriesToNetcdf_py(timeSeries:'TimeSeries', filename:str, overwrite:bool) -> None:
     """SaveSingleTimeSeriesToNetcdf_py
     
@@ -414,11 +474,14 @@ def SaveSingleTimeSeriesToNetcdf_py(timeSeries:'TimeSeries', filename:str, overw
     """
     timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
     filename_c_charp = wrap_as_pointer_handle(as_bytes(filename))
-    uchronia_so.SaveSingleTimeSeriesToNetcdf(timeSeries_xptr.ptr, filename_c_charp.ptr, overwrite)
+    _SaveSingleTimeSeriesToNetcdf_native(timeSeries_xptr.ptr, filename_c_charp.ptr, overwrite)
     # no cleanup for const char*
 
 
 @check_exceptions
+def _SaveEnsembleTimeSeriesToNetcdf_native(collection, filename, overwrite):
+    uchronia_so.SaveEnsembleTimeSeriesToNetcdf(collection, filename, overwrite)
+
 def SaveEnsembleTimeSeriesToNetcdf_py(collection:'EnsemblePtrTimeSeries', filename:str, overwrite:bool) -> None:
     """SaveEnsembleTimeSeriesToNetcdf_py
     
@@ -432,11 +495,14 @@ def SaveEnsembleTimeSeriesToNetcdf_py(collection:'EnsemblePtrTimeSeries', filena
     """
     collection_xptr = wrap_as_pointer_handle(collection)
     filename_c_charp = wrap_as_pointer_handle(as_bytes(filename))
-    uchronia_so.SaveEnsembleTimeSeriesToNetcdf(collection_xptr.ptr, filename_c_charp.ptr, overwrite)
+    _SaveEnsembleTimeSeriesToNetcdf_native(collection_xptr.ptr, filename_c_charp.ptr, overwrite)
     # no cleanup for const char*
 
 
 @check_exceptions
+def _SaveEnsembleForecastTimeSeriesToNetcdf_native(tsEnsTs, filename, overwrite):
+    uchronia_so.SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs, filename, overwrite)
+
 def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs:'EnsembleForecastTimeSeries', filename:str, overwrite:bool) -> None:
     """SaveEnsembleForecastTimeSeriesToNetcdf_py
     
@@ -450,11 +516,15 @@ def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs:'EnsembleForecastTimeSerie
     """
     tsEnsTs_xptr = wrap_as_pointer_handle(tsEnsTs)
     filename_c_charp = wrap_as_pointer_handle(as_bytes(filename))
-    uchronia_so.SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs_xptr.ptr, filename_c_charp.ptr, overwrite)
+    _SaveEnsembleForecastTimeSeriesToNetcdf_native(tsEnsTs_xptr.ptr, filename_c_charp.ptr, overwrite)
     # no cleanup for const char*
 
 
 @check_exceptions
+def _IsMissingValueItemEnsembleForecastTimeSeries_native(series, i):
+    result = uchronia_so.IsMissingValueItemEnsembleForecastTimeSeries(series, i)
+    return result
+
 def IsMissingValueItemEnsembleForecastTimeSeries_py(series:'EnsembleForecastTimeSeries', i:int) -> bool:
     """IsMissingValueItemEnsembleForecastTimeSeries_py
     
@@ -469,11 +539,15 @@ def IsMissingValueItemEnsembleForecastTimeSeries_py(series:'EnsembleForecastTime
     
     """
     series_xptr = wrap_as_pointer_handle(series)
-    result = uchronia_so.IsMissingValueItemEnsembleForecastTimeSeries(series_xptr.ptr, i)
+    result = _IsMissingValueItemEnsembleForecastTimeSeries_native(series_xptr.ptr, i)
     return result
 
 
 @check_exceptions
+def _GetItemEnsembleForecastTimeSeries_native(efts, i):
+    result = uchronia_so.GetItemEnsembleForecastTimeSeries(efts, i)
+    return result
+
 def GetItemEnsembleForecastTimeSeries_py(efts:'EnsembleForecastTimeSeries', i:int) -> 'EnsemblePtrTimeSeries':
     """GetItemEnsembleForecastTimeSeries_py
     
@@ -488,11 +562,15 @@ def GetItemEnsembleForecastTimeSeries_py(efts:'EnsembleForecastTimeSeries', i:in
     
     """
     efts_xptr = wrap_as_pointer_handle(efts)
-    result = uchronia_so.GetItemEnsembleForecastTimeSeries(efts_xptr.ptr, i)
+    result = _GetItemEnsembleForecastTimeSeries_native(efts_xptr.ptr, i)
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _TimeSeriesFromEnsembleOfTimeSeries_native(collectionTs, index):
+    result = uchronia_so.TimeSeriesFromEnsembleOfTimeSeries(collectionTs, index)
+    return result
+
 def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs:'EnsemblePtrTimeSeries', index:int) -> 'TimeSeries':
     """TimeSeriesFromEnsembleOfTimeSeries_py
     
@@ -507,11 +585,15 @@ def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs:'EnsemblePtrTimeSeries', 
     
     """
     collectionTs_xptr = wrap_as_pointer_handle(collectionTs)
-    result = uchronia_so.TimeSeriesFromEnsembleOfTimeSeries(collectionTs_xptr.ptr, index)
+    result = _TimeSeriesFromEnsembleOfTimeSeries_native(collectionTs_xptr.ptr, index)
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_native(efts, indexInIssueTime, indexInForecastTime):
+    result = uchronia_so.TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts, indexInIssueTime, indexInForecastTime)
+    return result
+
 def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts:'EnsembleForecastTimeSeries', indexInIssueTime:int, indexInForecastTime:int) -> 'TimeSeries':
     """TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py
     
@@ -527,11 +609,15 @@ def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts:'EnsembleForecastTime
     
     """
     efts_xptr = wrap_as_pointer_handle(efts)
-    result = uchronia_so.TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts_xptr.ptr, indexInIssueTime, indexInForecastTime)
+    result = _TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_native(efts_xptr.ptr, indexInIssueTime, indexInForecastTime)
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _GetValueFromUnivariateTimeSeries_native(ts, index):
+    result = uchronia_so.GetValueFromUnivariateTimeSeries(ts, index)
+    return result
+
 def GetValueFromUnivariateTimeSeries_py(ts:'TimeSeries', index:int) -> float:
     """GetValueFromUnivariateTimeSeries_py
     
@@ -546,11 +632,14 @@ def GetValueFromUnivariateTimeSeries_py(ts:'TimeSeries', index:int) -> float:
     
     """
     ts_xptr = wrap_as_pointer_handle(ts)
-    result = uchronia_so.GetValueFromUnivariateTimeSeries(ts_xptr.ptr, index)
+    result = _GetValueFromUnivariateTimeSeries_native(ts_xptr.ptr, index)
     return result
 
 
 @check_exceptions
+def _TransformEachItem_native(tsEnsTs, method, methodArgument):
+    uchronia_so.TransformEachItem(tsEnsTs, method, methodArgument)
+
 def TransformEachItem_py(tsEnsTs:'EnsembleForecastTimeSeries', method:str, methodArgument:str) -> None:
     """TransformEachItem_py
     
@@ -565,12 +654,15 @@ def TransformEachItem_py(tsEnsTs:'EnsembleForecastTimeSeries', method:str, metho
     tsEnsTs_xptr = wrap_as_pointer_handle(tsEnsTs)
     method_c_charp = wrap_as_pointer_handle(as_bytes(method))
     methodArgument_c_charp = wrap_as_pointer_handle(as_bytes(methodArgument))
-    uchronia_so.TransformEachItem(tsEnsTs_xptr.ptr, method_c_charp.ptr, methodArgument_c_charp.ptr)
+    _TransformEachItem_native(tsEnsTs_xptr.ptr, method_c_charp.ptr, methodArgument_c_charp.ptr)
     # no cleanup for const char*
     # no cleanup for const char*
 
 
 @check_exceptions
+def _SetValueToUnivariateTimeSeries_native(ts, index, value):
+    uchronia_so.SetValueToUnivariateTimeSeries(ts, index, value)
+
 def SetValueToUnivariateTimeSeries_py(ts:'TimeSeries', index:int, value:float) -> None:
     """SetValueToUnivariateTimeSeries_py
     
@@ -583,10 +675,14 @@ def SetValueToUnivariateTimeSeries_py(ts:'TimeSeries', index:int, value:float) -
     
     """
     ts_xptr = wrap_as_pointer_handle(ts)
-    uchronia_so.SetValueToUnivariateTimeSeries(ts_xptr.ptr, index, value)
+    _SetValueToUnivariateTimeSeries_native(ts_xptr.ptr, index, value)
 
 
 @check_exceptions
+def _GetItemEnsembleForecastTimeSeriesAsStructure_native(series, i):
+    result = uchronia_so.GetItemEnsembleForecastTimeSeriesAsStructure(series, i)
+    return result
+
 def GetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTimeSeries', i:int) -> xr.DataArray:
     """GetItemEnsembleForecastTimeSeriesAsStructure_py
     
@@ -601,11 +697,15 @@ def GetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTime
     
     """
     series_xptr = wrap_as_pointer_handle(series)
-    result = uchronia_so.GetItemEnsembleForecastTimeSeriesAsStructure(series_xptr.ptr, i)
+    result = _GetItemEnsembleForecastTimeSeriesAsStructure_native(series_xptr.ptr, i)
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
 @check_exceptions
+def _GetItemEnsembleTimeSeriesAsStructure_native(series, i):
+    result = uchronia_so.GetItemEnsembleTimeSeriesAsStructure(series, i)
+    return result
+
 def GetItemEnsembleTimeSeriesAsStructure_py(series:'EnsemblePtrTimeSeries', i:int) -> xr.DataArray:
     """GetItemEnsembleTimeSeriesAsStructure_py
     
@@ -620,11 +720,14 @@ def GetItemEnsembleTimeSeriesAsStructure_py(series:'EnsemblePtrTimeSeries', i:in
     
     """
     series_xptr = wrap_as_pointer_handle(series)
-    result = uchronia_so.GetItemEnsembleTimeSeriesAsStructure(series_xptr.ptr, i)
+    result = _GetItemEnsembleTimeSeriesAsStructure_native(series_xptr.ptr, i)
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
 @check_exceptions
+def _SetItemEnsembleForecastTimeSeriesAsStructure_native(series, i, values):
+    uchronia_so.SetItemEnsembleForecastTimeSeriesAsStructure(series, i, values)
+
 def SetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTimeSeries', i:int, values:xr.DataArray) -> None:
     """SetItemEnsembleForecastTimeSeriesAsStructure_py
     
@@ -638,11 +741,14 @@ def SetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTime
     """
     series_xptr = wrap_as_pointer_handle(series)
     values_tsd_ptr = marshal.as_native_time_series(values)
-    uchronia_so.SetItemEnsembleForecastTimeSeriesAsStructure(series_xptr.ptr, i, values_tsd_ptr.ptr)
+    _SetItemEnsembleForecastTimeSeriesAsStructure_native(series_xptr.ptr, i, values_tsd_ptr.ptr)
     # values_tsd_ptr - no cleanup needed?
 
 
 @check_exceptions
+def _SetItemEnsembleTimeSeriesAsStructure_native(collection, i, values):
+    uchronia_so.SetItemEnsembleTimeSeriesAsStructure(collection, i, values)
+
 def SetItemEnsembleTimeSeriesAsStructure_py(collection:'EnsemblePtrTimeSeries', i:int, values:xr.DataArray) -> None:
     """SetItemEnsembleTimeSeriesAsStructure_py
     
@@ -656,11 +762,15 @@ def SetItemEnsembleTimeSeriesAsStructure_py(collection:'EnsemblePtrTimeSeries', 
     """
     collection_xptr = wrap_as_pointer_handle(collection)
     values_tsd_ptr = marshal.as_native_time_series(values)
-    uchronia_so.SetItemEnsembleTimeSeriesAsStructure(collection_xptr.ptr, i, values_tsd_ptr.ptr)
+    _SetItemEnsembleTimeSeriesAsStructure_native(collection_xptr.ptr, i, values_tsd_ptr.ptr)
     # values_tsd_ptr - no cleanup needed?
 
 
 @check_exceptions
+def _CreatePerfectForecastTimeSeries_native(observations, start, length, timeStepName, offsetForecasts, leadTime):
+    result = uchronia_so.CreatePerfectForecastTimeSeries(observations, start, length, timeStepName, offsetForecasts, leadTime)
+    return result
+
 def CreatePerfectForecastTimeSeries_py(observations:'TimeSeries', start:datetime, length:int, timeStepName:str, offsetForecasts:int, leadTime:int) -> 'EnsembleForecastTimeSeries':
     """CreatePerfectForecastTimeSeries_py
     
@@ -681,13 +791,17 @@ def CreatePerfectForecastTimeSeries_py(observations:'TimeSeries', start:datetime
     observations_xptr = wrap_as_pointer_handle(observations)
     start_datetime = marshal.datetime_to_dtts(start)
     timeStepName_c_charp = wrap_as_pointer_handle(as_bytes(timeStepName))
-    result = uchronia_so.CreatePerfectForecastTimeSeries(observations_xptr.ptr, start_datetime.obj, length, timeStepName_c_charp.ptr, offsetForecasts, leadTime)
+    result = _CreatePerfectForecastTimeSeries_native(observations_xptr.ptr, start_datetime.obj, length, timeStepName_c_charp.ptr, offsetForecasts, leadTime)
     # start_datetime - no cleanup needed?
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _ToStructEnsembleTimeSeriesData_native(ensSeries):
+    result = uchronia_so.ToStructEnsembleTimeSeriesData(ensSeries)
+    return result
+
 def ToStructEnsembleTimeSeriesData_py(ensSeries:'EnsemblePtrTimeSeries') -> xr.DataArray:
     """ToStructEnsembleTimeSeriesData_py
     
@@ -701,11 +815,15 @@ def ToStructEnsembleTimeSeriesData_py(ensSeries:'EnsemblePtrTimeSeries') -> xr.D
     
     """
     ensSeries_xptr = wrap_as_pointer_handle(ensSeries)
-    result = uchronia_so.ToStructEnsembleTimeSeriesData(ensSeries_xptr.ptr)
+    result = _ToStructEnsembleTimeSeriesData_native(ensSeries_xptr.ptr)
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
 @check_exceptions
+def _ToStructSingleTimeSeriesData_native(timeSeries):
+    result = uchronia_so.ToStructSingleTimeSeriesData(timeSeries)
+    return result
+
 def ToStructSingleTimeSeriesData_py(timeSeries:'TimeSeries') -> xr.DataArray:
     """ToStructSingleTimeSeriesData_py
     
@@ -719,11 +837,15 @@ def ToStructSingleTimeSeriesData_py(timeSeries:'TimeSeries') -> xr.DataArray:
     
     """
     timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
-    result = uchronia_so.ToStructSingleTimeSeriesData(timeSeries_xptr.ptr)
+    result = _ToStructSingleTimeSeriesData_native(timeSeries_xptr.ptr)
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
 @check_exceptions
+def _CreateEnsembleTimeSeriesDataFromStruct_native(ensSeries):
+    result = uchronia_so.CreateEnsembleTimeSeriesDataFromStruct(ensSeries)
+    return result
+
 def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> 'EnsemblePtrTimeSeries':
     """CreateEnsembleTimeSeriesDataFromStruct_py
     
@@ -737,12 +859,16 @@ def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> 'Ensemb
     
     """
     ensSeries_tsd_ptr = marshal.as_native_time_series(ensSeries)
-    result = uchronia_so.CreateEnsembleTimeSeriesDataFromStruct(ensSeries_tsd_ptr.ptr)
+    result = _CreateEnsembleTimeSeriesDataFromStruct_native(ensSeries_tsd_ptr.ptr)
     # ensSeries_tsd_ptr - no cleanup needed?
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _CreateSingleTimeSeriesDataFromStruct_native(timeSeries):
+    result = uchronia_so.CreateSingleTimeSeriesDataFromStruct(timeSeries)
+    return result
+
 def CreateSingleTimeSeriesDataFromStruct_py(timeSeries:xr.DataArray) -> 'TimeSeries':
     """CreateSingleTimeSeriesDataFromStruct_py
     
@@ -756,12 +882,15 @@ def CreateSingleTimeSeriesDataFromStruct_py(timeSeries:xr.DataArray) -> 'TimeSer
     
     """
     timeSeries_tsd_ptr = marshal.as_native_time_series(timeSeries)
-    result = uchronia_so.CreateSingleTimeSeriesDataFromStruct(timeSeries_tsd_ptr.ptr)
+    result = _CreateSingleTimeSeriesDataFromStruct_native(timeSeries_tsd_ptr.ptr)
     # timeSeries_tsd_ptr - no cleanup needed?
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
 @check_exceptions
+def _DisposeMultiTimeSeriesData_native(data):
+    uchronia_so.DisposeMultiTimeSeriesData(data)
+
 def DisposeMultiTimeSeriesData_py(data:xr.DataArray) -> None:
     """DisposeMultiTimeSeriesData_py
     
@@ -771,10 +900,13 @@ def DisposeMultiTimeSeriesData_py(data:xr.DataArray) -> None:
         data (xr.DataArray): data
     
     """
-    uchronia_so.DisposeMultiTimeSeriesData(data)
+    _DisposeMultiTimeSeriesData_native(data)
 
 
 @check_exceptions
+def _GetTimeSeriesGeometry_native(timeSeries, geom):
+    uchronia_so.GetTimeSeriesGeometry(timeSeries, geom)
+
 def GetTimeSeriesGeometry_py(timeSeries:'TimeSeries', geom:TimeSeriesGeometryNative) -> None:
     """GetTimeSeriesGeometry_py
     
@@ -787,10 +919,13 @@ def GetTimeSeriesGeometry_py(timeSeries:'TimeSeries', geom:TimeSeriesGeometryNat
     """
     timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
     geom_xptr = wrap_as_pointer_handle(geom)
-    uchronia_so.GetTimeSeriesGeometry(timeSeries_xptr.ptr, geom_xptr.ptr)
+    _GetTimeSeriesGeometry_native(timeSeries_xptr.ptr, geom_xptr.ptr)
 
 
 @check_exceptions
+def _GetEnsembleForecastTimeSeriesGeometry_native(timeSeries, geom):
+    uchronia_so.GetEnsembleForecastTimeSeriesGeometry(timeSeries, geom)
+
 def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:'EnsembleForecastTimeSeries', geom:TimeSeriesGeometryNative) -> None:
     """GetEnsembleForecastTimeSeriesGeometry_py
     
@@ -803,10 +938,13 @@ def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:'EnsembleForecastTimeSer
     """
     timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
     geom_xptr = wrap_as_pointer_handle(geom)
-    uchronia_so.GetEnsembleForecastTimeSeriesGeometry(timeSeries_xptr.ptr, geom_xptr.ptr)
+    _GetEnsembleForecastTimeSeriesGeometry_native(timeSeries_xptr.ptr, geom_xptr.ptr)
 
 
 @check_exceptions
+def _GetTimeSeriesValues_native(timeSeries, values, arrayLength):
+    uchronia_so.GetTimeSeriesValues(timeSeries, values, arrayLength)
+
 def GetTimeSeriesValues_py(timeSeries:'TimeSeries', values:np.ndarray, arrayLength:int) -> None:
     """GetTimeSeriesValues_py
     
@@ -820,11 +958,15 @@ def GetTimeSeriesValues_py(timeSeries:'TimeSeries', values:np.ndarray, arrayLeng
     """
     timeSeries_xptr = wrap_as_pointer_handle(timeSeries)
     values_numarray = marshal.as_c_double_array(values, shallow=True)
-    uchronia_so.GetTimeSeriesValues(timeSeries_xptr.ptr, values_numarray.ptr, arrayLength)
+    _GetTimeSeriesValues_native(timeSeries_xptr.ptr, values_numarray.ptr, arrayLength)
     # values_numarray - no cleanup needed?
 
 
 @check_exceptions
+def _GetNumTimeSeries_native():
+    result = uchronia_so.GetNumTimeSeries()
+    return result
+
 def GetNumTimeSeries_py() -> int:
     """GetNumTimeSeries_py
     
@@ -836,11 +978,14 @@ def GetNumTimeSeries_py() -> int:
         (int): returned result
     
     """
-    result = uchronia_so.GetNumTimeSeries()
+    result = _GetNumTimeSeries_native()
     return result
 
 
 @check_exceptions
+def _GetProviderTsGeometry_native(dataLibrary, variableIdentifier, geom):
+    uchronia_so.GetProviderTsGeometry(dataLibrary, variableIdentifier, geom)
+
 def GetProviderTsGeometry_py(dataLibrary:'TimeSeriesProvider', variableIdentifier:str, geom:TimeSeriesGeometryNative) -> None:
     """GetProviderTsGeometry_py
     
@@ -855,11 +1000,14 @@ def GetProviderTsGeometry_py(dataLibrary:'TimeSeriesProvider', variableIdentifie
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     variableIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(variableIdentifier))
     geom_xptr = wrap_as_pointer_handle(geom)
-    uchronia_so.GetProviderTsGeometry(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, geom_xptr.ptr)
+    _GetProviderTsGeometry_native(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, geom_xptr.ptr)
     # no cleanup for const char*
 
 
 @check_exceptions
+def _GetProviderTimeSeriesValues_native(dataLibrary, variableIdentifier, values, arrayLength):
+    uchronia_so.GetProviderTimeSeriesValues(dataLibrary, variableIdentifier, values, arrayLength)
+
 def GetProviderTimeSeriesValues_py(dataLibrary:'TimeSeriesProvider', variableIdentifier:str, values:np.ndarray, arrayLength:int) -> None:
     """GetProviderTimeSeriesValues_py
     
@@ -875,11 +1023,14 @@ def GetProviderTimeSeriesValues_py(dataLibrary:'TimeSeriesProvider', variableIde
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     variableIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(variableIdentifier))
     values_numarray = marshal.as_c_double_array(values, shallow=True)
-    uchronia_so.GetProviderTimeSeriesValues(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, values_numarray.ptr, arrayLength)
+    _GetProviderTimeSeriesValues_native(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr, values_numarray.ptr, arrayLength)
     # no cleanup for const char*
     # values_numarray - no cleanup needed?
 
 
+
+def _GetProviderTimeSeriesIdentifiers_native(dataLibrary, size):
+    return uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary, size)
 
 def GetProviderTimeSeriesIdentifiers_py(dataLibrary:'TimeSeriesProvider'):
     """GetProviderTimeSeriesIdentifiers_py
@@ -892,13 +1043,17 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary:'TimeSeriesProvider'):
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
 
     size = marshal.new_int_scalar_ptr()
-    values = uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary_xptr.ptr, size)
+    values = _GetProviderTimeSeriesIdentifiers_native(dataLibrary_xptr.ptr, size)
 
 
     result = charp_array_to_py(values, size[0], True)
     return result
 
 @check_exceptions
+def _TimeSeriesFromProviderTs_native(dataLibrary, variableIdentifier):
+    result = uchronia_so.TimeSeriesFromProviderTs(dataLibrary, variableIdentifier)
+    return result
+
 def TimeSeriesFromProviderTs_py(dataLibrary:'TimeSeriesProvider', variableIdentifier:str) -> 'TimeSeries':
     """TimeSeriesFromProviderTs_py
     
@@ -914,7 +1069,7 @@ def TimeSeriesFromProviderTs_py(dataLibrary:'TimeSeriesProvider', variableIdenti
     """
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     variableIdentifier_c_charp = wrap_as_pointer_handle(as_bytes(variableIdentifier))
-    result = uchronia_so.TimeSeriesFromProviderTs(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr)
+    result = _TimeSeriesFromProviderTs_native(dataLibrary_xptr.ptr, variableIdentifier_c_charp.ptr)
     # no cleanup for const char*
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 

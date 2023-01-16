@@ -7,13 +7,111 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
+from cinterop.timeseries import as_pydatetime
 
-pkg_dir = os.path.join(os.path.dirname(__file__),'..')
+_origin = as_pydatetime("1970-01-01")
 
-sys.path.append(pkg_dir)
+def mainTimeAxis(deltaT, n, p=None):
+    if p is None: p = n
+    return {
+        "tsStartDate": _origin,
+        "tsEndDate": _origin + timedelta(seconds=deltaT*n),
+        "tsStartEns": _origin + timedelta(seconds=deltaT*p)
+        }
 
-# from ela.utils import flip
+#' buildTestEnsTs
+#'
+#' buildTestEnsTs
+#'
+#' @param i index of the test ensemble of time series
+#' @return an xts
+def buildTestEnsTs(i, seed=None, deltaT=3600, n=100, nEns=4):
+    tt = mainTimeAxis(deltaT, n)
+    return buildTestHourlyXts(i, tt["tsStartDate"], seed=seed, n=n, nEns=nEns, deltaT=deltaT)
 
-def test_success():
-    assert True
+
+def buildTestHourlyXts(i, originDate, seed=None, n=5, nEns=4, deltaT=1):
+    from cinterop.timeseries import mk_even_step_xarray_series, ENSEMBLE_DIMNAME
+    if seed is None: seed = 456
+    np.random.seed(seed)
+    x = np.random.normal(size=nEns*n).reshape((n, nEns))
+    return mk_even_step_xarray_series(
+        data = x+i,
+        start_date= originDate+timedelta(hours=i),
+        time_step_seconds=deltaT,
+        dim_name=ENSEMBLE_DIMNAME,
+        colnames=[str(j) for j in range(nEns)]
+        )
+
+from uchronia.classes import EnsembleForecastTimeSeries
+
+def buildTestTsEnsTs(deltaT=3600, n=100, p=80, deltaTLead=3600, nLead=5, nEns=4):
+    from cinterop.timeseries import create_ensemble_forecasts_series, create_even_time_index
+    if p > n:
+        raise ValueError("start of non-null ensemble is past the end of the time series")
+    tt = mainTimeAxis(deltaT, n, p)
+    ensFcTs = EnsembleForecastTimeSeries.new(start=_origin, length=n, time_step=timedelta(seconds=deltaT))
+    # ensFcTs = create_ensemble_forecasts_series(
+    #     None,
+    #     ens_index=np.arange(nEns),
+    #     lead_time_index=np.arange(nLead) + 1,
+    #     time_index=create_even_time_index(
+    #         start=_origin, time_step_seconds=deltaT, n=n)
+    # )
+    
+    for i in range(p, n):
+        multiTimeSeriesIn = buildTestEnsTs(i,n=nLead, deltaT=deltaTLead, nEns=nEns)
+        ensFcTs[i] = multiTimeSeriesIn
+    return ensFcTs
+
+def test_get_data_from_efts():
+    deltaT = 3600*3
+    deltaTLead = 180
+    n = 20
+    p = 8
+    nLead = 5
+    nEns = 4
+    ensFcTs = buildTestTsEnsTs(deltaT=deltaT,deltaTLead=deltaTLead,n=n,p=p,nLead=nLead,nEns=nEns)
+    q = n-p-1
+    tt = mainTimeAxis(deltaT, n, p)
+    for i in range(n):
+        ensTs = ensFcTs[i]
+        if i < p:
+            assert ensTs is None # np.all(np.isnan(ensTs))
+        else:
+            multiTimeSeriesExpected = buildTestHourlyXts(i, tt["tsStartDate"], n=nLead, nEns=nEns,deltaT=deltaTLead)
+            assert np.all(ensTs == multiTimeSeriesExpected)
+
+
+def test_round_trip_ensts():
+    import uchronia.wrap.uchronia_wrap_generated as uwg
+    from uchronia.time_series import get_item
+    import uchronia.data_set as uds
+    from cinterop.timeseries import ENSEMBLE_DIMNAME, TIME_DIMNAME
+    deltaT = 3600*3
+    n = 100
+    # nLead = 5
+    nEns = 4
+    # q = n-p-1
+    ensTsXts = buildTestEnsTs(1, deltaT=deltaT,n=n,nEns=nEns)
+    ensTs = uds.as_uchronia_data(ensTsXts)
+    for iEns in range(nEns):
+        theTs = ensTs[iEns].to_xarray()
+        expected = ensTsXts.sel({ENSEMBLE_DIMNAME: str(iEns)})
+        assert np.all(expected.coords[TIME_DIMNAME] == theTs.coords[TIME_DIMNAME] )
+        assert np.all(expected.values == theTs.values)
+    # # we create another set of data, to test the setting of each item series in the collection ensTs.
+    # newEnsTsXts = buildTestEnsTs(1, seed = 9876, deltaT=deltaT,n=n,nEns=nEns)
+    # for (iEns in as.integer(1:nEns)) {
+    #   uchronia::setItem(ensTs, iEns, newEnsTsXts[,iEns])
+    # }
+    # for (iEns in as.integer(1:nEns)) {
+    #   theTs = uchronia::getItem(ensTs, iEns)
+    #   expected = newEnsTsXts[,iEns]
+    #   expect_true(all(xts:::index.xts(expected )== xts:::index.xts(theTs)))
+    #   expect_true(all(expected == theTs))
+    # }
+
+if __name__ == "__main__":
+    blah = test_get_data_from_efts()

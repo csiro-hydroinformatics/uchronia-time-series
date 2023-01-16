@@ -36,7 +36,7 @@ def get_multiple_time_series_from_provider(
     Returns:
         an xarray time series
 
-    Example:
+    Examples:
         >>> # internalGetRecordedTts <- function(simulation, varIds) {
         >>> # uchronia::getMultipleTimeSeriesFromProvider(simulation, varIds, GetRecorded_Pkg_R)
         >>> # }
@@ -60,7 +60,7 @@ def get_ensemble_dataset(dataset_id: str = "", data_path: str = "") -> "TimeSeri
     Returns:
         TimeSeriesLibrary: external pointer type ENSEMBLE_DATA_SET_PTR, or a Python class wrapper around it 
 
-    Example:
+    Examples:
         TODO
 
     """
@@ -263,36 +263,37 @@ def as_xarray(time_series_info: "NdTimeSeries") -> xr.DataArray:
 #   }
 # }
 
-# #' Coerce an object to a c++ object handled via an external pointer
-# #'
-# #' Converts an object such as an xarray time series to an equivalent 'uchronia' C++ entity that it then refered to
-# #' via an external pointer. Typically deals with time series and ensemble thereof, but may be expanded later on to support more types.
-# #'
-# #' @param rData An R object such as an xarray object.
-# #' @return an S4 object 'ExternalObjRef' [package "cinterop"]
-# #' @examples
-# #' \dontrun{
-# #' len = 3
-# #' ensSize = 2
-# #' set.seed(1)
-# #' x = matrix(rnorm(n=len*ensSize), ncol=ensSize)
-# #' ind = lubridate::origin + (1:len) * lubridate::days(1)
-# #' (mts = xts::xts(x, ind))
-# #' (umts = asUchroniaData(mts))
-# #' as_xarray(umts)
-# #' }
-# #' @importFrom cinterop isExternalObjRef
-# #' @export
-# asUchroniaData(rData):
-#   if(xts::is.xts(rData)):
-#     return(toUchroniaSeries(cinterop::asInteropRegularTimeSeries(rData)))
-#   elif (cinterop::isExternalObjRef(rData)):
-#     return(rData)
-#   else:
-#     k = class(rData)
-#     stop( paste0( 'cannot convert objects of this(these) class(es) to an uchronia data set (xptr): ', paste(k, collapse = ',')))
-#   }
-# }
+#' Coerce an object to a c++ object handled via an external pointer
+#'
+#' Converts an object such as an xarray time series to an equivalent 'uchronia' C++ entity that it then refered to
+#' via an external pointer. Typically deals with time series and ensemble thereof, but may be expanded later on to support more types.
+#'
+#' @param rData An R object such as an xarray object.
+#' @return an S4 object 'ExternalObjRef' [package "cinterop"]
+#' @examples
+#' \dontrun{
+#' len = 3
+#' ensSize = 2
+#' set.seed(1)
+#' x = matrix(rnorm(n=len*ensSize), ncol=ensSize)
+#' ind = lubridate::origin + (1:len) * lubridate::days(1)
+#' (mts = xts::xts(x, ind))
+#' (umts = asUchroniaData(mts))
+#' as_xarray(umts)
+#' }
+#' @importFrom cinterop isExternalObjRef
+#' @export
+def as_uchronia_data(py_data:Any):
+    import uchronia.wrap.uchronia_wrap_generated as uwg
+    from uchronia.wrap.ffi_interop import marshal
+    from refcount.interop import is_cffi_native_handle
+    if isinstance(py_data, xr.DataArray):
+        return uwg.CreateEnsembleTimeSeriesDataFromStruct_py(py_data)
+    elif is_cffi_native_handle(py_data):
+        return py_data
+    else:
+        k = type(py_data)
+        raise ValueError( f'cannot convert objects of type {k} to an uchronia data set (xptr): ')
 
 # createTimeSeriesIndex(startDate, n, delta_t_sec=as.numeric(3600)):
 #   stopifnot(is(startDate, "POSIXct"))

@@ -42,6 +42,11 @@ class UchroniaError(Exception):
 # This will store the exception message raised by uchronia
 _EXCEPTION_TXT_RAISED = None
 
+class NativeException(Exception):
+    """ Raised when a call to a native library raised an error via a python callback function """
+    def __init__(self, message):
+        super(NativeException, self).__init__(message)
+
 @uchronia_ffi.callback("void(char *)")
 def exception_callback(exception_string):
     """
