@@ -144,6 +144,9 @@ class EnsemblePtrTimeSeries(DeletableCffiNativeHandle):
     def to_xarray(self):
         return uwg.ToStructEnsembleTimeSeriesData_py(self)
 
+    # def geometry(self):
+    #     return uwc.GetEnsembleForecastTimeSeriesGeometry_Pkg(self)
+
 
 class TimeSeriesLibrary(TimeSeriesProvider):
     """Object that acts as a catalogue with various time series available for retrieval
