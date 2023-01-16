@@ -1,3 +1,10 @@
+uchronia (2.4-1) unstable; urgency=medium
+
+  * Address compiler warnings with clang++. WIRADA-653 WIRADA-656
+  * Changes to the error handling of the C API, to reliably catch C std exceptions and surface via python.
+
+ -- Jean-Michel Perraud <jean-michel.perraud@csiro.au>  Mon, 16 Jan 2023 18:21:51 +1100
+
 uchronia (2.3-8) unstable; urgency=medium
 
   * Fix edge case: C interop for returned empty arrays (e.g. char**) led to spurious exception

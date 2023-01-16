@@ -55,13 +55,15 @@ def mk_date(year, month, day, hour=0, min=0, sec=0, tz=None):
 # #'  ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
 # #' @export
 # def geometryOf(x):
+#     from cinterop.cffi.marshal import is
+#     import cinterop
 #     # if(is.list(x)):
 #     #   return(marshaledTimeSeriesToXts(x))
-#     if isinstance(x, timeseries):
+#     if isinstance(x, xr.DataArray): # TODO: or?
 #         return geometryFromXts(x)
-#     } elif(cinterop::isInteropRegularTimeSeries(x)):
+#     elif(cinterop.(x)):
 #         return(geometryFromInteropRegularTimeSeries(x))
-#     } elif(cinterop::isExternalObjRef(x)):
+#     elif(cinterop::isExternalObjRef(x)):
 #         if(is_singular_time_series(x)):
 #         geometryFromUnivTs(x)
 #         } elif(is_ensemble_time_series(x)):

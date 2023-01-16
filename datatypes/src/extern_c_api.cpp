@@ -10,15 +10,19 @@
 #include "datatypes/interop_conversions.h"
 #include "datatypes/interop_conversions.hpp"
 
+
+static moirai::error_handling::error_log errorHandleUchronia;
+
+
 #define TRY_START try {
-#define INTERCEPT_STD_EXCEPTION } catch (std::exception& e) { moirai::error_handling::error_log::handle_std_exception(e); }
+#define INTERCEPT_STD_EXCEPTION } catch (std::exception& e) { errorHandleUchronia.handle_std_exception(e); }
 
 /**
  * @brief macro for intercepting exceptions at C API call but avoiding 
  * "warning: control reaches end of non-void function [-Wreturn-type]"
  * 
  */
-#define INTERCEPT_STD_EXCEPTION_RET(dummyReturned) } catch (std::exception& e) { moirai::error_handling::error_log::handle_std_exception(e); } return dummyReturned;
+#define INTERCEPT_STD_EXCEPTION_RET(dummyReturned) } catch (std::exception& e) { errorHandleUchronia.handle_std_exception<std::exception>(e); } return dummyReturned;
 
 #define INTERCEPT_STD_EXCEPTION_RETPTR INTERCEPT_STD_EXCEPTION_RET(nullptr)
 #define INTERCEPT_STD_EXCEPTION_BOOL INTERCEPT_STD_EXCEPTION_RET(false)
@@ -74,13 +78,17 @@ void CopyTimeSeriesValues(DATATYPES_TIME_SERIES_DOUBLE_PTR timeSeries, double * 
 * START OF THE API
 ************************/
 
+void RegisterExceptionCallbackUchronia(const void* callback)
+{
+	if(callback == nullptr) // Allow the deregistration, at least for unit test purposes.
+		errorHandleUchronia.register_exception_callback(callback);
+	else if(!errorHandleUchronia.has_callback_registered())
+		errorHandleUchronia.register_exception_callback(callback);
+}
+
 void RegisterExceptionCallback(const void* callback)
 {
-	using moirai::error_handling::error_log;
-	if(callback == nullptr) // Allow the deregistration, at least for unit test purposes.
-		error_log::register_exception_callback(callback);
-	else if(!error_log::has_callback_registered())
-		error_log::register_exception_callback(callback);
+	RegisterExceptionCallbackUchronia(callback);
 }
 
 void DisposeSharedPointer(VOID_PTR_PROVIDER_PTR ptr)
@@ -129,7 +137,7 @@ void DeleteAnsiString(const char* value)
 char* GetLastStdExceptionMessage()
 {
 	TRY_START
-		char* res = STRDUP(moirai::error_handling::error_log::get_last_exception_message().c_str());
+		char* res = STRDUP(errorHandleUchronia.get_last_exception_message().c_str());
 	return res;
 	INTERCEPT_STD_EXCEPTION_RETPTR
 }

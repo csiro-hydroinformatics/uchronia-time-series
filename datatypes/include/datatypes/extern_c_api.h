@@ -57,6 +57,14 @@ extern "C" {
 	 */
 	DATATYPES_API void RegisterExceptionCallback(const void* callback);
 
+	/**
+	 *
+	 * \brief	Registers a function to call when uchronia has generated a std::exception that has been caught by the API.
+	 *
+	 * \param [in]	callback function pointer. The function must have a signature like void on_error_message(const char* msg);
+	 */
+	DATATYPES_API void RegisterExceptionCallbackUchronia(const void* callback);
+
 	////////////////////////////////
 	// Generic memory management.
 	////////////////////////////////

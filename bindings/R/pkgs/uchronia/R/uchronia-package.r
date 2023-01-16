@@ -13,6 +13,7 @@
 #'
 #' \tabular{lll}{
 #' Version \tab Date \tab Notes \cr
+#' 2.4.1 \tab 2023-01-16 \tab Changes to the error handling of the C API, to reliably catch C std exceptions and surface via python. \cr
 #' 2.3.1 \tab 2020-01-27 \tab Surface support for monthly time series. Added to cater for the model GR2M. \cr
 #' 2.3.0 \tab 2020-01-10 \tab Cumulative maintenance release. \cr
 #' 2.1.2 \tab 2020-01-25 \tab Cumulative maintenance release. \cr

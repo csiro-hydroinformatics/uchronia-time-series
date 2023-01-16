@@ -12,10 +12,12 @@ from typing import TYPE_CHECKING, Dict, List, Tuple, Any, Optional
 from datetime import datetime
 from refcount.interop import CffiData, OwningCffiNativeHandle, DeletableCffiNativeHandle, wrap_as_pointer_handle
 from cinterop.cffi.marshal import as_bytes, TimeSeriesGeometryNative
-from uchronia.wrap.ffi_interop import marshal, uchronia_so, check_exceptions
+from uchronia.wrap.ffi_interop import marshal, uchronia_so
 # phase out importing from uchronia.classes, to prevent cyclic imports
 # from uchronia.classes import wrap_cffi_native_handle
 # Additional specific imports for this package
+
+import uchronia.wrap.ffi_interop as _u_wrap
 
 
 if TYPE_CHECKING:
@@ -110,7 +112,7 @@ def dispose_shared_pointer_py(ptr:Any) -> None:
     if uchronia_so is not None and uchronia_so.DisposeSharedPointer is not None:
         uchronia_so.DisposeSharedPointer(ptr_xptr.ptr)
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetLastStdExceptionMessage_native():
     result = uchronia_so.GetLastStdExceptionMessage()
     return result
@@ -130,7 +132,7 @@ def GetLastStdExceptionMessage_py() -> str:
     return char_array_to_py(result, dispose=True)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _RegisterExceptionCallback_native(callback):
     uchronia_so.RegisterExceptionCallback(callback)
 
@@ -146,7 +148,23 @@ def RegisterExceptionCallback_py(callback:Any) -> None:
     _RegisterExceptionCallback_native(callback)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
+def _RegisterExceptionCallbackUchronia_native(callback):
+    uchronia_so.RegisterExceptionCallbackUchronia(callback)
+
+def RegisterExceptionCallbackUchronia_py(callback:Any) -> None:
+    """RegisterExceptionCallbackUchronia_py
+    
+    RegisterExceptionCallbackUchronia_py: generated wrapper function for API function RegisterExceptionCallbackUchronia
+    
+    Args:
+        callback (Any): callback
+    
+    """
+    _RegisterExceptionCallbackUchronia_native(callback)
+
+
+@_u_wrap.check_exceptions
 def _DisposeSharedPointer_native(ptr):
     uchronia_so.DisposeSharedPointer(ptr)
 
@@ -163,7 +181,7 @@ def DisposeSharedPointer_py(ptr:Any) -> None:
     _DisposeSharedPointer_native(ptr_xptr.ptr)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _SetTimeSeriesMissingValueValue_native(missingValueValue):
     uchronia_so.SetTimeSeriesMissingValueValue(missingValueValue)
 
@@ -179,7 +197,7 @@ def SetTimeSeriesMissingValueValue_py(missingValueValue:float) -> None:
     _SetTimeSeriesMissingValueValue_native(missingValueValue)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _LoadEnsembleDataset_native(libraryIdentifier, dataPath):
     result = uchronia_so.LoadEnsembleDataset(libraryIdentifier, dataPath)
     return result
@@ -205,7 +223,7 @@ def LoadEnsembleDataset_py(libraryIdentifier:str, dataPath:str) -> 'TimeSeriesLi
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_DATA_SET_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _CreateEnsembleDataset_native(type):
     result = uchronia_so.CreateEnsembleDataset(type)
     return result
@@ -292,7 +310,7 @@ def GetEnsembleDatasetDataSummaries_py(dataLibrary:'TimeSeriesLibrary'):
     result = charp_array_to_py(values, size[0], True)
     return result
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetDataDimensionsDescription_native(dataLibrary, dataId):
     result = uchronia_so.GetDataDimensionsDescription(dataLibrary, dataId)
     return result
@@ -317,7 +335,7 @@ def GetDataDimensionsDescription_py(dataLibrary:'TimeSeriesLibrary', dataId:str)
     return py_time_series_dimensions_description(result, dispose=True)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _EnsembleSizeEnsembleTimeSeries_native(ensSeries):
     result = uchronia_so.EnsembleSizeEnsembleTimeSeries(ensSeries)
     return result
@@ -339,7 +357,7 @@ def EnsembleSizeEnsembleTimeSeries_py(ensSeries:'EnsemblePtrTimeSeries') -> int:
     return result
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _DisposeDataDimensionsDescriptions_native(data):
     uchronia_so.DisposeDataDimensionsDescriptions(data)
 
@@ -355,7 +373,7 @@ def DisposeDataDimensionsDescriptions_py(data:List) -> None:
     _DisposeDataDimensionsDescriptions_native(data)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _CreateEnsembleForecastTimeSeries_native(start, length, timeStepName):
     result = uchronia_so.CreateEnsembleForecastTimeSeries(start, length, timeStepName)
     return result
@@ -382,7 +400,7 @@ def CreateEnsembleForecastTimeSeries_py(start:datetime, length:int, timeStepName
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetDatasetSingleTimeSeries_native(dataLibrary, dataId):
     result = uchronia_so.GetDatasetSingleTimeSeries(dataLibrary, dataId)
     return result
@@ -407,7 +425,7 @@ def GetDatasetSingleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataId:str) -
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetDatasetEnsembleTimeSeries_native(dataLibrary, dataEnsembleId):
     result = uchronia_so.GetDatasetEnsembleTimeSeries(dataLibrary, dataEnsembleId)
     return result
@@ -432,7 +450,7 @@ def GetDatasetEnsembleTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dataEnsembl
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetDatasetEnsembleForecastTimeSeries_native(dataLibrary, dataId):
     result = uchronia_so.GetDatasetEnsembleForecastTimeSeries(dataLibrary, dataId)
     return result
@@ -457,7 +475,7 @@ def GetDatasetEnsembleForecastTimeSeries_py(dataLibrary:'TimeSeriesLibrary', dat
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _SaveSingleTimeSeriesToNetcdf_native(timeSeries, filename, overwrite):
     uchronia_so.SaveSingleTimeSeriesToNetcdf(timeSeries, filename, overwrite)
 
@@ -478,7 +496,7 @@ def SaveSingleTimeSeriesToNetcdf_py(timeSeries:'TimeSeries', filename:str, overw
     # no cleanup for const char*
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _SaveEnsembleTimeSeriesToNetcdf_native(collection, filename, overwrite):
     uchronia_so.SaveEnsembleTimeSeriesToNetcdf(collection, filename, overwrite)
 
@@ -499,7 +517,7 @@ def SaveEnsembleTimeSeriesToNetcdf_py(collection:'EnsemblePtrTimeSeries', filena
     # no cleanup for const char*
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _SaveEnsembleForecastTimeSeriesToNetcdf_native(tsEnsTs, filename, overwrite):
     uchronia_so.SaveEnsembleForecastTimeSeriesToNetcdf(tsEnsTs, filename, overwrite)
 
@@ -520,7 +538,7 @@ def SaveEnsembleForecastTimeSeriesToNetcdf_py(tsEnsTs:'EnsembleForecastTimeSerie
     # no cleanup for const char*
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _IsMissingValueItemEnsembleForecastTimeSeries_native(series, i):
     result = uchronia_so.IsMissingValueItemEnsembleForecastTimeSeries(series, i)
     return result
@@ -543,7 +561,7 @@ def IsMissingValueItemEnsembleForecastTimeSeries_py(series:'EnsembleForecastTime
     return result
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetItemEnsembleForecastTimeSeries_native(efts, i):
     result = uchronia_so.GetItemEnsembleForecastTimeSeries(efts, i)
     return result
@@ -566,7 +584,7 @@ def GetItemEnsembleForecastTimeSeries_py(efts:'EnsembleForecastTimeSeries', i:in
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _TimeSeriesFromEnsembleOfTimeSeries_native(collectionTs, index):
     result = uchronia_so.TimeSeriesFromEnsembleOfTimeSeries(collectionTs, index)
     return result
@@ -589,7 +607,7 @@ def TimeSeriesFromEnsembleOfTimeSeries_py(collectionTs:'EnsemblePtrTimeSeries', 
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_native(efts, indexInIssueTime, indexInForecastTime):
     result = uchronia_so.TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries(efts, indexInIssueTime, indexInForecastTime)
     return result
@@ -613,7 +631,7 @@ def TimeSeriesFromTimeSeriesOfEnsembleOfTimeSeries_py(efts:'EnsembleForecastTime
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetValueFromUnivariateTimeSeries_native(ts, index):
     result = uchronia_so.GetValueFromUnivariateTimeSeries(ts, index)
     return result
@@ -636,7 +654,7 @@ def GetValueFromUnivariateTimeSeries_py(ts:'TimeSeries', index:int) -> float:
     return result
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _TransformEachItem_native(tsEnsTs, method, methodArgument):
     uchronia_so.TransformEachItem(tsEnsTs, method, methodArgument)
 
@@ -659,7 +677,7 @@ def TransformEachItem_py(tsEnsTs:'EnsembleForecastTimeSeries', method:str, metho
     # no cleanup for const char*
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _SetValueToUnivariateTimeSeries_native(ts, index, value):
     uchronia_so.SetValueToUnivariateTimeSeries(ts, index, value)
 
@@ -678,7 +696,7 @@ def SetValueToUnivariateTimeSeries_py(ts:'TimeSeries', index:int, value:float) -
     _SetValueToUnivariateTimeSeries_native(ts_xptr.ptr, index, value)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetItemEnsembleForecastTimeSeriesAsStructure_native(series, i):
     result = uchronia_so.GetItemEnsembleForecastTimeSeriesAsStructure(series, i)
     return result
@@ -701,7 +719,7 @@ def GetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTime
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetItemEnsembleTimeSeriesAsStructure_native(series, i):
     result = uchronia_so.GetItemEnsembleTimeSeriesAsStructure(series, i)
     return result
@@ -724,7 +742,7 @@ def GetItemEnsembleTimeSeriesAsStructure_py(series:'EnsemblePtrTimeSeries', i:in
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _SetItemEnsembleForecastTimeSeriesAsStructure_native(series, i, values):
     uchronia_so.SetItemEnsembleForecastTimeSeriesAsStructure(series, i, values)
 
@@ -745,7 +763,7 @@ def SetItemEnsembleForecastTimeSeriesAsStructure_py(series:'EnsembleForecastTime
     # values_tsd_ptr - no cleanup needed?
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _SetItemEnsembleTimeSeriesAsStructure_native(collection, i, values):
     uchronia_so.SetItemEnsembleTimeSeriesAsStructure(collection, i, values)
 
@@ -766,7 +784,7 @@ def SetItemEnsembleTimeSeriesAsStructure_py(collection:'EnsemblePtrTimeSeries', 
     # values_tsd_ptr - no cleanup needed?
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _CreatePerfectForecastTimeSeries_native(observations, start, length, timeStepName, offsetForecasts, leadTime):
     result = uchronia_so.CreatePerfectForecastTimeSeries(observations, start, length, timeStepName, offsetForecasts, leadTime)
     return result
@@ -797,7 +815,7 @@ def CreatePerfectForecastTimeSeries_py(observations:'TimeSeries', start:datetime
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_FORECAST_TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _ToStructEnsembleTimeSeriesData_native(ensSeries):
     result = uchronia_so.ToStructEnsembleTimeSeriesData(ensSeries)
     return result
@@ -819,7 +837,7 @@ def ToStructEnsembleTimeSeriesData_py(ensSeries:'EnsemblePtrTimeSeries') -> xr.D
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _ToStructSingleTimeSeriesData_native(timeSeries):
     result = uchronia_so.ToStructSingleTimeSeriesData(timeSeries)
     return result
@@ -841,7 +859,7 @@ def ToStructSingleTimeSeriesData_py(timeSeries:'TimeSeries') -> xr.DataArray:
     return opaque_ts_as_xarray_time_series(result, dispose=True)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _CreateEnsembleTimeSeriesDataFromStruct_native(ensSeries):
     result = uchronia_so.CreateEnsembleTimeSeriesDataFromStruct(ensSeries)
     return result
@@ -864,7 +882,7 @@ def CreateEnsembleTimeSeriesDataFromStruct_py(ensSeries:xr.DataArray) -> 'Ensemb
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_PTR_TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _CreateSingleTimeSeriesDataFromStruct_native(timeSeries):
     result = uchronia_so.CreateSingleTimeSeriesDataFromStruct(timeSeries)
     return result
@@ -887,7 +905,7 @@ def CreateSingleTimeSeriesDataFromStruct_py(timeSeries:xr.DataArray) -> 'TimeSer
     return custom_wrap_cffi_native_handle(result, 'TIME_SERIES_PTR')
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _DisposeMultiTimeSeriesData_native(data):
     uchronia_so.DisposeMultiTimeSeriesData(data)
 
@@ -903,7 +921,7 @@ def DisposeMultiTimeSeriesData_py(data:xr.DataArray) -> None:
     _DisposeMultiTimeSeriesData_native(data)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetTimeSeriesGeometry_native(timeSeries, geom):
     uchronia_so.GetTimeSeriesGeometry(timeSeries, geom)
 
@@ -922,7 +940,7 @@ def GetTimeSeriesGeometry_py(timeSeries:'TimeSeries', geom:TimeSeriesGeometryNat
     _GetTimeSeriesGeometry_native(timeSeries_xptr.ptr, geom_xptr.ptr)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetEnsembleForecastTimeSeriesGeometry_native(timeSeries, geom):
     uchronia_so.GetEnsembleForecastTimeSeriesGeometry(timeSeries, geom)
 
@@ -941,7 +959,7 @@ def GetEnsembleForecastTimeSeriesGeometry_py(timeSeries:'EnsembleForecastTimeSer
     _GetEnsembleForecastTimeSeriesGeometry_native(timeSeries_xptr.ptr, geom_xptr.ptr)
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetTimeSeriesValues_native(timeSeries, values, arrayLength):
     uchronia_so.GetTimeSeriesValues(timeSeries, values, arrayLength)
 
@@ -962,7 +980,7 @@ def GetTimeSeriesValues_py(timeSeries:'TimeSeries', values:np.ndarray, arrayLeng
     # values_numarray - no cleanup needed?
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetNumTimeSeries_native():
     result = uchronia_so.GetNumTimeSeries()
     return result
@@ -982,7 +1000,7 @@ def GetNumTimeSeries_py() -> int:
     return result
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetProviderTsGeometry_native(dataLibrary, variableIdentifier, geom):
     uchronia_so.GetProviderTsGeometry(dataLibrary, variableIdentifier, geom)
 
@@ -1004,7 +1022,7 @@ def GetProviderTsGeometry_py(dataLibrary:'TimeSeriesProvider', variableIdentifie
     # no cleanup for const char*
 
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _GetProviderTimeSeriesValues_native(dataLibrary, variableIdentifier, values, arrayLength):
     uchronia_so.GetProviderTimeSeriesValues(dataLibrary, variableIdentifier, values, arrayLength)
 
@@ -1049,7 +1067,7 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary:'TimeSeriesProvider'):
     result = charp_array_to_py(values, size[0], True)
     return result
 
-@check_exceptions
+@_u_wrap.check_exceptions
 def _TimeSeriesFromProviderTs_native(dataLibrary, variableIdentifier):
     result = uchronia_so.TimeSeriesFromProviderTs(dataLibrary, variableIdentifier)
     return result

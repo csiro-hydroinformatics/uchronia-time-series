@@ -40,7 +40,7 @@ class UchroniaError(Exception):
 
 
 # This will store the exception message raised by uchronia
-_EXCEPTION_TXT_RAISED = None
+_exception_txt_raised_uchronia = None
 
 class NativeException(Exception):
     """ Raised when a call to a native library raised an error via a python callback function """
@@ -48,15 +48,15 @@ class NativeException(Exception):
         super(NativeException, self).__init__(message)
 
 @uchronia_ffi.callback("void(char *)")
-def exception_callback(exception_string):
+def _exception_callback_uchronia(exception_string):
     """
         This function is called when uchronia raises an exception.
-        It sets the global variable ``_EXCEPTION_TXT_RAISED``
+        It sets the global variable ``_exception_txt_raised_uchronia``
 
         :param cdata exception_string: Exception string.
     """
-    global _EXCEPTION_TXT_RAISED
-    _EXCEPTION_TXT_RAISED = uchronia_ffi.string(exception_string)
+    global _exception_txt_raised_uchronia
+    _exception_txt_raised_uchronia = uchronia_ffi.string(exception_string)
 
 
 def check_exceptions(func):
@@ -69,7 +69,7 @@ def check_exceptions(func):
         """
             This decorator will first call the function ``func``
             After that it will raise a Python UchroniaError exception if the
-            global variable ``_EXCEPTION_TXT_RAISED`` is set.
+            global variable ``_exception_txt_raised_uchronia`` is set.
 
             :param func func: Python function wrapping a uchronia function.
         """
@@ -77,16 +77,16 @@ def check_exceptions(func):
         # Call the function
         return_value = func(*args, **kwargs)
         # Check if an exception was raised
-        global _EXCEPTION_TXT_RAISED
-        if _EXCEPTION_TXT_RAISED is not None:
-            temp_exception = _EXCEPTION_TXT_RAISED
-            _EXCEPTION_TXT_RAISED = None
+        global _exception_txt_raised_uchronia
+        if _exception_txt_raised_uchronia is not None:
+            temp_exception = _exception_txt_raised_uchronia
+            _exception_txt_raised_uchronia = None
             raise UchroniaError(temp_exception)
         return return_value
     return wrapper
 
 
-uchronia_so.RegisterExceptionCallback(exception_callback)
+uchronia_so.RegisterExceptionCallback(_exception_callback_uchronia)
 
 
 @check_exceptions
