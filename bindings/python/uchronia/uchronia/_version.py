@@ -5,5 +5,5 @@ Version.
 
 Doing it this way provides for access in setup.py and via __version__
 """
-__version__ = "2.3.8"
+__version__ = "2.3.9"
 

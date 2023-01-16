@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 from .wrap.ffi_interop import uchronia_dispose_multi_time_series_data
 
 import uchronia.wrap.uchronia_wrap_generated as uwg
+import uchronia.wrap.uchronia_wrap_custom as uwc
 
 import uchronia.time_series as uts
 import uchronia.data_set as uds
@@ -76,6 +77,10 @@ class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
 
     def to_xarray(self):
         return None
+
+    def time_index(self):
+        geom = uwc.GetEnsembleForecastTimeSeriesGeometry_Pkg(self)
+        return geom.time_index()
 
 
 class EnsembleTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):

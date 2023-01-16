@@ -1,5 +1,10 @@
-from typing import Any
+from typing import Any, TYPE_CHECKING
 import uchronia.wrap.uchronia_wrap_generated as uwg
+
+if TYPE_CHECKING:
+    from uchronia.classes import (
+        EnsembleForecastTimeSeries,
+    )
 
 # void toMarshalledTsinfo(const Rcpp::S4& rTsInfo, regular_time_series_geometry& mts)
 # {
@@ -43,12 +48,11 @@ import uchronia.wrap.uchronia_wrap_generated as uwg
 # //}
 
 # # [[Rcpp::export]]
-# Rcpp::S4 GetEnsembleForecastTimeSeriesGeometry_Pkg(XPtr<opaque_pointer_handle> timeSeries)
-# {
-#     regular_time_series_geometry mtsg
-#     GetEnsembleForecastTimeSeriesGeometry(timeSeries, &mtsg)
-#     return fromMarshalledTsinfo(mtsg)
-# }
+def GetEnsembleForecastTimeSeriesGeometry_Pkg(timeSeries: 'EnsembleForecastTimeSeries'):
+    from uchronia.wrap.ffi_interop import marshal
+    mtsg = marshal.new_native_tsgeom()
+    uwg.GetEnsembleForecastTimeSeriesGeometry_py(timeSeries, mtsg)
+    return mtsg
 
 # # [[Rcpp::export]]
 # Rcpp::S4 GetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i)

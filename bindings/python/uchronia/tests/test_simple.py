@@ -85,8 +85,6 @@ def test_get_data_from_efts():
 
 
 def test_round_trip_ensts():
-    import uchronia.wrap.uchronia_wrap_generated as uwg
-    from uchronia.time_series import get_item
     import uchronia.data_set as uds
     from cinterop.timeseries import ENSEMBLE_DIMNAME, TIME_DIMNAME
     deltaT = 3600*3
@@ -102,16 +100,54 @@ def test_round_trip_ensts():
         assert np.all(expected.coords[TIME_DIMNAME] == theTs.coords[TIME_DIMNAME] )
         assert np.all(expected.values == theTs.values)
     # # we create another set of data, to test the setting of each item series in the collection ensTs.
-    # newEnsTsXts = buildTestEnsTs(1, seed = 9876, deltaT=deltaT,n=n,nEns=nEns)
-    # for (iEns in as.integer(1:nEns)) {
-    #   uchronia::setItem(ensTs, iEns, newEnsTsXts[,iEns])
-    # }
-    # for (iEns in as.integer(1:nEns)) {
-    #   theTs = uchronia::getItem(ensTs, iEns)
-    #   expected = newEnsTsXts[,iEns]
-    #   expect_true(all(xts:::index.xts(expected )== xts:::index.xts(theTs)))
-    #   expect_true(all(expected == theTs))
-    # }
+    newEnsTsXts = buildTestEnsTs(1, seed = 9876, deltaT=deltaT,n=n,nEns=nEns)
+    for iEns in range(nEns):
+        ensTs[iEns] = newEnsTsXts.sel({ENSEMBLE_DIMNAME: str(iEns)})
+    for iEns in range(nEns):
+        theTs = ensTs[iEns].to_xarray()
+        expected = newEnsTsXts.sel({ENSEMBLE_DIMNAME: str(iEns)})
+        assert np.all(expected.coords[TIME_DIMNAME] == theTs.coords[TIME_DIMNAME] )
+        assert np.all(expected.values == theTs.values)
+
+def test_time_indices_retrieved():
+    deltaT = 3600 * 3
+    deltaTLead = 3600 // 4
+    n = 20
+    p = 8
+    nLead = 5
+    nEns = 4
+
+    ensFcTs = buildTestTsEnsTs(deltaT=deltaT,deltaTLead=deltaTLead,n=n,p=p,nLead=nLead,nEns=nEns)
+    tt = ensFcTs.time_index()
+    tst = mainTimeAxis(deltaT, n, p)
+    expectedTaxis = [tst['tsStartDate'] + timedelta(seconds = int(i)) for i in (np.arange(n) * deltaT)]
+    assert np.all(np.array(expectedTaxis) == tt.array)
+
+def test_data_dimensions_detection():
+    import uchronia.data_set as uds
+    deltaT = 180
+    n = 10
+    nEns = 4
+  
+    x = buildTestEnsTs(1,123,deltaT=deltaT, n=n, nEns=nEns)
+    x = uds.as_uchronia_data(x)
+
+    # TODO?
+    # g = x.geometry()
+    # 
+    # expect_equal(nEns, g$ensemble$size)
+    # expect_equal(n, g$temporal$size)
+    # expect_equal(as.integer(lubridate::seconds(deltaT)), as.integer(g$temporal$time_step))
+    # expect_equal(lubridate::as.duration(lubridate::seconds(deltaT)), g$temporal$time_step)
+    # 
+    # ux = asUchroniaData(x)
+    # g = geometryOf(ux)
+    # 
+    # expect_equal(nEns, g$ensemble$size)
+    # expect_equal(n, g$temporal$size)
+    # expect_equal(as.integer(lubridate::seconds(deltaT)), as.integer(g$temporal$time_step))
+    # expect_equal(lubridate::as.duration(lubridate::seconds(deltaT)), g$temporal$time_step)
+
 
 if __name__ == "__main__":
-    blah = test_get_data_from_efts()
+    blah = test_time_indices_retrieved()
