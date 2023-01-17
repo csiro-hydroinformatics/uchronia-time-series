@@ -4,9 +4,11 @@
 \alias{mkSeriesMonthlyTstep}
 \title{Make a time series with a monthly step}
 \usage{
-mkSeriesMonthlyTstep(startDate, x, isMissingFunc = function(val) {
-    val < 0
-})
+mkSeriesMonthlyTstep(
+  startDate,
+  x,
+  isMissingFunc = function(val) {     val < 0 }
+)
 }
 \arguments{
 \item{startDate}{the start date of the time series. It must be a POSIXct object.}
