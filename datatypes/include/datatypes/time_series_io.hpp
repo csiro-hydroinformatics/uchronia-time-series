@@ -1401,7 +1401,7 @@ namespace datatypes
 		//};
 
 		template <typename T>
-		class DATATYPES_DLL_LIB TimeSeriesIOHelper
+		class /*DATATYPES_DLL_LIB*/ TimeSeriesIOHelper
 		{
 		public:
 			using SeriesType = typename CommonTypes<T>::SeriesType;
