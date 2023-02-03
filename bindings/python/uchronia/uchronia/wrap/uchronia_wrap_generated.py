@@ -109,7 +109,7 @@ def dispose_shared_pointer_py(ptr:Any) -> None:
     # leading to a TypeError: 'NoneType' object is not callable.
     # This is a nuisance, and hard to fully diagnose.
     # So, we will use the following workaround to guard against it. See WIRADA-659.
-    if uchronia_so is not None and uchronia_so.DisposeSharedPointer is not None:
+    if uchronia_so is not None: #  and uchronia_so.DisposeSharedPointer is not None:
         uchronia_so.DisposeSharedPointer(ptr_xptr.ptr)
 
 @_u_wrap.check_exceptions
