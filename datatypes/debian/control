@@ -3,7 +3,7 @@ Priority: optional
 Maintainer: Jean-Michel Perraud <per202@csiro.au>
 Build-Depends: cmake,
                debhelper (>= 11~),
-	           debhelper-compat (= 11),
+               debhelper-compat (= 11),
 #                catch,
                libboost-date-time-dev,
                libboost-system-dev,
