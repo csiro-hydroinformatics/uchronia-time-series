@@ -1,14 +1,11 @@
 """Pythonic classes accessing underlying C++ objects functionalities
 """
 
-from typing import Any, Callable, Dict, List, OrderedDict, Sequence, TYPE_CHECKING, Union
+from typing import Any, Callable, List, TYPE_CHECKING, Union
 from cffi import FFI
 from refcount.interop import DeletableCffiNativeHandle, CffiData, CffiWrapperFactory
-from cinterop.timeseries import ConvertibleToTimestamp
 if TYPE_CHECKING:
     from .const import NdTimeSeries
-
-from .wrap.ffi_interop import uchronia_dispose_multi_time_series_data
 
 import uchronia.wrap.uchronia_wrap_generated as uwg
 import uchronia.wrap.uchronia_wrap_custom as uwc
