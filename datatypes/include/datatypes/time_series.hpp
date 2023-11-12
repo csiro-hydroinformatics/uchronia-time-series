@@ -1002,6 +1002,113 @@ namespace datatypes
 				return newTs;
 			}
 
+			static SeriesType AggregateTimeStepIrregular(const SeriesType& series, const string& argument) {
+
+				using sec_type = boost::posix_time::time_duration::sec_type;
+				auto newTimeStep = TimeStep::Parse(argument);
+				auto monthlyTimeStep = TimeStep::Parse("monthly");
+				if (newTimeStep != monthlyTimeStep)
+					throw std::logic_error("Function aggregates to monthly timestep only");
+				sec_type delta = series.GetTimeStep().GetRegularStepDuration().total_seconds();
+
+				size_t targetSize = 0; // series.GetLength() / multiple;
+
+				size_t seriesSize = series.GetLength();
+				ptime sd = series.GetStartDate();
+				ptime newseriesStartDate;
+				ptime newseriesEndDate;
+				std::string str01("01");
+				bool startflag;
+				startflag = false;
+				std::string currdate0 = to_iso_string(series.TimeForIndex(0));
+				std::string currday = currdate0.substr(6, 2);
+				bool flag = (currday.compare(str01)==0);
+				if (flag)
+				{
+					startflag = true;
+					newseriesStartDate = series.TimeForIndex(0);
+					targetSize++;
+				}
+
+				for (size_t i = 1; i < seriesSize; i++)
+				{
+					std::string lastdate = to_iso_string(series.TimeForIndex(i - 1));
+					std::string currdate = to_iso_string(series.TimeForIndex(i ));
+					std::string lasmon = lastdate.substr(4,2);
+					std::string currmon = currdate.substr(4, 2);
+
+					if (targetSize==0){
+						currday = currdate.substr(6, 2);
+						flag = ( currday.compare(str01) ==0);
+						if (flag)
+						{
+							startflag = true;
+							newseriesStartDate = series.TimeForIndex(i);
+						} 
+					}
+					else {
+						startflag = true;
+					}
+
+					bool monflag = ((currmon.compare(lasmon) == 0) );
+					if (!monflag && startflag)
+					{
+						targetSize++;
+						newseriesEndDate = series.TimeForIndex(i - 1);
+					}
+				}
+				std::string stdatestring = to_iso_string(newseriesStartDate);
+				if (targetSize < 1)
+					throw std::logic_error("Aggregate: source lenght too short to aggregate");
+				SeriesType newTs(0.0, targetSize-1, newseriesStartDate, monthlyTimeStep);
+
+				newseriesEndDate = newTs.GetEndDate();
+				stdatestring = to_iso_string(newseriesEndDate);
+				size_t outtimestep = 0;
+				double accumulated = 0.0;
+				auto missval = series.GetMissingValue();
+				startflag = false;
+				for (size_t i = 0; i < (seriesSize-1); i++)
+				{
+					std::string nextdate = to_iso_string(series.TimeForIndex(i + 1));
+					std::string currdate = to_iso_string(series.TimeForIndex(i));
+					std::string nextmon = nextdate.substr(4, 2);
+					std::string currmon = currdate.substr(4, 2);
+
+					std::string currday = currdate.substr(6, 2);
+					if (series.TimeForIndex(i) >= newseriesStartDate)
+					{
+						startflag = true;
+					}
+
+					if (outtimestep > (targetSize-1))
+					{
+						startflag = false;
+					}
+
+					if (startflag)
+					{
+						auto val = series.GetValue(i);
+
+						if (series.IsMissingValue(val) || series.IsMissingValue(accumulated))
+						{
+							accumulated = missval;
+						}
+						else
+							accumulated += val;
+
+						if (currmon.compare(nextmon) && (outtimestep < targetSize)) {
+							newTs.SetValue(outtimestep, accumulated);
+							outtimestep++;
+							accumulated = 0.0;
+						}
+					}
+				}
+
+				return newTs;
+			}
+
+
 			static SeriesType DisaggregateTimeStep(const SeriesType& series, const string& argument) {
 
 				using sec_type = boost::posix_time::time_duration::sec_type;
@@ -1042,6 +1149,11 @@ namespace datatypes
 			static void AggregateTimeStep(SeriesType& series, const string& argument) {
 				series = AggregateTimeStep((const SeriesType&)series, argument);
 			}
+
+			static void AggregateTimeStepIrregular(SeriesType& series, const string& argument) {
+				series = AggregateTimeStepIrregular((const SeriesType&)series, argument);
+			}
+
 
 			static void DisaggregateTimeStep(SeriesType& series, const string& argument) {
 				series = DisaggregateTimeStep((const SeriesType&)series, argument);
