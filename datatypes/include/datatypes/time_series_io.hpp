@@ -1825,12 +1825,33 @@ namespace datatypes
 
 			vector<T> Serialize(const vector<TTimeSeries<T>*>& series)
 			{
-				vector<vector<T>> v;
-				for (size_t i = 0; i < series.size(); i++)
+				size_t numberOfSeries = series.size();
+				size_t seriesLength = series[0]->GetLength();
+				for (size_t i = 1; i < numberOfSeries; i++)
 				{
-					v.push_back(series[i]->GetValuesVector());
+					if (seriesLength != series[i]->GetLength()) {
+						datatypes::exceptions::ExceptionUtilities::ThrowInvalidOperation("Unable to write NetCDF file with different length series");
+					}
 				}
-				return datatypes::utils::STLHelper::Serialize(v);
+
+				vector<T> v;
+				// We know exactly how big the serialized vector will be
+				// so reserve the memory now to avoid unnecessary allocations
+				// as we populate the final vector.
+				v.reserve(seriesLength*numberOfSeries);
+
+				// The vectors need to be interleaved when serializing for writing to NetCDF
+				// Therefore iterate over the 'zip' of all the series to build the vector.
+				// See https://jira.csiro.au/browse/WIRADA-516
+				for (size_t i = 0; i < seriesLength; i++)
+				{
+					for (size_t j = 0; j < numberOfSeries; j++)
+					{
+						v.push_back(series[j]->GetValue(i));
+					}
+				}
+
+				return v;
 			}
 
 			void WriteToIdentifiers(const std::map<string, TTimeSeries<T>*>& toSave)
