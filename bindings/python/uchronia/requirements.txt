@@ -1,6 +1,6 @@
 refcount>=1.1.1
 cffi>=1.11.5
-cinterop>=0.13.0
+cinterop>=1.0.0
 xarray
 numpy
 pandas

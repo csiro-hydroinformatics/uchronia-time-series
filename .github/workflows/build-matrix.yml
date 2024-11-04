@@ -122,7 +122,7 @@ jobs:
         UT_DATA_DIR=${GITHUB_WORKSPACE}/${UT_DATA_DIRNAME}
         mkdir -p $UT_DATA_DIR
         cd $UT_DATA_DIR
-        curl -o swift_test_data.7z https://cloudstor.aarnet.edu.au/plus/s/RU6kLfzuncINu4f/download
+        curl -o swift_test_data.7z ftp://ftp.csiro.au/hfc/swift_test_data.7z
         # sudo apt-get install p7zip-full
         7zr x swift_test_data.7z
 
