@@ -164,5 +164,5 @@ with open(os.path.join(cdefs_dir, 'structs_cdef.h')) as f_headers:
 with open(os.path.join(cdefs_dir, 'funcs_cdef.h')) as f_headers:
     uchronia_ffi.cdef(f_headers.read()) 
 
-uchronia_so = uchronia_ffi.dlopen( 'libdatatypes.so', 1)
+uchronia_so = uchronia_ffi.dlopen( 'libdatatypes.so', uchronia_ffi.RTLD_LAZY)
 ```

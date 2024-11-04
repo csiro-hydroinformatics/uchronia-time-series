@@ -30,7 +30,7 @@ update_path_windows(from_env='LIBRARY_PATH', to_env='PATH')
 # TODO is there a concrete use case to search custom paths and not let dlopen do its default??
 # long_fname = find_first_full_path(short_fname, "uchronia")
 long_fname = short_fname
-uchronia_so = uchronia_ffi.dlopen(long_fname, 1) # Lazy loading
+uchronia_so = uchronia_ffi.dlopen(long_fname, uchronia_ffi.RTLD_LAZY) # Lazy loading
 
 marshal = CffiMarshal(uchronia_ffi)
 class UchroniaError(Exception):
