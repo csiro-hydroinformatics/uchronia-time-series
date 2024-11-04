@@ -163,7 +163,7 @@ jobs:
     #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        cd bindings/python/uchronia
+        cd uchronia-time-series/bindings/python/uchronia
         pytest tests/ # --cov=uchronia --cov-report=xml
     # # - name: Mypy type check
     # #   run: poetry run mypy .
