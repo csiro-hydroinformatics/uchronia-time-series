@@ -1,17 +1,18 @@
 """Pythonic classes accessing underlying C++ objects functionalities
 """
 
-from typing import Any, Callable, List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+
 from cffi import FFI
-from refcount.interop import DeletableCffiNativeHandle, CffiData, CffiWrapperFactory
+from refcount.interop import CffiData, CffiWrapperFactory, DeletableCffiNativeHandle
+
 if TYPE_CHECKING:
     from .const import NdTimeSeries
 
-import uchronia.wrap.uchronia_wrap_generated as uwg
-import uchronia.wrap.uchronia_wrap_custom as uwc
-
-import uchronia.time_series as uts
 import uchronia.data_set as uds
+import uchronia.time_series as uts
+import uchronia.wrap.uchronia_wrap_custom as uwc
+import uchronia.wrap.uchronia_wrap_generated as uwg
 
 
 class TimeSeriesProvider(DeletableCffiNativeHandle):
@@ -46,8 +47,12 @@ class TimeSeriesMixin:
         return uts.as_xarray(self)
 
 from datetime import datetime, timedelta
+
 import pandas as pd
+
 import uchronia.time_series as ut
+
+
 class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
     def __init__(
         self,
@@ -201,11 +206,11 @@ class TimeSeriesLibrary(TimeSeriesProvider):
         """
         return uts.sub_identifiers(self, identifier)
 
-    def datasets_summaries(self) -> List[str]:
+    def datasets_summaries(self) -> Dict[str,str]:
         """Get the summaries of datasets in a library 
 
         Returns:
-            List[str]: short descriptions of all the datasets in this library
+            Dict[str,str]: For each top data ID, short description the corresponding the dataset.
         """    
         return uds.datasets_summaries(self)
 

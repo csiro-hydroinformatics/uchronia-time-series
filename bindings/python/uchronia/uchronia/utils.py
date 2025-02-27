@@ -1,7 +1,26 @@
 from typing import Sequence
-import xarray as xr
-import pandas as pd
 
+import pandas as pd
+import xarray as xr
+
+
+def pkg_version(package_name:str):
+    """A function to get printable version information for package
+
+    Args:
+        package_name (str): package name, e.g. 'swift2'
+
+    Returns:
+        str: package information, version or 
+    """
+    try:
+        package = __import__(package_name)
+        if hasattr(package, '__version__'):
+            return f"{package_name} {package.__version__}"
+        else:
+            return f"{package_name} <version not found>"
+    except ImportError:
+        return f"<package {package_name} not found in this python environment>"
 
 def xr_concat(
     series: Sequence[xr.DataArray],

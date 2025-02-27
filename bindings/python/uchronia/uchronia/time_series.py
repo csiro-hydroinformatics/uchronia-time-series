@@ -1,26 +1,32 @@
-from typing import Any, Union, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, Union
+
 if TYPE_CHECKING:
     from uchronia.classes import (
-        EnsembleTimeSeries,
-        TimeSeriesLibrary,
         EnsembleForecastTimeSeries,
-        TimeSeries,
         EnsemblePtrTimeSeries,
+        EnsembleTimeSeries,
+        TimeSeries,
+        TimeSeriesLibrary,
         TimeSeriesProvider,
     )
-    from uchronia.const import TsRetrievalSignature, VecStr, NdTimeSeries, ItemSliceNdTimeSeries
+    from uchronia.const import (
+        ItemSliceNdTimeSeries,
+        NdTimeSeries,
+        TsRetrievalSignature,
+        VecStr,
+    )
 
 import pandas as pd
 from refcount.interop import DeletableCffiNativeHandle
+
+import uchronia.wrap.uchronia_wrap_custom as uwc
+import uchronia.wrap.uchronia_wrap_generated as uwg
 from uchronia.data_set import as_xarray
 from uchronia.internals import (
     is_ensemble_time_series,
     is_singular_time_series,
     is_time_series_of_ensemble_time_series,
 )
-import uchronia.wrap.uchronia_wrap_generated as uwg
-import uchronia.wrap.uchronia_wrap_custom as uwc
-
 
 
 def mk_date(year, month, day, hour=0, min=0, sec=0, tz=None):
@@ -236,6 +242,7 @@ def mk_date(year, month, day, hour=0, min=0, sec=0, tz=None):
 #' @export
 
 import xarray as xr
+
 
 def get_item(ens_fc_ts: "NdTimeSeries", i, convert_to_xr=True) -> Union["ItemSliceNdTimeSeries", xr.DataArray]:
     """
@@ -484,6 +491,19 @@ def sub_identifiers(data_library: "TimeSeriesLibrary", identifier:str) -> List[s
 #     name=xnames
 #   )
 # }
+
+def serialisable_series(series):
+    if not isinstance(series, pd.Series):
+        raise NotImplementedError("Only supports pd.Series for now")
+    time_index = series.index
+    assert time_index.tz is None or time_index.tz == 'UTC'
+    assert isinstance(time_index, pd.DatetimeIndex)
+    return {
+        "utcInt": [int(x.timestamp()) for x in time_index],
+        "x": [float(x) for x in series.values],
+        # "name": series.name
+    }
+
 
 # #' Deserialize information to a UTC time series
 # #'
