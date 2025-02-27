@@ -1,24 +1,28 @@
-from ctypes import Union
-from typing import TYPE_CHECKING, Any, Callable, List, Sequence
-from refcount.interop import is_cffi_native_handle
-from uchronia.internals import internal_get_time_series_from_provider
-import uchronia.wrap.uchronia_wrap_generated as uwg
-import uchronia.wrap.uchronia_wrap_custom as uwc
 import os
-from uchronia.internals import is_singular_time_series, is_ensemble_time_series
-import xarray as xr
+from ctypes import Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Sequence
 
+import xarray as xr
+from refcount.interop import is_cffi_native_handle
+
+import uchronia.wrap.uchronia_wrap_custom as uwc
+import uchronia.wrap.uchronia_wrap_generated as uwg
+from uchronia.internals import (
+    internal_get_time_series_from_provider,
+    is_ensemble_time_series,
+    is_singular_time_series,
+)
 
 if TYPE_CHECKING:
     from uchronia.classes import (
-        EnsembleTimeSeries,
-        TimeSeriesLibrary,
         EnsembleForecastTimeSeries,
-        TimeSeries,
         EnsemblePtrTimeSeries,
+        EnsembleTimeSeries,
+        TimeSeries,
+        TimeSeriesLibrary,
         TimeSeriesProvider,
     )
-    from uchronia.const import TsRetrievalSignature, VecStr, NdTimeSeries
+    from uchronia.const import NdTimeSeries, TsRetrievalSignature, VecStr
 
 def get_multiple_time_series_from_provider(
     ts_provider: "TimeSeriesProvider", var_ids: "VecStr", api_get_ts_func: "TsRetrievalSignature"
@@ -107,7 +111,7 @@ def get_dataset_ids(data_library: "TimeSeriesLibrary") -> List[str]:
     return uwg.GetEnsembleDatasetDataIdentifiers_py(data_library)
 
 
-def datasets_summaries(data_library: "TimeSeriesLibrary") -> List[str]:
+def datasets_summaries(data_library: "TimeSeriesLibrary") -> Dict[str,str]:
     """Get the summaries of datasets in a library 
 
     Args:
@@ -115,8 +119,11 @@ def datasets_summaries(data_library: "TimeSeriesLibrary") -> List[str]:
 
     Returns:
         List[str]: short descriptions of all the datasets in this library
-    """    
-    return uwg.GetEnsembleDatasetDataSummaries_py(data_library)
+    """
+    return zip(
+        get_dataset_ids(data_library=data_library),
+        uwg.GetEnsembleDatasetDataSummaries_py(data_library)
+    )
 
 
 # #' @export
@@ -284,9 +291,10 @@ def as_xarray(time_series_info: "NdTimeSeries") -> xr.DataArray:
 #' @importFrom cinterop isExternalObjRef
 #' @export
 def as_uchronia_data(py_data:Any):
+    from refcount.interop import is_cffi_native_handle
+
     import uchronia.wrap.uchronia_wrap_generated as uwg
     from uchronia.wrap.ffi_interop import marshal
-    from refcount.interop import is_cffi_native_handle
     if isinstance(py_data, xr.DataArray):
         return uwg.CreateEnsembleTimeSeriesDataFromStruct_py(py_data)
     elif is_cffi_native_handle(py_data):
