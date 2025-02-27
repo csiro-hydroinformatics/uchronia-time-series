@@ -120,10 +120,10 @@ def datasets_summaries(data_library: "TimeSeriesLibrary") -> Dict[str,str]:
     Returns:
         List[str]: short descriptions of all the datasets in this library
     """
-    return zip(
+    return dict(zip(
         get_dataset_ids(data_library=data_library),
         uwg.GetEnsembleDatasetDataSummaries_py(data_library)
-    )
+    ))
 
 
 # #' @export
