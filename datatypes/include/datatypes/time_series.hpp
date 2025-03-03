@@ -978,7 +978,7 @@ namespace datatypes
 
 				size_t targetSize = series.GetLength() / multiple;
 				if (targetSize < 1)
-					throw std::logic_error("Aggregate: source lenght too short to aggregate");
+					throw std::logic_error("Aggregate: source length too short to aggregate");
 				SeriesType newTs(0.0, targetSize, series.TimeForIndex(multiple-1), newTimeStep);
 
 				for (size_t i = 0; i < targetSize; i++)
@@ -1059,7 +1059,7 @@ namespace datatypes
 				}
 				std::string stdatestring = to_iso_string(newseriesStartDate);
 				if (targetSize < 1)
-					throw std::logic_error("Aggregate: source lenght too short to aggregate");
+					throw std::logic_error("Aggregate: source length too short to aggregate");
 				SeriesType newTs(0.0, targetSize-1, newseriesStartDate, monthlyTimeStep);
 
 				newseriesEndDate = newTs.GetEndDate();
