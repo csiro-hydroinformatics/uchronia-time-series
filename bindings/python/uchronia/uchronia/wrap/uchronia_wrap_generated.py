@@ -246,10 +246,9 @@ def CreateEnsembleDataset_py(type:str) -> 'TimeSeriesLibrary':
     return custom_wrap_cffi_native_handle(result, 'ENSEMBLE_DATA_SET_PTR')
 
 
-
+@_u_wrap.check_exceptions
 def _GetEnsembleDatasetDataIdentifiers_native(dataLibrary, size):
     return uchronia_so.GetEnsembleDatasetDataIdentifiers(dataLibrary, size)
-
 def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:'TimeSeriesLibrary'):
     """GetEnsembleDatasetDataIdentifiers_py
     
@@ -257,20 +256,16 @@ def GetEnsembleDatasetDataIdentifiers_py(dataLibrary:'TimeSeriesLibrary'):
     
     
     """
-
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
-
     size = marshal.new_int_scalar_ptr()
     values = _GetEnsembleDatasetDataIdentifiers_native(dataLibrary_xptr.ptr, size)
-
 
     result = charp_array_to_py(values, size[0], True)
     return result
 
-
+@_u_wrap.check_exceptions
 def _GetEnsembleDatasetDataSubIdentifiers_native(dataLibrary, dataCollectionId, size):
     return uchronia_so.GetEnsembleDatasetDataSubIdentifiers(dataLibrary, dataCollectionId, size)
-
 def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:'TimeSeriesLibrary', dataCollectionId:str):
     """GetEnsembleDatasetDataSubIdentifiers_py
     
@@ -278,21 +273,17 @@ def GetEnsembleDatasetDataSubIdentifiers_py(dataLibrary:'TimeSeriesLibrary', dat
     
     
     """
-
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
     dataCollectionId_c_charp = wrap_as_pointer_handle(as_bytes(dataCollectionId))
-
     size = marshal.new_int_scalar_ptr()
     values = _GetEnsembleDatasetDataSubIdentifiers_native(dataLibrary_xptr.ptr, dataCollectionId_c_charp.ptr, size)
     # no cleanup for const char*
-
     result = charp_array_to_py(values, size[0], True)
     return result
 
-
+@_u_wrap.check_exceptions
 def _GetEnsembleDatasetDataSummaries_native(dataLibrary, size):
     return uchronia_so.GetEnsembleDatasetDataSummaries(dataLibrary, size)
-
 def GetEnsembleDatasetDataSummaries_py(dataLibrary:'TimeSeriesLibrary'):
     """GetEnsembleDatasetDataSummaries_py
     
@@ -300,12 +291,9 @@ def GetEnsembleDatasetDataSummaries_py(dataLibrary:'TimeSeriesLibrary'):
     
     
     """
-
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
-
     size = marshal.new_int_scalar_ptr()
     values = _GetEnsembleDatasetDataSummaries_native(dataLibrary_xptr.ptr, size)
-
 
     result = charp_array_to_py(values, size[0], True)
     return result
@@ -1046,10 +1034,9 @@ def GetProviderTimeSeriesValues_py(dataLibrary:'TimeSeriesProvider', variableIde
     # values_numarray - no cleanup needed?
 
 
-
+@_u_wrap.check_exceptions
 def _GetProviderTimeSeriesIdentifiers_native(dataLibrary, size):
     return uchronia_so.GetProviderTimeSeriesIdentifiers(dataLibrary, size)
-
 def GetProviderTimeSeriesIdentifiers_py(dataLibrary:'TimeSeriesProvider'):
     """GetProviderTimeSeriesIdentifiers_py
     
@@ -1057,12 +1044,9 @@ def GetProviderTimeSeriesIdentifiers_py(dataLibrary:'TimeSeriesProvider'):
     
     
     """
-
     dataLibrary_xptr = wrap_as_pointer_handle(dataLibrary)
-
     size = marshal.new_int_scalar_ptr()
     values = _GetProviderTimeSeriesIdentifiers_native(dataLibrary_xptr.ptr, size)
-
 
     result = charp_array_to_py(values, size[0], True)
     return result
