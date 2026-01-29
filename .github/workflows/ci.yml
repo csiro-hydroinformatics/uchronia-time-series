@@ -20,6 +20,26 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+
+    - name: Install third party libs
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          g++ \
+          p7zip-full \
+          curl \
+          libboost-system-dev \
+          libboost-date-time-dev \
+          libboost-regex-dev \
+          libboost-filesystem-dev \
+          libboost-graph-dev \
+          libboost-thread-dev \
+          libtbb-dev \
+          libyaml-cpp-dev \
+          libnetcdf-dev \
+          libudunits2-dev
+
     - name: Check out uchronia repo
       uses: actions/checkout@v4
       with:
