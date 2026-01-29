@@ -31,18 +31,18 @@ from uchronia.internals import (
 
 def mk_date(year, month, day, hour=0, min=0, sec=0, tz=None):
     """
-    Creates a pandas Timestamp date/time object
+    Creates a pandas Timestamp date/time object, https://pandas.pydata.org/docs/reference/api/pandas.Timestamp.html
 
-    Creates a pandas Timestamp date/time object, with a default UTC time zone and zeroes as default time arguments (i.e. midnight)
+    Creates a pandas Timestamp date/time object, with an optional time zone and zeroes as default time arguments (i.e. midnight)
 
     Args:
-        year (int): integer
-        month (int): integer
-        day (int): integer
-        hour (int): integer
-        min (int): integer
-        sec (int): numeric
-        tz (str): character, A time zone specification to be used for the conversion. Defaults to UTC.
+        year (int): year
+        month (int): month
+        day (int): day
+        hour (int): hour. Defaults to 0.
+        min (int): min. Defaults to 0.
+        sec (int): sec. Defaults to 0.
+        tz (str, pytz.timezone, dateutil.tz.tzfile or None): character, A time zone specification to be used for the conversion. Defaults to None, i.e. so called naive date time.
 
     Returns:
         a pandas Timestamp date/time object
