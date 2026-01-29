@@ -1,6 +1,6 @@
 # Uchronia - time series handling for ensembles simulations and forecasts in C++
 
-[![ci](https://github.com/csiro-hydroinformatics/uchronia-time-series/workflows/ci/badge.svg)](https://github.com/csiro-hydroinformatics/uchronia-time-series/actions?query=workflow%3Aci)
+[![CI](https://github.com/csiro-hydroinformatics/uchronia-time-series/actions/workflows/ci.yml/badge.svg)](https://github.com/csiro-hydroinformatics/uchronia-time-series/actions/workflows/ci.yml)
 
 ## Overview
 
