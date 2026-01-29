@@ -1,13 +1,14 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: matrix-build
+name: CI
 
 on:
   push:
-    branches: [ "testing" ]
-  #pull_request:
-  #  branches: [ "testing" ]
+    branches:
+      # - main
+      - testing
+  pull_request:
+    branches:
+      # - main
+      - testing
 
 env:
   UT_DATA_DIRNAME: _ut_data
@@ -15,42 +16,20 @@ env:
   CM: "cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_PREFIX_PATH=/usr/local -DCMAKE_MODULE_PATH=/usr/local/share/cmake/Modules/ -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON .."
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest]
-        # python-version: ["3.9", "3.10"]
-        # exclude:
-        #   - os: macos-latest
-        #     python-version: "3.10"
-        #   - os: windows-latest
-        #     python-version: "3.10"
-      fail-fast: true
-    runs-on: ${{ matrix.os }}
+  build-and-test:
+    runs-on: ubuntu-latest
+    
     steps:
-    - name: Install third party libs
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          cmake \
-          g++ \
-          p7zip-full \
-          curl \
-          libboost-system-dev \
-          libboost-date-time-dev \
-          libboost-regex-dev \
-          libboost-filesystem-dev \
-          libboost-graph-dev \
-          libboost-thread-dev \
-          libtbb-dev \
-          libyaml-cpp-dev \
-          libnetcdf-dev \
-          libudunits2-dev
+    - name: Check out uchronia repo
+      uses: actions/checkout@v4
+      with:
+        repository: csiro-hydroinformatics/uchronia-time-series
+        ref: testing
+        path: uchronia-time-series
+        # token: ${{ secrets.my_pat }}
 
-    # First(?) party dependencies: ours...
     - name: Check out moirai repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: csiro-hydroinformatics/moirai
         ref: testing
@@ -58,7 +37,7 @@ jobs:
         # token: ${{ secrets.my_pat }}
 
     - name: Check out c-interop repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: csiro-hydroinformatics/c-interop
         ref: testing
@@ -66,26 +45,19 @@ jobs:
         # token: ${{ secrets.my_pat }}
 
     - name: Check out config-utils repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: csiro-hydroinformatics/config-utils
         ref: testing
         path: config-utils
         # token: ${{ secrets.my_pat }}
 
-    - name: Check out uchronia repo
-      uses: actions/checkout@v3
-      with:
-        repository: csiro-hydroinformatics/uchronia-time-series
-        ref: testing
-        path: uchronia-time-series
-        # token: ${{ secrets.my_pat }}
-
-    - name: Install moirai C++ headers
+    - name: Install moirai
       run: |
         cd moirai
         mkdir -p build && cd build
         $CM
+        make -j$(nproc)
         sudo make install
 
     - name: Install config-utils material
@@ -135,40 +107,3 @@ jobs:
         export SWIFT_TEST_DIR=${GITHUB_WORKSPACE}/${UT_DATA_DIRNAME}/documentation
         ./datatypes_tests
 
-    - name: Build/run API unit tests
-      run: |
-        cd uchronia-time-series/tests/api
-        mkdir -p build ; cd build
-        $CM
-        make
-        export SWIFT_TEST_DIR=${GITHUB_WORKSPACE}/${UT_DATA_DIRNAME}/documentation
-        ./datatypes_tests_api
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install Python dependencies for uchronia
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
-        cd bindings/python/uchronia
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
-    #- name: Lint with flake8
-    #  run: |
-    #    # stop the build if there are Python syntax errors or undefined names
-    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-    #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-    #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        cd uchronia-time-series/bindings/python/uchronia
-        pytest tests/ # --cov=uchronia --cov-report=xml
-    # # - name: Mypy type check
-    # #   run: poetry run mypy .
-    # - name: Use Codecov to track coverage
-    #   if: matrix.os == 'linux' && matrix.python-version == '3.9'
-    #   uses: codecov/codecov-action@v3
-    #   with:
-    #     files: coverage.xml   # coverage report
