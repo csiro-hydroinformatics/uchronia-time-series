@@ -75,7 +75,29 @@ library(uchronia)
 browseVignettes("uchronia")
 ```
 
-### Example in Python
+### Python bindings
+
+#### Installation from GitHub Releases
+
+The Python package `uchronia` can be installed directly from GitHub Releases:
+
+```sh
+# Install specific version (requires libdatatypes to be pre-installed)
+pip install https://github.com/csiro-hydroinformatics/uchronia-time-series/releases/download/v2.6.3/uchronia-2.6.3-py3-none-any.whl
+```
+
+**Prerequisites:** The `libdatatypes` shared library must be installed on your system before using the Python package. See installation instructions above.
+
+To specify as a dependency in `pyproject.toml`:
+
+```toml
+[project]
+dependencies = [
+    "uchronia @ https://github.com/csiro-hydroinformatics/uchronia-time-series/releases/download/v2.6.3/uchronia-2.6.3-py3-none-any.whl"
+]
+```
+
+#### Example usage
 
 ```python
 import uchronia
