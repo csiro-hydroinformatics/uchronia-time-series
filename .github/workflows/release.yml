@@ -6,7 +6,7 @@ name: Release Python Package
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'python/*.*.*'
 
 jobs:
   build-wheel:
@@ -14,12 +14,12 @@ jobs:
     
     steps:
     - name: Check out repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: '3.12'
     
     - name: Install build dependencies
       run: |
@@ -30,12 +30,21 @@ jobs:
       run: |
         cd bindings/python/uchronia
         python -m build --wheel
-    
+    # this is for the initial testing of the workflow only:
+    - name: Delete existing release if present
+      continue-on-error: true
+      run: |
+        gh release delete ${{ github.ref_name }} --yes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      id: create_release
+      uses: softprops/action-gh-release@v2
       with:
         draft: true
         files: bindings/python/uchronia/dist/*.whl
         generate_release_notes: true
+        make_latest: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
