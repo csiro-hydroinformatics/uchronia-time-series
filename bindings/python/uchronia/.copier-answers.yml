@@ -1,0 +1,20 @@
+# Changes here will be overwritten by Copier.
+_commit: 1.11.15
+_src_path: gh:pawamoy/copier-uv
+author_email: jean-michel.perraud@csiro.au
+author_fullname: J-M
+author_username: jmp75
+copyright_date: '2026'
+copyright_holder: CSIRO
+copyright_holder_email: jean-michel.perraud@csiro.au
+copyright_license: BSD-3-Clause
+project_description: Python interface to a C++ library designed to handle multidimensional
+    time series and ensemble thereof
+project_name: uchronia
+python_package_command_line_name: uchronia
+python_package_distribution_name: uchronia
+python_package_import_name: uchronia
+repository_name: uchronia-time-series
+repository_namespace: csiro-hydroinformatics
+repository_provider: github.com
+

@@ -1,24 +1,20 @@
 # uchronia
 
-[![license](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jmp75/pylakeoned/blob/devel/LICENSE.txt) ![status](https://img.shields.io/badge/status-alpha-blue.svg) master: [![Build status - master](https://ci.appveyor.com/api/projects/status/vmwq7xarxxj8s564/branch/master?svg=true)](https://ci.appveyor.com/project/jmp75/pylakeoned/branch/master) devel: [![Build status - devel](https://ci.appveyor.com/api/projects/status/vmwq7xarxxj8s564/branch/devel?svg=true)](https://ci.appveyor.com/project/jmp75/pylakeoned/branch/devel)
+[![ci](https://github.com/csiro-hydroinformatics/uchronia-time-series/workflows/ci/badge.svg)](https://github.com/csiro-hydroinformatics/uchronia-time-series/actions?query=workflow%3Aci)
+[![documentation](https://img.shields.io/badge/docs-zensical-FF9100.svg?style=flat)](https://csiro-hydroinformatics.github.io/uchronia-time-series/)
+[![pypi version](https://img.shields.io/pypi/v/uchronia.svg)](https://pypi.org/project/uchronia/)
+[![gitter](https://img.shields.io/badge/matrix-chat-4DB798.svg?style=flat)](https://app.gitter.im/#/room/#uchronia-time-series:gitter.im)
 
-The Python package **uchronia** is the python interface to a C++ library designed to handle multidimensional time series and ensemble thereof.
-
-[Uchronia](https://en.wikipedia.org/wiki/Uchronia) is a literary neologism for a hypothetical or fictional time-period of our world. This seems a suitable name for a library primarily designed notably to handle ensemble forecast time series.
-
-## License
-
-TBD (see [License.txt](./LICENSE.txt))
+Python interface to a C++ library designed to handle multidimensional time series and ensemble thereof
 
 ## Installation
 
-From source:
-
-```sh
-pip install -r requirements.txt
-python setup.py install
+```bash
+pip install uchronia
 ```
 
-## Documentation
+With [`uv`](https://docs.astral.sh/uv/):
 
-TODO
+```bash
+uv tool install uchronia
+```

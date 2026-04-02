@@ -1,3 +1,7 @@
-# the inclusion of the tests module is not meant to offer best practices for
-# testing in general, but rather to support the `find_packages` example in
-# setup.py that excludes installing the "tests" package
+"""Tests suite for `uchronia`."""
+
+from pathlib import Path
+
+TESTS_DIR = Path(__file__).parent
+TMP_DIR = TESTS_DIR / "tmp"
+FIXTURES_DIR = TESTS_DIR / "fixtures"
