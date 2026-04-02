@@ -22,3 +22,4 @@ uv.lock
 .pytest_cache/
 .ruff_cache/
 __pycache__/
+_build/
