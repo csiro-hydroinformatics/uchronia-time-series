@@ -5,9 +5,13 @@ output-format = "concise"
 [lint]
 exclude = [
     "tests/fixtures/*.py",
+    "tests/*.py",
+    "src/uchronia/wrap/uchronia_wrap_generated.py",
+    "src/uchronia/wrap/uchronia_wrap_custom.py",
 ]
 select = ["ALL"]
 ignore = [
+    "PTH", # keep os.path for now.
     "A001",  # Variable is shadowing a Python builtin
     "ANN204",  # Missing return type annotation for special method __str__
     "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
@@ -29,6 +33,7 @@ ignore = [
     "TD002",  # Missing author in TODO
     "TD003",  # Missing issue link for TODO
     "TRY003",  # Avoid specifying long messages outside the exception class
+    "UP035"
 ]
 
 [lint.per-file-ignores]

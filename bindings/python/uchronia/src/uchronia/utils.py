@@ -1,26 +1,26 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 import pandas as pd
 import xarray as xr
 
 
-def pkg_version(package_name:str):
+def pkg_version(package_name: str):
     """A function to get printable version information for package
 
     Args:
         package_name (str): package name, e.g. 'swift2'
 
     Returns:
-        str: package information, version or 
+        str: package information, version or
     """
     try:
         package = __import__(package_name)
-        if hasattr(package, '__version__'):
+        if hasattr(package, "__version__"):
             return f"{package_name} {package.__version__}"
-        else:
-            return f"{package_name} <version not found>"
+        return f"{package_name} <version not found>"
     except ImportError:
         return f"<package {package_name} not found in this python environment>"
+
 
 def xr_concat(
     series: Sequence[xr.DataArray],
@@ -28,7 +28,7 @@ def xr_concat(
     new_dim_name: str = None,
     units: str = None,
 ) -> xr.DataArray:
-    """concatenate DataArrays - helper function
+    """Concatenate DataArrays - helper function
 
     Args:
         series (Sequence[xr.DataArray]): arrays to concatenate. These should have the same coordinates.
@@ -40,9 +40,14 @@ def xr_concat(
         xr.DataArray: concatenated arrays with one added dimension compared to inputs
 
     Examples:
-        >>> before = mk_test_season_minmax(min_x=1.0, max_x=2.0, kharif=False, units='MAF')
+        >>> before = mk_test_season_minmax(min_x=1.0, max_x=2.0, kharif=False, units="MAF")
         >>> after = before * 1.1
-        >>> xr_concat([before, after], new_coord_names=['before','after'], new_dim_name='case', units='MAF')
+        >>> xr_concat(
+        ...     [before, after],
+        ...     new_coord_names=["before", "after"],
+        ...     new_dim_name="case",
+        ...     units="MAF",
+        ... )
         <xarray.DataArray (case: 2, minmax: 2, ten_day_id: 18)>
         array([[[1. , 1. , 1. , 1. , 1. , 1. , 1. , 1. , 1. , 1. , 1. , 1. ,
                 1. , 1. , 1. , 1. , 1. , 1. ],

@@ -1,4 +1,5 @@
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
 import uchronia.wrap.uchronia_wrap_generated as uwg
 
 if TYPE_CHECKING:
@@ -47,12 +48,15 @@ if TYPE_CHECKING:
 # //    return fromMarshalledTsinfo(mtsg)
 # //}
 
+
 # # [[Rcpp::export]]
-def GetEnsembleForecastTimeSeriesGeometry_Pkg(timeSeries: 'EnsembleForecastTimeSeries'):
+def GetEnsembleForecastTimeSeriesGeometry_Pkg(timeSeries: "EnsembleForecastTimeSeries"):
     from uchronia.wrap.ffi_interop import marshal
+
     mtsg = marshal.new_native_tsgeom()
     uwg.GetEnsembleForecastTimeSeriesGeometry_py(timeSeries, mtsg)
     return mtsg
+
 
 # # [[Rcpp::export]]
 # Rcpp::S4 GetItemEnsembleForecastTimeSeries_Pkg(XPtr<opaque_pointer_handle> series, IntegerVector i)
@@ -96,33 +100,35 @@ def GetEnsembleForecastTimeSeriesGeometry_Pkg(timeSeries: 'EnsembleForecastTimeS
 #     return cinterop::create_rcpp_xptr_wrapper<opaque_pointer_handle>(xptr, type)
 # }
 
+
 # [[Rcpp::export]]
 def GetDatasetFromLibrary_Pkg(data_library, data_identifier):
     desc = uwg.GetDataDimensionsDescription_py(data_library, data_identifier)
     dimensions = len(desc)
     if dimensions == 1:
         return uwg.GetDatasetSingleTimeSeries_py(data_library, data_identifier)
-    elif dimensions == 2:
+    if dimensions == 2:
         return uwg.GetDatasetEnsembleTimeSeries_py(data_library, data_identifier)
-    elif dimensions == 3:
+    if dimensions == 3:
         return uwg.GetDatasetEnsembleForecastTimeSeries_py(data_library, data_identifier)
-    else:
-        raise Exception("Number of dimensions for a data set is not supported: " + str(dimensions))
-
+    raise Exception("Number of dimensions for a data set is not supported: " + str(dimensions))
 
 
 import numpy as np
 
+
 def _array_for_geom(mtsg) -> np.ndarray:
     return np.empty((mtsg.length,))
+
 
 # def GetTimeSeriesFromProvider_Pkg(provider, variable_identifier):
 def get_time_series_data_from_provider(provider: Any, variable_identifier, mtsg):
     uwg.GetProviderTsGeometry_py(provider, variable_identifier, mtsg)
     values = _array_for_geom(mtsg)
     uwg.GetProviderTimeSeriesValues_py(
-        provider, variable_identifier, values, mtsg.length
+        provider,
+        variable_identifier,
+        values,
+        mtsg.length,
     )
     return values
-
-

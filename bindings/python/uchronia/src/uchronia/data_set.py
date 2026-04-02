@@ -1,6 +1,5 @@
 import os
-from ctypes import Union
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Sequence
+from typing import TYPE_CHECKING, Any
 
 import xarray as xr
 from refcount.interop import is_cffi_native_handle
@@ -15,20 +14,19 @@ from uchronia.internals import (
 
 if TYPE_CHECKING:
     from uchronia.classes import (
-        EnsembleForecastTimeSeries,
-        EnsemblePtrTimeSeries,
-        EnsembleTimeSeries,
         TimeSeries,
         TimeSeriesLibrary,
         TimeSeriesProvider,
     )
     from uchronia.const import NdTimeSeries, TsRetrievalSignature, VecStr
 
+
 def get_multiple_time_series_from_provider(
-    ts_provider: "TimeSeriesProvider", var_ids: "VecStr", api_get_ts_func: "TsRetrievalSignature"
+    ts_provider: "TimeSeriesProvider",
+    var_ids: "VecStr",
+    api_get_ts_func: "TsRetrievalSignature",
 ) -> xr.DataArray:
-    """
-    Gets one or more time series from a time series provider
+    """Gets one or more time series from a time series provider
 
     Gets one or more time series from a time series provider. This function is exported for use by other python packages rather than for end users.
 
@@ -52,8 +50,7 @@ def get_multiple_time_series_from_provider(
 
 
 def get_ensemble_dataset(dataset_id: str = "", data_path: str = "") -> "TimeSeriesLibrary":
-    """
-    Gets an object, a library to access a set of time series
+    """Gets an object, a library to access a set of time series
 
     Gets an object, a library to access a set of time series
 
@@ -62,7 +59,7 @@ def get_ensemble_dataset(dataset_id: str = "", data_path: str = "") -> "TimeSeri
         data_path (str): (unused - for future use) overriding path to data storage
 
     Returns:
-        TimeSeriesLibrary: external pointer type ENSEMBLE_DATA_SET_PTR, or a Python class wrapper around it 
+        TimeSeriesLibrary: external pointer type ENSEMBLE_DATA_SET_PTR, or a Python class wrapper around it
 
     Examples:
         TODO
@@ -92,15 +89,13 @@ def get_ensemble_dataset(dataset_id: str = "", data_path: str = "") -> "TimeSeri
         # if this is an RData file, load into this environment?
         # if this is a YAML data set, or something like that
         return uwg.LoadEnsembleDataset_py(dataset_id, data_path)
-    else:
-        raise FileNotFoundError(
-            "file not found. get_ensemble_dataset is in a prototype stage and supports only YAML data set descriptors"
-        )
+    raise FileNotFoundError(
+        "file not found. get_ensemble_dataset is in a prototype stage and supports only YAML data set descriptors",
+    )
 
 
-def get_dataset_ids(data_library: "TimeSeriesLibrary") -> List[str]:
-    """
-    Gets the top level data identifiers in a data library (data set)
+def get_dataset_ids(data_library: "TimeSeriesLibrary") -> list[str]:
+    """Gets the top level data identifiers in a data library (data set)
 
     Args:
         data_library (TimeSeriesLibrary): wrapper around an external pointer ENSEMBLE_DATA_SET_PTR, a.k.a a "time series library"
@@ -111,8 +106,8 @@ def get_dataset_ids(data_library: "TimeSeriesLibrary") -> List[str]:
     return uwg.GetEnsembleDatasetDataIdentifiers_py(data_library)
 
 
-def datasets_summaries(data_library: "TimeSeriesLibrary") -> Dict[str,str]:
-    """Get the summaries of datasets in a library 
+def datasets_summaries(data_library: "TimeSeriesLibrary") -> dict[str, str]:
+    """Get the summaries of datasets in a library
 
     Args:
         data_library (TimeSeriesLibrary): library to query
@@ -120,10 +115,12 @@ def datasets_summaries(data_library: "TimeSeriesLibrary") -> Dict[str,str]:
     Returns:
         List[str]: short descriptions of all the datasets in this library
     """
-    return dict(zip(
-        get_dataset_ids(data_library=data_library),
-        uwg.GetEnsembleDatasetDataSummaries_py(data_library)
-    ))
+    return dict(
+        zip(
+            get_dataset_ids(data_library=data_library),
+            uwg.GetEnsembleDatasetDataSummaries_py(data_library),
+        )
+    )
 
 
 # #' @export
@@ -138,9 +135,10 @@ def datasets_summaries(data_library: "TimeSeriesLibrary") -> Dict[str,str]:
 # }
 
 
-def get_dataset(data_library: "TimeSeriesLibrary", data_id: str) -> "NdTimeSeries": # Union['TimeSeries','EnsemblePtrTimeSeries','EnsembleForecastTimeSeries']:
-    """
-    Retrieve data from a data sets library
+def get_dataset(
+    data_library: "TimeSeriesLibrary", data_id: str
+) -> "NdTimeSeries":  # Union['TimeSeries','EnsemblePtrTimeSeries','EnsembleForecastTimeSeries']:
+    """Retrieve data from a data sets library
 
     Gets the data from a library for a given identifier.
 
@@ -156,8 +154,7 @@ def get_dataset(data_library: "TimeSeriesLibrary", data_id: str) -> "NdTimeSerie
 
 
 def get_dataset_single_time_series(data_library: "TimeSeriesLibrary", data_id) -> "TimeSeries":
-    """
-    Retrieve data from a data sets library
+    """Retrieve data from a data sets library
 
     Gets the data from a library for a given identifier.
 
@@ -174,8 +171,7 @@ def get_dataset_single_time_series(data_library: "TimeSeriesLibrary", data_id) -
 
 
 def get_time_series_from_provider(provider: "TimeSeriesProvider", data_id: str = None) -> Any:
-    """
-    Gets a time series from a time series provider, given a data ID
+    """Gets a time series from a time series provider, given a data ID
 
     Gets a time series from a time series provider, given a data ID.
     This means that the argument is a wrapper around an external pointer to a object whose type is
@@ -194,9 +190,8 @@ def get_time_series_from_provider(provider: "TimeSeriesProvider", data_id: str =
     return internal_get_time_series_from_provider(provider, data_id)
 
 
-def get_data_identifiers(provider: "TimeSeriesProvider") -> List[str]:
-    """
-    Gets the known time series identifiers (e.g. Gauge names) of a time series provider
+def get_data_identifiers(provider: "TimeSeriesProvider") -> list[str]:
+    """Gets the known time series identifiers (e.g. Gauge names) of a time series provider
 
     Gets the known time series identifiers (e.g. Gauge names) of a time series provider.
     This means that the argument is a wrapper around an external pointer to a object whose type is
@@ -221,8 +216,7 @@ def get_data_identifiers(provider: "TimeSeriesProvider") -> List[str]:
 
 
 def as_xarray(time_series_info: "NdTimeSeries") -> xr.DataArray:
-    """
-    Coerce an object to an xarray time series
+    """Coerce an object to an xarray time series
 
     Converts if possible an object to an xarray time series. Suitable objects are an equivalent 'uchronia' C++ entity
     via an external pointer. Typically deals with time series and ensemble thereof, but may be expanded later on to support more types.
@@ -235,7 +229,8 @@ def as_xarray(time_series_info: "NdTimeSeries") -> xr.DataArray:
 
     """
     if isinstance(time_series_info, xr.DataArray) or isinstance(
-        time_series_info, xr.Dataset
+        time_series_info,
+        xr.Dataset,
     ):
         return time_series_info
     # if isinstance(time_series_info, dict):
@@ -245,21 +240,19 @@ def as_xarray(time_series_info: "NdTimeSeries") -> xr.DataArray:
     if is_cffi_native_handle(time_series_info):
         if is_singular_time_series(time_series_info):
             return uwg.ToStructSingleTimeSeriesData_py(time_series_info)
-        elif is_ensemble_time_series(time_series_info):
+        if is_ensemble_time_series(time_series_info):
             return uwg.ToStructEnsembleTimeSeriesData_py(time_series_info)
         # elif is_time_series_of_ensemble_time_series(time_series_info):
         #     return uwg.SomethingStillNotDone(time_series_info)
-        else:
-            raise ValueError(
-                'as_xarray: does not know how to convert to xarray an object of external type "'
-                + time_series_info.type_id
-                + '"'
-            )
-    else:
-        k = type(time_series_info)
         raise ValueError(
-            "cannot convert objects of type " + str(k) + " to an xarray time series"
+            'as_xarray: does not know how to convert to xarray an object of external type "'
+            + time_series_info.type_id
+            + '"',
         )
+    k = type(time_series_info)
+    raise ValueError(
+        "cannot convert objects of type " + str(k) + " to an xarray time series",
+    )
 
 
 # toUchroniaSeries(time_series_info):
@@ -269,6 +262,7 @@ def as_xarray(time_series_info: "NdTimeSeries") -> xr.DataArray:
 #     return(CreateEnsembleTimeSeriesDataFromStruct_py(time_series_info))
 #   }
 # }
+
 
 #' Coerce an object to a c++ object handled via an external pointer
 #'
@@ -290,18 +284,18 @@ def as_xarray(time_series_info: "NdTimeSeries") -> xr.DataArray:
 #' }
 #' @importFrom cinterop isExternalObjRef
 #' @export
-def as_uchronia_data(py_data:Any):
+def as_uchronia_data(py_data: Any):
     from refcount.interop import is_cffi_native_handle
 
     import uchronia.wrap.uchronia_wrap_generated as uwg
-    from uchronia.wrap.ffi_interop import marshal
+
     if isinstance(py_data, xr.DataArray):
         return uwg.CreateEnsembleTimeSeriesDataFromStruct_py(py_data)
-    elif is_cffi_native_handle(py_data):
+    if is_cffi_native_handle(py_data):
         return py_data
-    else:
-        k = type(py_data)
-        raise ValueError( f'cannot convert objects of type {k} to an uchronia data set (xptr): ')
+    k = type(py_data)
+    raise ValueError(f"cannot convert objects of type {k} to an uchronia data set (xptr): ")
+
 
 # createTimeSeriesIndex(startDate, n, delta_t_sec=as.numeric(3600)):
 #   stopifnot(is(startDate, "POSIXct"))

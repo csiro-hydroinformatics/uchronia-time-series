@@ -1,13 +1,17 @@
-"""Pythonic classes accessing underlying C++ objects functionalities
-"""
+"""Pythonic classes accessing underlying C++ objects functionalities."""
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Union
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Optional
 
 from cffi import FFI
 from refcount.interop import CffiData, CffiWrapperFactory, DeletableCffiNativeHandle
 
 if TYPE_CHECKING:
-    from .const import NdTimeSeries
+    from uchronia.const import NdTimeSeries
+
+from datetime import datetime, timedelta
+
+import pandas as pd
 
 import uchronia.data_set as uds
 import uchronia.time_series as uts
@@ -26,19 +30,22 @@ class TimeSeriesProvider(DeletableCffiNativeHandle):
         self,
         handle: CffiData,
         release_native: Callable[[CffiData], None],
-        type_id: str = None,
+        type_id: Optional[str] = None,
         prior_ref_count: int = 0,
     ):
-        super(TimeSeriesProvider, self).__init__(
-            handle, release_native, type_id, prior_ref_count
+        super().__init__(
+            handle,
+            release_native,
+            type_id,
+            prior_ref_count,
         )
 
 
 class TimeSeriesMixin:
-    """Mixin interface for time series objects of various dimensionality"""
+    """Mixin interface for time series objects of various dimensionality."""
 
     def __init__(self):
-        super(TimeSeriesMixin, self).__init__()
+        super().__init__()
 
     # def get_item(self, i: int, convert_to_xr=True):
     #     return uts.get_item(self, i, convert_to_xr)
@@ -46,11 +53,6 @@ class TimeSeriesMixin:
     def as_xarray(self):
         return uts.as_xarray(self)
 
-from datetime import datetime, timedelta
-
-import pandas as pd
-
-import uchronia.time_series as ut
 
 
 class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
@@ -61,12 +63,15 @@ class EnsembleForecastTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
         type_id: str = None,
         prior_ref_count: int = 0,
     ):
-        super(EnsembleForecastTimeSeries, self).__init__(
-            handle, release_native, type_id, prior_ref_count
+        super().__init__(
+            handle,
+            release_native,
+            type_id,
+            prior_ref_count,
         )
 
     @staticmethod
-    def new(start:datetime, length:int, time_step:Union[str,timedelta]) -> "EnsembleForecastTimeSeries":
+    def new(start: datetime, length: int, time_step: str | timedelta) -> "EnsembleForecastTimeSeries":
         if isinstance(time_step, timedelta):
             time_step = str(pd.Timedelta(time_step)).split(" ")[-1]
         return uwg.CreateEnsembleForecastTimeSeries_py(start, length, timeStepName=time_step)
@@ -93,9 +98,13 @@ class EnsembleTimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
         type_id: str = None,
         prior_ref_count: int = 0,
     ):
-        super(EnsembleTimeSeries, self).__init__(
-            handle, release_native, type_id, prior_ref_count
+        super().__init__(
+            handle,
+            release_native,
+            type_id,
+            prior_ref_count,
         )
+
 
 class TimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
     def __init__(
@@ -105,18 +114,22 @@ class TimeSeries(DeletableCffiNativeHandle, TimeSeriesMixin):
         type_id: str = None,
         prior_ref_count: int = 0,
     ):
-        super(TimeSeries, self).__init__(
-            handle, release_native, type_id, prior_ref_count
+        super().__init__(
+            handle,
+            release_native,
+            type_id,
+            prior_ref_count,
         )
 
     def __getitem__(self, key):
         return uwg.GetValueFromUnivariateTimeSeries_py(self, key)
-  
+
     def __setitem__(self, key, newvalue):
         uwg.SetValueToUnivariateTimeSeries_py(self, key, newvalue)
 
     def to_xarray(self):
         return uwg.ToStructSingleTimeSeriesData_py(self)
+
 
 class EnsemblePtrTimeSeries(DeletableCffiNativeHandle):
     def __init__(
@@ -126,19 +139,21 @@ class EnsemblePtrTimeSeries(DeletableCffiNativeHandle):
         type_id: str = None,
         prior_ref_count: int = 0,
     ):
-        super(EnsemblePtrTimeSeries, self).__init__(
-            handle, release_native, type_id, prior_ref_count
+        super().__init__(
+            handle,
+            release_native,
+            type_id,
+            prior_ref_count,
         )
 
     def __getitem__(self, key):
         if isinstance(key, int):
             return uwg.TimeSeriesFromEnsembleOfTimeSeries_py(self, key)
-        elif isinstance(key, tuple):
+        if isinstance(key, tuple):
             i, j = key
             # TODO: inefficient
             return uwg.TimeSeriesFromEnsembleOfTimeSeries_py(self, i)[j]
-        else:
-            raise KeyError("Invalid type of key")
+        raise KeyError("Invalid type of key")
 
     def __setitem__(self, key, newvalue):
         uwg.SetItemEnsembleTimeSeriesAsStructure_py(self, key, newvalue)
@@ -164,13 +179,15 @@ class TimeSeriesLibrary(TimeSeriesProvider):
         type_id: str = None,
         prior_ref_count: int = 0,
     ):
-        super(TimeSeriesLibrary, self).__init__(
-            handle, release_native, type_id, prior_ref_count
+        super().__init__(
+            handle,
+            release_native,
+            type_id,
+            prior_ref_count,
         )
 
-    def get_dataset_ids(self) -> List[str]:
-        """
-        Gets the top level data identifiers in a data library (data set)
+    def get_dataset_ids(self) -> list[str]:
+        """Gets the top level data identifiers in a data library (data set)
 
         Returns:
             List[str]: identifiers for the datasets in this library
@@ -178,8 +195,7 @@ class TimeSeriesLibrary(TimeSeriesProvider):
         return uds.get_dataset_ids(self)
 
     def get_dataset(self, data_id: str) -> "NdTimeSeries":
-        """
-        Gets the data from a library for a given identifier.
+        """Gets the data from a library for a given identifier.
 
         Args:
             data_id (str): character, one data identifier for the data retrieved.
@@ -189,9 +205,8 @@ class TimeSeriesLibrary(TimeSeriesProvider):
         """
         return uds.get_dataset(self, data_id)
 
-    def sub_identifiers(self, identifier:str) -> List[str]:
-        """
-        Gets the next level data identifier of a top level ID
+    def sub_identifiers(self, identifier: str) -> list[str]:
+        """Gets the next level data identifier of a top level ID
 
         Gets the next level data identifier of a top level ID.
         A collection of time series such as one identified by "streamflows" may have
@@ -206,14 +221,13 @@ class TimeSeriesLibrary(TimeSeriesProvider):
         """
         return uts.sub_identifiers(self, identifier)
 
-    def datasets_summaries(self) -> Dict[str,str]:
-        """Get the summaries of datasets in a library 
+    def datasets_summaries(self) -> dict[str, str]:
+        """Get the summaries of datasets in a library
 
         Returns:
             Dict[str,str]: For each top data ID, short description the corresponding the dataset.
-        """    
+        """
         return uds.datasets_summaries(self)
-
 
 
 _api_type_wrapper = {

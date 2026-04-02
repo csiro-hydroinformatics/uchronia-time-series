@@ -1,23 +1,20 @@
-from refcount.interop import is_cffi_native_handle
-from uchronia.const import VecStr
-import uchronia.wrap.uchronia_wrap_custom as uwc
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any
 
-from typing import Any, Callable, List, TYPE_CHECKING, Sequence
-import numpy as np
-import xarray as xr
 import pandas as pd
-from refcount.interop import type_error_cffi
+import xarray as xr
+from refcount.interop import is_cffi_native_handle, type_error_cffi
+
+import uchronia.wrap.uchronia_wrap_custom as uwc
+from uchronia.const import VecStr
 
 if TYPE_CHECKING:
-    from uchronia.classes import (
-        TimeSeries,
-        TimeSeriesProvider
-    )
-    from uchronia.const import TsRetrievalSignature, VecStr, NdTimeSeries, VecNdTimeSeries
+    from uchronia.classes import TimeSeriesProvider
+    from uchronia.const import NdTimeSeries, TsRetrievalSignature, VecNdTimeSeries, VecStr
+
 
 def is_time_series_of_ensemble_time_series(s: Any):
-    """
-    Is the object a 'uchronia' time series of ensembles of time series
+    """Is the object a 'uchronia' time series of ensembles of time series
 
     Is the object a 'uchronia' time series of ensembles of time series
 
@@ -29,8 +26,7 @@ def is_time_series_of_ensemble_time_series(s: Any):
 
 
 def is_ensemble_time_series(s: Any):
-    """
-    Is the object a 'uchronia' ensemble of time series
+    """Is the object a 'uchronia' ensemble of time series
 
     Is the object a 'uchronia' ensemble of time series
 
@@ -42,8 +38,7 @@ def is_ensemble_time_series(s: Any):
 
 
 def is_singular_time_series(s: Any):
-    """
-    Is the object a 'uchronia' univariate time series
+    """Is the object a 'uchronia' univariate time series
 
     Is the object a 'uchronia' univariate time series
 
@@ -71,19 +66,25 @@ def check_ensemble_forecast_time_series(s: Any):
 
 def internal_get_time_series_from_provider(provider, data_ids):
     internal_get_multiple_time_series(
-        provider, data_ids, uwc.get_time_series_data_from_provider
+        provider,
+        data_ids,
+        uwc.get_time_series_data_from_provider,
     )
 
 
 def _concatenate_series(
-    t_series_list: Sequence["NdTimeSeries"], new_coord_names: Sequence[str], new_dim_name:str
+    t_series_list: Sequence["NdTimeSeries"],
+    new_coord_names: Sequence[str],
+    new_dim_name: str,
 ) -> xr.DataArray:
     res = xr.concat(t_series_list, dim=pd.Index(new_coord_names, name=new_dim_name))
     return res
 
 
 def internal_get_multiple_time_series(
-    simulation:"TimeSeriesProvider", var_ids: VecStr, api_get_ts_func: "TsRetrievalSignature"
+    simulation: "TimeSeriesProvider",
+    var_ids: VecStr,
+    api_get_ts_func: "TsRetrievalSignature",
 ) -> "VecNdTimeSeries":
     if isinstance(var_ids, str):
         var_ids = [var_ids]
@@ -92,7 +93,9 @@ def internal_get_multiple_time_series(
 
     def f(var_id):
         return internal_get_single_model_time_series(
-            simulation, var_id, api_get_ts_func
+            simulation,
+            var_id,
+            api_get_ts_func,
         )
 
     t_series_list = [f(var_id) for var_id in var_ids]
@@ -100,10 +103,11 @@ def internal_get_multiple_time_series(
 
 
 def internal_get_single_model_time_series(
-    ts_provider: "TimeSeriesProvider", var_id: str, api_get_ts_func: "TsRetrievalSignature"
+    ts_provider: "TimeSeriesProvider",
+    var_id: str,
+    api_get_ts_func: "TsRetrievalSignature",
 ) -> "NdTimeSeries":
-    """
-    Internal only - Perform an action on a uchronia object that is expected to return a time series
+    """Internal only - Perform an action on a uchronia object that is expected to return a time series
 
     Perform an action on a uchronia object that is expected to return a time series.
     This function is internal to the package, to prevent code duplication between
@@ -121,7 +125,7 @@ def internal_get_single_model_time_series(
     """
     if not isinstance(var_id, str):
         raise ValueError(
-            "internal_get_single_model_time_series must work on a single variable identifier"
+            "internal_get_single_model_time_series must work on a single variable identifier",
         )
     time_series_info = api_get_ts_func(ts_provider, var_id)
     # return(marshaledTimeSeriesToXts(time_series_info))

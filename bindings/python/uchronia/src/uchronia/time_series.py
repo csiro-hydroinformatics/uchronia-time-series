@@ -1,25 +1,16 @@
-from typing import TYPE_CHECKING, Any, List, Union
+from typing import TYPE_CHECKING, Any, Union
 
 if TYPE_CHECKING:
     from uchronia.classes import (
-        EnsembleForecastTimeSeries,
-        EnsemblePtrTimeSeries,
-        EnsembleTimeSeries,
-        TimeSeries,
         TimeSeriesLibrary,
-        TimeSeriesProvider,
     )
     from uchronia.const import (
         ItemSliceNdTimeSeries,
         NdTimeSeries,
-        TsRetrievalSignature,
-        VecStr,
     )
 
 import pandas as pd
-from refcount.interop import DeletableCffiNativeHandle
 
-import uchronia.wrap.uchronia_wrap_custom as uwc
 import uchronia.wrap.uchronia_wrap_generated as uwg
 from uchronia.data_set import as_xarray
 from uchronia.internals import (
@@ -30,8 +21,7 @@ from uchronia.internals import (
 
 
 def mk_date(year, month, day, hour=0, min=0, sec=0, tz=None):
-    """
-    Creates a pandas Timestamp date/time object, https://pandas.pydata.org/docs/reference/api/pandas.Timestamp.html
+    """Creates a pandas Timestamp date/time object, https://pandas.pydata.org/docs/reference/api/pandas.Timestamp.html
 
     Creates a pandas Timestamp date/time object, with an optional time zone and zeroes as default time arguments (i.e. midnight)
 
@@ -49,7 +39,13 @@ def mk_date(year, month, day, hour=0, min=0, sec=0, tz=None):
 
     """
     return pd.Timestamp(
-        year=year, month=month, day=day, hour=hour, minute=min, second=sec, tz=tz
+        year=year,
+        month=month,
+        day=day,
+        hour=hour,
+        minute=min,
+        second=sec,
+        tz=tz,
     )
 
 
@@ -245,8 +241,7 @@ import xarray as xr
 
 
 def get_item(ens_fc_ts: "NdTimeSeries", i, convert_to_xr=True) -> Union["ItemSliceNdTimeSeries", xr.DataArray]:
-    """
-    Gets an item in an indexable uchronia object
+    """Gets an item in an indexable uchronia object
 
     Gets an item in an indexable uchronia object of one of the the C++ uchronia types identifed by TIME_SERIES_PTR,
     ENSEMBLE_PTR_TIME_SERIES_PTR, or ENSEMBLE_FORECAST_TIME_SERIES_PTR.
@@ -280,23 +275,21 @@ def get_item(ens_fc_ts: "NdTimeSeries", i, convert_to_xr=True) -> Union["ItemSli
     zero_index = i - 1
     if is_singular_time_series(ens_fc_ts):
         return uwg.GetValueFromUnivariateTimeSeries_py(ens_fc_ts, zero_index)
-    elif is_ensemble_time_series(ens_fc_ts):
+    if is_ensemble_time_series(ens_fc_ts):
         univ_ts = uwg.TimeSeriesFromEnsembleOfTimeSeries_py(ens_fc_ts, zero_index)
         if convert_to_xr:
             univ_ts = as_xarray(univ_ts)
         return univ_ts
-    elif is_time_series_of_ensemble_time_series(ens_fc_ts):
+    if is_time_series_of_ensemble_time_series(ens_fc_ts):
         if convert_to_xr:
             mts = uwg.GetItemEnsembleForecastTimeSeriesAsStructure_py(ens_fc_ts, zero_index)
         else:
             mts = uwg.GetItemEnsembleForecastTimeSeries_py(ens_fc_ts, zero_index)
         return mts
-    else:
-        raise ValueError(
-            'get_item: does not know how to get from an object of external type "'
-            + ens_fc_ts.type_id,
-            '"',
-        )
+    raise ValueError(
+        'get_item: does not know how to get from an object of external type "' + ens_fc_ts.type_id,
+        '"',
+    )
 
 
 #' Sets an item of an ensemble time series
@@ -320,9 +313,10 @@ def get_item(ens_fc_ts: "NdTimeSeries", i, convert_to_xr=True) -> Union["ItemSli
 #' print(uchronia::get_item(ens_fc_ts, 1))
 #' }
 #' @export
-def set_item(ens_fc_ts: "NdTimeSeries", i:int, value:Any):
-    if not isinstance(i, int): raise ValueError("Only numeric indices are supported for now")
-    zero_index = i-1
+def set_item(ens_fc_ts: "NdTimeSeries", i: int, value: Any):
+    if not isinstance(i, int):
+        raise ValueError("Only numeric indices are supported for now")
+    zero_index = i - 1
     if is_singular_time_series(ens_fc_ts):
         #   if(!is.numeric(value)) stop("For an univariate time series item set must be a scalar")
         uwg.SetValueToUnivariateTimeSeries_py(ens_fc_ts, zero_index, value)
@@ -334,16 +328,16 @@ def set_item(ens_fc_ts: "NdTimeSeries", i:int, value:Any):
         uwg.SetItemEnsembleForecastTimeSeriesAsStructure_py(ens_fc_ts, zero_index, value)
     else:
         raise ValueError(
-            'set_item: does not know how to get from an object of external type "'
-            + ens_fc_ts.type_id,
+            'set_item: does not know how to get from an object of external type "' + ens_fc_ts.type_id,
             '"',
         )
+
 
 # #' Checks whether a data library has a given top level data identifier
 # #'
 # #' Checks whether a data library has a given top level data identifier
 # #'
-# #' @param data_library external pointer type ENSEMBLE_DATA_SET_PTR, or a Python class wrapper around it 
+# #' @param data_library external pointer type ENSEMBLE_DATA_SET_PTR, or a Python class wrapper around it
 # #' @param identifier character, the identifier to test again
 # #' @seealso \code{\link{get_ensemble_dataset}} for sample code
 # #' @export
@@ -353,9 +347,8 @@ def set_item(ens_fc_ts: "NdTimeSeries", i:int, value:Any):
 # }
 
 
-def sub_identifiers(data_library: "TimeSeriesLibrary", identifier:str) -> List[str]:
-    """
-    Gets the next level data identifier of a top level ID
+def sub_identifiers(data_library: "TimeSeriesLibrary", identifier: str) -> list[str]:
+    """Gets the next level data identifier of a top level ID
 
     Gets the next level data identifier of a top level ID.
     A collection of time series such as one identified by "streamflows" may have
@@ -363,7 +356,7 @@ def sub_identifiers(data_library: "TimeSeriesLibrary", identifier:str) -> List[s
     may thus be retrieved by a hierarchical string ID  "streamflows.401221" 401221 is a gauge ID.
 
     Args:
-        data_library (TimeSeriesLibrary): external pointer type ENSEMBLE_DATA_SET_PTR, or a Python class wrapper around it 
+        data_library (TimeSeriesLibrary): external pointer type ENSEMBLE_DATA_SET_PTR, or a Python class wrapper around it
         identifier (str): character, the top level identifier to test again for next level ids
 
     Returns:
@@ -492,11 +485,12 @@ def sub_identifiers(data_library: "TimeSeriesLibrary", identifier:str) -> List[s
 #   )
 # }
 
+
 def serialisable_series(series):
     if not isinstance(series, pd.Series):
         raise NotImplementedError("Only supports pd.Series for now")
     time_index = series.index
-    assert time_index.tz is None or time_index.tz == 'UTC'
+    assert time_index.tz is None or time_index.tz == "UTC"
     assert isinstance(time_index, pd.DatetimeIndex)
     return {
         "utcInt": [int(x.timestamp()) for x in time_index],

@@ -4,8 +4,7 @@ from uchronia.data_set import get_ensemble_dataset
 
 
 def sample_data_dir(do_warn=True):
-    """
-    Probe for the location of sample data directory (too big for package inclusion)
+    """Probe for the location of sample data directory (too big for package inclusion)
 
     Probe for the location of sample data directory (too big for package inclusion), defined by the SWIFT_SAMPLE_DATA_DIR environment variable.
 
@@ -20,7 +19,7 @@ def sample_data_dir(do_warn=True):
     if do_warn:
         if not os.path.exists(d):
             raise Exception(
-                "Non-existent environment variable 'SWIFT_SAMPLE_DATA_DIR', or its value is not an existing directory"
+                "Non-existent environment variable 'SWIFT_SAMPLE_DATA_DIR', or its value is not an existing directory",
             )
     return d
 
@@ -32,8 +31,7 @@ def has_sample_data():
 
 
 def sample_time_series_library(ident: str):
-    """
-    Get one of the sample time series libraries included in this package
+    """Get one of the sample time series libraries included in this package
 
     Get one of the sample time series libraries included in this package
 
@@ -53,12 +51,14 @@ def sample_time_series_library(ident: str):
     pkg_data_dir = os.path.join(pkg_dir, "data")
     if ident == "upper murray":
         data_library_file = os.path.join(
-            pkg_data_dir, "time_series_library_upper_murray.yaml"
+            pkg_data_dir,
+            "time_series_library_upper_murray.yaml",
         )
         data_path = os.path.join(doc_data_path, "UpperMurray")
     elif ident == "stanley":
         data_library_file = os.path.join(
-            pkg_data_dir, "time_series_library_stanley.yaml"
+            pkg_data_dir,
+            "time_series_library_stanley.yaml",
         )
         data_path = os.path.join(doc_data_path, "RPP")
     if not os.path.exists(data_path):
