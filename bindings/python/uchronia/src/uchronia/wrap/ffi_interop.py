@@ -1,17 +1,12 @@
 """
     Wrapper around the uchronia C API functions using CFFI.
 """
-from functools import wraps
-from cffi import FFI
 import os
+from functools import wraps
 
-from typing import List, Dict, Any
-from refcount.putils import library_short_filename, update_path_windows
-import pandas as pd
-
-from refcount.interop import OwningCffiNativeHandle, CffiNativeHandle
+from cffi import FFI
 from cinterop.cffi.marshal import CffiMarshal
-
+from refcount.putils import library_short_filename, update_path_windows
 
 uchronia_ffi = FFI()
 here = os.path.abspath(os.path.dirname(__file__))
@@ -19,10 +14,10 @@ uchronia_pkg_dir = os.path.join(here,'..')
 cdefs_dir = os.path.join(uchronia_pkg_dir, 'data')
 assert os.path.exists(cdefs_dir)
 
-with open(os.path.join(cdefs_dir, 'structs_cdef.h')) as f_headers:
+with open(os.path.join(cdefs_dir, 'structs_cdef.h'), encoding="utf-8") as f_headers:
     uchronia_ffi.cdef(f_headers.read())
 
-with open(os.path.join(cdefs_dir, 'funcs_cdef.h')) as f_headers:
+with open(os.path.join(cdefs_dir, 'funcs_cdef.h'), encoding="utf-8") as f_headers:
     uchronia_ffi.cdef(f_headers.read())
 
 short_fname = library_short_filename('datatypes')
